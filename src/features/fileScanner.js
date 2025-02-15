@@ -91,7 +91,7 @@ const scanAllFilesContainKeywords = async () => {
 };
 
 let initialScanCompleted = false;
-let initialTextScanCompleted = false; // New flag to prevent false removals on first edit
+let debouncerTime = null;
 
 const watchFiles = async () => {
   console.log("Intial Scan Running!");
@@ -120,7 +120,7 @@ const watchFiles = async () => {
     scanAllFilesContainKeywords();
   });
 
-  console.log("📂 Watching for file changes...");
+  //console.log("📂 Watching for file changes...");
 
   // 📝 Detect real-time text changes (even before saving)
   vscode.workspace.onDidChangeTextDocument((event) => {
@@ -129,44 +129,33 @@ const watchFiles = async () => {
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor || event.document !== activeEditor.document) return;
 
-    console.log("📝 Text Changed - Checking for new keywords...");
+    //console.log("📝 Text Changed - Checking for new keywords...");
 
     const text = event.document.getText();
     const regex = /\/\/[^\n]*\b(\w+):/g;
     const matches = [...text.matchAll(regex)].map((match) => match[1]);
-    // matches: ["TODO", "NOTE", "DEBUG", "HACK", "INFO"] -> get all the keyword in the current file
 
     const removedKeywords = [...previousKeywords].filter(
       (keyword) => !matches.includes(keyword)
     );
 
-    // previousKeywords = ["TODO", "NOTE"];
-    // matches = ["TODO", "NOTE", "IMPORTANT"];
-
-    // newKeywords = ["IMPORTANT"]; // ✅ Only detects the new keyword
-
     const newKeywords = matches.filter(
       (keyword) => !previousKeywords.has(keyword)
     );
 
-    // 🚀 **Fix: Only process removed keywords after first real text edit**
-    if (!initialTextScanCompleted) {
-      initialTextScanCompleted = true; // First text change has occurred, now we allow removal detection
-      console.log(
-        "✅ First text scan complete, now tracking removals properly."
-      );
-      return; // Skip processing on the first edit
-    }
-
     if (newKeywords.length > 0 || removedKeywords.length > 0) {
-      console.log("🆕 New Keywords Detected:", newKeywords);
-      console.log("❌ Removed Keywords Detected:", removedKeywords);
-
+      // console.log("🆕 New Keywords Detected:", newKeywords);
+      // console.log("❌ Removed Keywords Detected:", removedKeywords);
       // ✅ Sync previousKeywords with detected keywords
       previousKeywords.clear();
       matches.forEach((keyword) => previousKeywords.add(keyword));
 
-      scanAllFilesContainKeywords(); // Run scan to update sidebar
+      // Apply debounce mechanisim
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        console.log("🔄 Debounced Scan Triggered...");
+        scanAllFilesContainKeywords();
+      }, 500);
     } else {
       console.log("✅ No real keyword changes detected, skipping rescan.");
     }
