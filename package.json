@@ -1,0 +1,74 @@
+{
+  "name": "custom-code-highlight-tool",
+  "displayName": "custom-code-highlight-tool",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.92.2"
+  },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onCommand:scanAllfiles.containDefaultKeyword",
+    "onCommand:highlightWord.afterColon",
+    "onCommand:extension.replaceSpaceWithUnderscore",
+    "onView:customSidebar"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "scanAllfiles.containDefaultKeyword",
+        "title": "Scan Files:"
+      },
+      {
+        "command": "highlightWord.afterColon",
+        "title": "Highlight Word:"
+      },
+      {
+        "command": "extension.replaceSpaceWithUnderscore",
+        "title": "Replace Space with Underscore" 
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "extension.replaceSpaceWithUnderscore",
+        "key": "space",
+        "when": "editorTextFocus"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "fileScannerSidebar",
+          "title": "File Scanner",
+          "icon": "resources/icon.png"
+        }
+      ]
+    },
+    "views": {
+      "fileScannerSidebar": [
+        {
+          "id": "customSidebar",
+          "name": "Keyword Scanner",
+          "type": "webview"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.96.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.16.0"
+  },
+  "dependencies": {
+    "tinycolor2": "^1.6.0"
+  }
+}

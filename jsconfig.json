@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"module": "Node16",
+		"target": "ES2022",
+		"checkJs": false,  /* Typecheck .js files. */
+		"lib": [
+			"ES2022"
+		]
+	},
+	"exclude": [
+		"../Custom-Keyword-Highilighting-VsCode-Extension/custom-keyword-highlight-tool/node_modules"
+	]
+}
