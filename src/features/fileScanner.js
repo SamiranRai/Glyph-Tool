@@ -8,10 +8,6 @@ const { highlightTimeStamps } = require("./highlightWord"); // store all keyword
 
 // Store the data
 const resultData = [];
-// Store previously detected keywords to avoid unnecessary scans
-let previousKeywords = new Set();
-let debounceTimer;
-
 let updateSidebar = null; // Store the sidebar update function
 
 const scanAllFilesContainKeywords = async () => {
@@ -78,9 +74,6 @@ const scanAllFilesContainKeywords = async () => {
     }
   }
 
-  //previousKeywords = detectedKeywords;
-  //previousKeywords = new Set(detectedKeywords);
-
   console.log("🔍 Updated resultData:", resultData);
 
   // if (updateSidebar) {
@@ -90,8 +83,10 @@ const scanAllFilesContainKeywords = async () => {
   return resultData;
 };
 
+//Store previously detected keywords to avoid unnecessary scans
+let previousKeywords = new Set();
 let initialScanCompleted = false;
-let debouncerTime = null;
+let debouncerTimer = null;
 let recentlyUpdated = false;
 
 const watchFiles = async () => {
@@ -157,8 +152,8 @@ const watchFiles = async () => {
       matches.forEach((keyword) => previousKeywords.add(keyword));
 
       // Apply debounce mechanisim
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
+      if (debouncerTimer) clearTimeout(debouncerTimer);
+      debouncerTimer = setTimeout(() => {
         console.log("🔄 Debounced Scan Triggered...");
         scanAllFilesContainKeywords();
         recentlyUpdated = true; // Scan was already done!
@@ -176,5 +171,4 @@ const watchFiles = async () => {
 module.exports = {
   scanAllFilesContainKeywords,
   watchFiles,
-  //setSidebarCallback,
 };
