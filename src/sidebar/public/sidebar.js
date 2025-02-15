@@ -1,29 +1,30 @@
 const vscode = acquireVsCodeApi(); // ✅ Get VS Code API to communicate
 
-// Send requset to the extension when the sidebar is load
-window.addEventListener("DOMContentLoaded", () => {
-  vscode.postMessage({ command: "fetchData" });
-});
-
-// Listen for message from backend
 window.addEventListener("message", (event) => {
-  const message = event.data;
-  if (message.command === "updateData") {
-    console.log("updateData:" + message.data);
-    // pass the data to "updateUI()" function
-    updateUI(message.data);
+  console.log("✅ Sidebar received message:", event.data);
+
+  if (event.data.command === "updateData") {
+    updateSidebarUI(event.data.data);
   }
 });
 
-// UpdateUI Function
-function updateUI(data) {
-  const container = document.getElementById("data-container");
-  container.innerHTML = ""; // clear old Data
+// Function to update the UI dynamically
+function updateSidebarUI(data) {
+  const container = document.getElementById("sidebar-content");
+  container.innerHTML = "";
+
+  if (data.length === 0) {
+    container.innerHTML = "<p>No keywords found.</p>";
+    return;
+  }
 
   data.forEach((item) => {
     const div = document.createElement("div");
-    div.className = "keyword-item";
-    div.innerHTML = `<strong>${item.keyword}:</strong> ${item.description} <br> 📄 ${item.file} (Line ${item.line})`;
+    div.className = "keyword-entry";
+    div.innerHTML = `
+      <strong>${item.keyword}</strong>: ${item.description} <br>
+      <small>${item.file} (Line ${item.line})</small>
+    `;
     container.appendChild(div);
   });
 }

@@ -21,9 +21,9 @@ const scanAllFilesContainKeywords = async () => {
   const files = await vscode.workspace.findFiles(
     `**/*.{${fileExtensions.join(",")}}`
   );
-  const regex = /\/\/\s*\b([A-Z_]+):/gm;
 
-  let detectedKeywords = new Set();
+  // Regular expression to match the "keyword present" files
+  const regex = /\/\/\s*\b([A-Z_]+):/gm;
 
   for (const file of files) {
     try {
@@ -34,6 +34,7 @@ const scanAllFilesContainKeywords = async () => {
         (editor) => editor.document.uri.fsPath === file.fsPath
       );
 
+      // if it's open
       if (openEditor) {
         content = openEditor.document.getText(); // Get real-time content
       } else {
@@ -44,7 +45,6 @@ const scanAllFilesContainKeywords = async () => {
       }
 
       const lines = content.split("\n");
-
       for (let i = 0; i < lines.length; i++) {
         let match;
         while ((match = regex.exec(lines[i]))) {
@@ -54,6 +54,7 @@ const scanAllFilesContainKeywords = async () => {
               ? descriptionMatch[1].trim()
               : "No Description.";
 
+          // Push the date to "resultData" array
           resultData.push({
             keyword: match[1],
             description,
@@ -64,8 +65,6 @@ const scanAllFilesContainKeywords = async () => {
             timeStamp:
               highlightTimeStamps.get(match[1] + ":") || "NO-TIME_STAMP",
           });
-
-          detectedKeywords.add(match[1]);
         }
       }
     } catch (error) {
@@ -74,12 +73,15 @@ const scanAllFilesContainKeywords = async () => {
     }
   }
 
-  console.log("🔍 Updated resultData:", resultData);
+  console.log("Updated resultData:", resultData);
 
-  // if (updateSidebar) {
-  //   updateSidebar(resultData); // Ensure UI updates
-  // }
+  if (updateSidebar) {
+    updateSidebar(resultData);
+  } else {
+    console.error("❌ updateSidebar is NOT set! Sidebar cannot update.");
+  }
 
+  // also returning "resultData" for watchFiles--> previous keyword init scanning
   return resultData;
 };
 
@@ -89,6 +91,7 @@ let initialScanCompleted = false;
 let debouncerTimer = null;
 let recentlyUpdated = false;
 
+// watchFile-> for real-time file monitoring
 const watchFiles = async () => {
   console.log("Intial Scan Running!");
 
@@ -107,30 +110,26 @@ const watchFiles = async () => {
       recentlyUpdated = false;
       return;
     }
-    console.log("🔄 File Changed - Rescanning...");
+    console.log("File Changed - Rescanning...");
     scanAllFilesContainKeywords();
   });
 
   watcher.onDidCreate(() => {
-    console.log("➕ File Created - Rescanning...");
+    console.log("File Created - Rescanning...");
     scanAllFilesContainKeywords();
   });
 
   watcher.onDidDelete(() => {
-    console.log("❌ File Deleted - Rescanning...");
+    console.log("File Deleted - Rescanning...");
     scanAllFilesContainKeywords();
   });
 
-  //console.log("📂 Watching for file changes...");
-
-  // 📝 Detect real-time text changes (even before saving)
+  // Detect real-time text changes (even before saving)
   vscode.workspace.onDidChangeTextDocument((event) => {
-    if (!initialScanCompleted) return; // ✅ Prevent unnecessary re-scans
+    if (!initialScanCompleted) return; // Prevent unnecessary re-scans
 
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor || event.document !== activeEditor.document) return;
-
-    //console.log("📝 Text Changed - Checking for new keywords...");
 
     const text = event.document.getText();
     const regex = /\/\/[^\n]*\b(\w+):/g;
@@ -145,9 +144,7 @@ const watchFiles = async () => {
     );
 
     if (newKeywords.length > 0 || removedKeywords.length > 0) {
-      // console.log("🆕 New Keywords Detected:", newKeywords);
-      // console.log("❌ Removed Keywords Detected:", removedKeywords);
-      // ✅ Sync previousKeywords with detected keywords
+      // Sync previousKeywords with detected keywords
       previousKeywords.clear();
       matches.forEach((keyword) => previousKeywords.add(keyword));
 
@@ -164,11 +161,13 @@ const watchFiles = async () => {
   });
 };
 
-// const setSidebarCallback = (callback) => {
-//   updateSidebar = callback;
-// };
+// Modify `setSidebarCallback`
+const setSidebarCallback = (callback) => {
+  updateSidebar = callback;
+};
 
 module.exports = {
   scanAllFilesContainKeywords,
   watchFiles,
+  setSidebarCallback,
 };

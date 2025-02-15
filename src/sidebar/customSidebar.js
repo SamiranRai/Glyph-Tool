@@ -1,27 +1,26 @@
-//------ ACT AS MIDDLE MAN FOR FRONTEND <-(CUSTOMSIDEBAR.JS)-> BACKEND
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
+const {
+  scanAllFilesContainKeywords,
+  setSidebarCallback,
+} = require("../features/fileScanner");
 
-// Importing "scanAllFilesContainKeywords"
-const { scanAllFilesContainKeywords } = require("../features/fileScanner");
-
-// Custom Sidebar:
 class CustomSidebarProvider {
   constructor(context) {
     this.context = context;
+    this.webviewView = null; // Store the webview instance
   }
 
   resolveWebviewView(webviewView) {
-    webviewView.webview.options = {
-      enableScripts: true,
-    };
+    this.webviewView = webviewView; // Store for later updates
+
+    webviewView.webview.options = { enableScripts: true };
 
     const htmlPath = path.join(
       this.context.extensionPath,
       "src/sidebar/public/sidebar.html"
     );
-
     const cssURI = webviewView.webview.asWebviewUri(
       vscode.Uri.file(
         path.join(this.context.extensionPath, "src/sidebar/public/sidebar.css")
@@ -40,13 +39,23 @@ class CustomSidebarProvider {
 
     webviewView.webview.html = htmlContent;
 
-    // Listen for message from the sidebar
+    // Listen for message from Sidebar (when requesting fresh data)
     webviewView.webview.onDidReceiveMessage(async (message) => {
       if (message.command === "fetchData") {
-        // Sidebar send a request "fetchData"
         const data = await scanAllFilesContainKeywords();
-        // Send the response "updateData" to the Sidebar
         webviewView.webview.postMessage({ command: "updateData", data });
+      }
+    });
+
+    setSidebarCallback((updatedData) => {
+      if (this.webviewView) {
+        console.log("✅ Sending data to sidebar:", updatedData);
+        this.webviewView.webview.postMessage({
+          command: "updateData",
+          data: updatedData,
+        });
+      } else {
+        console.error("❌ Sidebar webviewView is NOT available.");
       }
     });
   }
