@@ -92,6 +92,7 @@ const scanAllFilesContainKeywords = async () => {
 
 let initialScanCompleted = false;
 let debouncerTime = null;
+let recentlyUpdated = false;
 
 const watchFiles = async () => {
   console.log("Intial Scan Running!");
@@ -106,6 +107,11 @@ const watchFiles = async () => {
   );
 
   watcher.onDidChange(() => {
+    if (recentlyUpdated) {
+      console.log("Skipping redundant scan (already updated by text edit)");
+      recentlyUpdated = false;
+      return;
+    }
     console.log("🔄 File Changed - Rescanning...");
     scanAllFilesContainKeywords();
   });
@@ -155,6 +161,7 @@ const watchFiles = async () => {
       debounceTimer = setTimeout(() => {
         console.log("🔄 Debounced Scan Triggered...");
         scanAllFilesContainKeywords();
+        recentlyUpdated = true; // Scan was already done!
       }, 500);
     } else {
       console.log("✅ No real keyword changes detected, skipping rescan.");
