@@ -1,7 +1,6 @@
 const vscode = require("vscode");
 const getKeywordHighlightColor = require("../utility/highlight_word_required/getKeywordHighlightColor");
 const predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
-const handleSpacebarConversion = require("../utility/highlight_word_required/handleSpacebarConversion");
 
 let isEditing = false;
 let decorationTypes = new Map();
@@ -100,21 +99,11 @@ function activate(context) {
     }
   );
 
-  const disposableKeyPress = vscode.commands.registerTextEditorCommand(
-    "extension.replaceSpaceWithUnderscore",
-    handleSpacebarConversion
-  );
-
-  context.subscriptions.push(
-    disposableTextChange,
-    disposableEditorChange,
-    disposableKeyPress
-  );
+  context.subscriptions.push(disposableTextChange, disposableEditorChange);
 }
 
 module.exports = {
   activate,
   highlightWords,
-  handleSpacebarConversion,
   highlightTimeStamps, // Export timestamp Map
 };

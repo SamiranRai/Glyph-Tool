@@ -10,7 +10,6 @@
   "activationEvents": [
     "onCommand:scanAllfiles.containDefaultKeyword",
     "onCommand:highlightWord.afterColon",
-    "onCommand:extension.replaceSpaceWithUnderscore",
     "onView:customSidebar"
   ],
   "main": "./extension.js",
@@ -23,18 +22,9 @@
       {
         "command": "highlightWord.afterColon",
         "title": "Highlight Word:"
-      },
-      {
-        "command": "extension.replaceSpaceWithUnderscore",
-        "title": "Replace Space with Underscore" 
       }
     ],
     "keybindings": [
-      {
-        "command": "extension.replaceSpaceWithUnderscore",
-        "key": "space",
-        "when": "editorTextFocus"
-      }
     ],
     "viewsContainers": {
       "activitybar": [

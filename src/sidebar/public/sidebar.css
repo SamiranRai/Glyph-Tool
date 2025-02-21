@@ -2,9 +2,10 @@ body {
     font-family: Arial, sans-serif;
     padding: 10px;
     background: #544343;
+    font-size: 15px;
   }
   
-  #data-container {
+  #sidebar-content {
     border: 1px solid #ddd;
     padding: 10px;
     background: rgb(142, 35, 35);

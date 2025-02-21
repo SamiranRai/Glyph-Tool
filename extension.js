@@ -1,10 +1,7 @@
 const vscode = require("vscode");
 
-// Importing "highlightWords functions" && "handleSpacebarConversion"
-const {
-  highlightWords,
-  handleSpacebarConversion,
-} = require("./src/features/highlightWord");
+// Importing "highlightWords functions"
+const { highlightWords } = require("./src/features/highlightWord");
 
 // Importing "scanAllFilesContainKeywords" && "watchFiles"
 const {
@@ -28,11 +25,6 @@ function activate(context) {
     scanAllFilesContainKeywords
   );
 
-  // Registering Spacebar Auto-Replace Command
-  let spacebarCommand = vscode.commands.registerTextEditorCommand(
-    "extension.replaceSpaceWithUnderscore",
-    handleSpacebarConversion
-  );
 
   // Registering Custom SideBar
   let customSidebar = vscode.window.registerWebviewViewProvider(
@@ -42,7 +34,6 @@ function activate(context) {
   // Push commands to subscriptions
   context.subscriptions.push(highlightWordCommand);
   context.subscriptions.push(scanHighlightedKeywordFiles);
-  context.subscriptions.push(spacebarCommand);
   context.subscriptions.push(customSidebar);
 
   // Start watching for file changes
