@@ -3,8 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Custom Sidebar</title>
+    <title>Highlighted Keywords</title>
     <link rel="stylesheet" href="{{styleUri}}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <!--Main UI-->
@@ -12,7 +18,10 @@
     <div class="sidebar-header">
       <div class="header-section">
         <div class="header-button">
-          <button>Add a new Keyword</button>
+          <button>
+            <span class="icon-container" data-icon="add-icon"></span>
+            Add a new keyword
+          </button>
         </div>
       </div>
     </div>
@@ -37,7 +46,11 @@
                 id="input-filter-task"
                 type="text"
               />
-              <div class="filter-button"></div>
+              <div class="filter-button">
+                <button class="filter-button">
+                  <img src="" alt="filter button" />
+                </button>
+              </div>
               <div class="total-result"></div>
             </div>
             <!--Task Wrapper-->
@@ -87,7 +100,11 @@
       </div>
     </div>
 
-    <!--Js File-->
+    <!--Js Part-->
+    <script>
+      // Passing the "iconsBaseUri" to sidebar.js file
+      window.iconsBaseUri = "{{iconsBaseUri}}";
+    </script>
     <script src="{{scriptUri}}"></script>
   </body>
 </html>

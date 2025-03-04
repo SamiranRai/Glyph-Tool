@@ -32,10 +32,18 @@ class CustomSidebarProvider {
       )
     );
 
+    // 🔹 Convert the icons folder path into a webview-safe URI
+    const iconsBaseUri = webviewView.webview.asWebviewUri(
+      vscode.Uri.file(
+        path.join(this.context.extensionPath, "src/sidebar/public/icons")
+      )
+    );
+
     let htmlContent = fs.readFileSync(htmlPath, "utf-8");
     htmlContent = htmlContent
       .replace("{{styleUri}}", cssURI)
-      .replace("{{scriptUri}}", jsURI);
+      .replace("{{scriptUri}}", jsURI)
+      .replace("{{iconsBaseUri}}", iconsBaseUri); // Pass icons URI to HTML;
 
     webviewView.webview.html = htmlContent;
 
