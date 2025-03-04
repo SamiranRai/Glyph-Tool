@@ -10,42 +10,24 @@ window.addEventListener("message", (event) => {
 
 // Function to update the UI dynamically (optimized)
 function updateSidebarUI(data) {
-  const container = document.getElementById("sidebar-content");
+  const container = document.getElementById("task-list");
 
-  const existingKeywords = new Map();
-  container.querySelectorAll(".keyword-entry").forEach((div) => {
-    const keyword = div.getAttribute("data-keyword");
-    existingKeywords.set(keyword, div);
-  });
+  container.innerHTML = ""; // Clear existing content before updating
 
-  const newKeywords = new Set(data.map((item) => item.keyword));
-
-  // 🔹 ADD or UPDATE keywords
   data.forEach((item) => {
-    if (existingKeywords.has(item.keyword)) {
-      // ✅ Update existing keyword entry
-      const div = existingKeywords.get(item.keyword);
-      div.innerHTML = `
-        <strong>${item.keyword}</strong>: ${item.description} <br>
-        <small>${item.file} (Line ${item.line})</small>
-      `;
-    } else {
-      // ✅ Add new keyword entry
-      const div = document.createElement("div");
-      div.className = "keyword-entry";
-      div.setAttribute("data-keyword", item.keyword);
-      div.innerHTML = `
-        <strong>${item.keyword}</strong>: ${item.description} <br>
-        <small>${item.file} (Line ${item.line})</small>
-      `;
-      container.appendChild(div);
-    }
-  });
-
-  // 🔹 REMOVE deleted keywords
-  existingKeywords.forEach((div, keyword) => {
-    if (!newKeywords.has(keyword)) {
-      div.remove();
-    }
+    const div = document.createElement("div");
+    div.className = "task-entry";
+    div.innerHTML = `
+      <div class="task-header">
+        <span class="fixme-label ${item.keyword}">${item.keyword}</span>
+      </div>
+      <p class="task-title">${item.description}</p>
+      <div class="task-meta">
+        <span>📄 ${item.file}</span> |
+        <span>🔢 Line: ${item.line}</span> |
+        <span>⏰ ${item.time}</span>
+      </div>
+    `;
+    container.appendChild(div);
   });
 }

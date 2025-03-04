@@ -7,11 +7,87 @@
     <link rel="stylesheet" href="{{styleUri}}" />
   </head>
   <body>
-    <h2>Keyword Tracker</h2>
-    <div id="sidebar-content">
-      <p>Waiting for data...</p>
+    <!--Main UI-->
+    <!--Sidebar Header-->
+    <div class="sidebar-header">
+      <div class="header-section">
+        <div class="header-button">
+          <button>Add a new Keyword</button>
+        </div>
+      </div>
+    </div>
+    <!--Sidebar Tab Section-->
+    <div class="tabs-section">
+      <div class="tabs-container">
+        <!--Tab Header-->
+        <ul class="tabs-header topheader">
+          <li id="tab-tasks">Tasks</li>
+          <li id="tab-collections">Collections</li>
+          <li id="tab-done">Done</li>
+        </ul>
+        <!--Tab Body-->
+        <ul class="tabs">
+          <!--Tasks Tab-->
+          <li class="tab" id="tasks-tab">
+            <!--Filter Section-->
+            <div class="filter-section">
+              <input
+                placeholder="filter tasks"
+                class="input-filter"
+                id="input-filter-task"
+                type="text"
+              />
+              <div class="filter-button"></div>
+              <div class="total-result"></div>
+            </div>
+            <!--Task Wrapper-->
+            <div class="task-wrapper">
+              <div class="tab-content" id="tasks"></div>
+            </div>
+          </li>
+
+          <!--Collections Tab-->
+          <li class="tab" id="collections-tab">
+            <!--Filter Section-->
+            <div class="filter-section">
+              <input
+                placeholder="filter collections"
+                class="input-filter"
+                id="input-filter-collection"
+                type="text"
+              />
+              <div class="filter-button"></div>
+              <div class="total-result"></div>
+            </div>
+            <!--Collection Wrapper-->
+            <div class="collection-wrapper">
+              <div class="tab-content" id="collections"></div>
+            </div>
+          </li>
+
+          <li class="tab" id="dones-tab">
+            <!--Filter Section-->
+            <div class="filter-section">
+              <input
+                placeholder="filter dones"
+                class="input-filter"
+                id="input-filter-done"
+                type="text"
+              />
+              <div class="filter-button"></div>
+              <div class="total-result"></div>
+            </div>
+            <!--Done Wrapper-->
+            <div class="done-wrapper">
+              <div class="tab-content" id="dones"></div>
+            </div>
+          </li>
+        </ul>
+        <!--<div class="line"></div>-->
+      </div>
     </div>
 
+    <!--Js File-->
     <script src="{{scriptUri}}"></script>
   </body>
 </html>
