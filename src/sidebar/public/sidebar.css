@@ -10,75 +10,84 @@ body {
 
 ul {
   list-style-type: none;
-  margin: 0;
-  padding: 0;
 }
 
-.tabs-header li {
-  font-size: 14.2px;
-  font-weight: 500;
-  font-style: none;
-  padding: 20px 0;
-}
-
-#collections-tab, #dones-tab {
-  display: none;
-}
+/* Header Button: Add a new Keyword */
 
 .header-button button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
   width: 100%;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 500;
-  padding: 7px 0;
+  padding: 9px 0;
   border-radius: 5px;
   border: none;
-}
-
-.tabs-header {
-  display: flex;
-  justify-content: space-around;
-}
-.topheader-tabbar {
-  display: flex;
-  align-items: center;
+  background-color: rgb(39, 52, 80);
+  text-align: center;
   cursor: pointer;
 }
 
-.topheader-tabbar:nth-child(1) {
-  gap: 6.42px;
-}
-
-.topheader-tabbar:nth-child(2) {
-  gap: 6px;
-}
-.topheader-tabbar:nth-child(3) {
-  gap: 6px;
-}
-
-.icon-container {
+.icon-container-style-button {
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.topheader .icon-container svg {
-  width: 100%;
-  height: 100%;
+/* Tab Header TabBar: Tasks, Collections, Done */
+
+.tab-header-container ul {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-around;
 }
-.topheader .icon-container svg path {
+
+.tab-header-container .tabs-header li {
+  font-size: 14.2px;
+  font-weight: 500;
+  font-style: none;
+  padding: 20px 0;
+  margin: 0 6px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.tab-header-container li:nth-child(1) {
+  gap: 6.42px;
+}
+
+.tab-header-container li:nth-child(2) {
+  gap: 6.42px;
+}
+.tab-header-container li:nth-child(3) {
+  gap: 6px;
+}
+
+.icon-container-style-tabbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-container-style-tabbar svg {
+  width: 95%;
+  height: 95%;
+}
+.icon-container-style-tabbar svg path {
   fill: currentColor;
 }
 
-/* Fixed half body white issue due to fill propertey */
-.topheader .done-icon--container svg path {
+/* Fixed SVG half body white issue due to fill propertey */
+.done-icon--container svg path {
   fill: none;
   stroke: currentColor;
 }
 
-/* .task-icon--container {
-  margin-right: 6.42px;
-  margin-top: 3.3px;
-} */
+/* Filter- Search Input && Filter button */
 
 .filter-section {
   display: flex;
@@ -97,3 +106,8 @@ ul {
 
 }
 
+
+/* HIDE */
+#collections-tab, #dones-tab {
+  display: none;
+}

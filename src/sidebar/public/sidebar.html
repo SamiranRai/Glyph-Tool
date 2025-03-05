@@ -19,7 +19,10 @@
       <div class="header-section">
         <div class="header-button">
           <button>
-            <span class="icon-container" data-icon="add-icon"></span>
+            <span
+              class="icon-container icon-container-style-button"
+              data-icon="add-icon"
+            ></span>
             Add a new keyword
           </button>
         </div>
@@ -29,29 +32,31 @@
     <div class="tabs-section">
       <div class="tabs-container">
         <!--Tab Header-->
-        <ul class="tabs-header topheader">
-          <li id="tab-tasks" class="topheader-tabbar">
-            <span
-              class="icon-container task-icon--container"
-              data-icon="task-icon"
-            ></span>
-            Tasks
-          </li>
-          <li id="tab-collections" class="topheader-tabbar">
-            <span
-              class="icon-container collection-icon--container"
-              data-icon="collection-icon"
-            ></span>
-            Collections
-          </li>
-          <li id="tab-done" class="topheader-tabbar">
-            <span
-              class="icon-container done-icon--container"
-              data-icon="done-icon"
-            ></span>
-            Done
-          </li>
-        </ul>
+        <div class="tab-header-container">
+          <ul class="tabs-header topheader">
+            <li id="tab-tasks">
+              <span
+                class="icon-container icon-container-style-tabbar task-icon--container"
+                data-icon="task-icon"
+              ></span>
+              Tasks
+            </li>
+            <li id="tab-collections">
+              <span
+                class="icon-container icon-container-style-tabbar collection-icon--container"
+                data-icon="collection-icon"
+              ></span>
+              Collections
+            </li>
+            <li id="tab-done">
+              <span
+                class="icon-container icon-container-style-tabbar done-icon--container"
+                data-icon="done-icon"
+              ></span>
+              Done
+            </li>
+          </ul>
+        </div>
         <!--Tab Body-->
         <ul class="tabs">
           <!--Tasks Tab-->
@@ -66,7 +71,10 @@
               />
               <div class="filter-button">
                 <button class="filter-button">
-                  <img src="" alt="filter button" />
+                  <span
+                    class="icon-container icon-container-style-filter-button"
+                    data-icon="filter-icon"
+                  ></span>
                 </button>
               </div>
               <div class="total-result"></div>
