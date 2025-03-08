@@ -24,8 +24,8 @@ const scanAllFilesContainKeywords = async () => {
 
   // Regular expression to match the "keyword present" files
   const regex = /\/\/\s*\b([A-Z_]+):/gm;
-  const priorityRegex = /-P:\s*\[["']?(High|Medium|Low)["']?\]/i;
-  const deadlineRegex = /-D:\s*\[(\d{4}-\d{2}-\d{2})\]/;
+  // const priorityRegex = /-P:\s*\[["']?(High|Medium|Low)["']?\]/i;
+  // const deadlineRegex = /-D:\s*\[(\d{4}-\d{2}-\d{2})\]/;
 
   for (const file of files) {
     try {
@@ -58,19 +58,19 @@ const scanAllFilesContainKeywords = async () => {
 
           const wholeLine = lines[i].trim();
 
-          // Matching text using REgx
-          let priorityMatch = wholeLine.match(priorityRegex);
-          let deadlineMatch = wholeLine.match(deadlineRegex);
+          // // Matching text using REgx
+          // let priorityMatch = wholeLine.match(priorityRegex);
+          // let deadlineMatch = wholeLine.match(deadlineRegex);
 
-          let priority;
-          let deadline;
+          // let priority;
+          // let deadline;
 
-          // If any one exist
-          if (priorityMatch || deadlineMatch) {
-            console.log(`Detected in Line ${i + 1}:`, wholeLine);
-            priority = priorityMatch ? priorityMatch[1] : "None";
-            deadline = deadlineMatch ? deadlineMatch[1] : "None";
-          }
+          // // If any one exist
+          // if (priorityMatch || deadlineMatch) {
+          //   console.log(`Detected in Line ${i + 1}:`, wholeLine);
+          //   priority = priorityMatch ? priorityMatch[1] : "None";
+          //   deadline = deadlineMatch ? deadlineMatch[1] : "None";
+          // }
 
           // Push the date to "resultData" array
           resultData.push({
@@ -81,8 +81,8 @@ const scanAllFilesContainKeywords = async () => {
             line: i + 1,
             timeStamp:
               highlightTimeStamps.get(match[1] + ":") || "NO-TIME_STAMP",
-            priority: priority,
-            deadline: deadline,
+            // priority: priority,
+            // deadline: deadline,
             snippet: lines[i].trim(),
           });
         }

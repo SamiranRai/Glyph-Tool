@@ -10,9 +10,10 @@ window.addEventListener("message", (event) => {
 
 // Function to update the UI dynamically (optimized)
 function updateSidebarUI(data) {
-  console.log("Hello from Frontend!");
+  console.log("Hello from Frontend!", data);
 }
 
+// FRONTEND ONLY CODE --->
 // Static UI Part --->
 
 document.addEventListener("DOMContentLoaded", () => {
