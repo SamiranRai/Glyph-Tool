@@ -24,8 +24,6 @@ const scanAllFilesContainKeywords = async () => {
 
   // Regular expression to match the "keyword present" files
   const regex = /\/\/\s*\b([A-Z_]+):/gm;
-  // const priorityRegex = /-P:\s*\[["']?(High|Medium|Low)["']?\]/i;
-  // const deadlineRegex = /-D:\s*\[(\d{4}-\d{2}-\d{2})\]/;
 
   for (const file of files) {
     try {
@@ -56,22 +54,6 @@ const scanAllFilesContainKeywords = async () => {
               ? descriptionMatch[1].trim()
               : "No Description.";
 
-          const wholeLine = lines[i].trim();
-
-          // // Matching text using REgx
-          // let priorityMatch = wholeLine.match(priorityRegex);
-          // let deadlineMatch = wholeLine.match(deadlineRegex);
-
-          // let priority;
-          // let deadline;
-
-          // // If any one exist
-          // if (priorityMatch || deadlineMatch) {
-          //   console.log(`Detected in Line ${i + 1}:`, wholeLine);
-          //   priority = priorityMatch ? priorityMatch[1] : "None";
-          //   deadline = deadlineMatch ? deadlineMatch[1] : "None";
-          // }
-
           // Push the date to "resultData" array
           resultData.push({
             keyword: match[1],
@@ -81,8 +63,6 @@ const scanAllFilesContainKeywords = async () => {
             line: i + 1,
             timeStamp:
               highlightTimeStamps.get(match[1] + ":") || "NO-TIME_STAMP",
-            // priority: priority,
-            // deadline: deadline,
             snippet: lines[i].trim(),
           });
         }
@@ -106,6 +86,7 @@ const scanAllFilesContainKeywords = async () => {
 };
 
 //Store previously detected keywords to avoid unnecessary scans
+let previousComments = new Map(); // Stores keyword-description pairs
 let previousKeywords = new Set();
 let initialScanCompleted = false;
 let debouncerTimer = null;
@@ -145,47 +126,87 @@ const watchFiles = async () => {
   });
 
   // Detect real-time text changes (even before saving)
+
   vscode.workspace.onDidChangeTextDocument((event) => {
-    if (!initialScanCompleted) return; // Prevent unnecessary re-scans
+    if (!initialScanCompleted) return; // Skip scanning before initial load
 
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor || event.document !== activeEditor.document) return;
 
     const text = event.document.getText();
-    const regex = /\/\/[^\n]*\b(\w+):/g;
-    // const priorityRegex = /-P:\[\s*"?(\bhigh\b|\bmedium\b|\blow\b)"?\s*\]/i;
-    // const deadlineRegex = /-D:\[\s*(\d{4}-\d{2}-\d{2})\s*\]/;
-    const matches = [...text.matchAll(regex)].map((match) => match[1]);
+    const matches = new Map();
 
-    const removedKeywords = [...previousKeywords].filter(
-      (keyword) => !matches.includes(keyword)
+    // Regex to match `// KEYWORD: Description`
+    const regex = /^\/\/\s*([A-Z_]+):\s*(.*)$/gm;
+    for (const match of text.matchAll(regex)) {
+      const keyword = match[1].trim();
+      const description = match[2]?.trim() || "No Description";
+      matches.set(`${keyword}: ${description}`, true); // Store full pair
+    }
+
+    // Detect added and removed comments
+    const newComments = [...matches.keys()];
+    const oldComments = [...previousComments.keys()];
+
+    const removedComments = oldComments.filter(
+      (comment) => !matches.has(comment)
+    );
+    const addedComments = newComments.filter(
+      (comment) => !previousComments.has(comment)
     );
 
-    const newKeywords = matches.filter(
-      (keyword) => !previousKeywords.has(keyword)
-    );
+    if (removedComments.length > 0 || addedComments.length > 0) {
+      console.log("🔄 Changes detected in comments. Rescanning...");
 
-    if (
-      newKeywords.length > 0 ||
-      removedKeywords.length > 0
-      // || priorityMatches.length > 0 ||
-      // deadlineMatches.length > 0
-    ) {
-      // Sync previousKeywords with detected keywords
-      previousKeywords.clear();
-      matches.forEach((keyword) => previousKeywords.add(keyword));
+      previousComments.clear();
+      newComments.forEach((comment) => previousComments.set(comment, true));
 
-      // Apply debounce mechanisim
       if (debouncerTimer) clearTimeout(debouncerTimer);
       debouncerTimer = setTimeout(() => {
-        console.log("🔄 Debounced Scan Triggered...");
         scanAllFilesContainKeywords();
-        recentlyUpdated = true; // Scan was already done!
+        recentlyUpdated = true;
       }, 500);
     } else {
-      console.log("✅ No real keyword changes detected, skipping rescan.");
+      console.log(
+        "✅ No meaningful comment changes detected, skipping rescan."
+      );
     }
   });
+
+  // vscode.workspace.onDidChangeTextDocument((event) => {
+  //   if (!initialScanCompleted) return; // Prevent unnecessary re-scans
+
+  //   const activeEditor = vscode.window.activeTextEditor;
+  //   if (!activeEditor || event.document !== activeEditor.document) return;
+
+  //   const text = event.document.getText();
+  //   const regex = /\/\/[^\n]*\b(\w+):/g;
+  //   const matches = [...text.matchAll(regex)].map((match) => match[1]);
+
+  //   const removedKeywords = [...previousKeywords].filter(
+  //     (keyword) => !matches.includes(keyword)
+  //   );
+
+  //   const newKeywords = matches.filter(
+  //     (keyword) => !previousKeywords.has(keyword)
+  //   );
+
+  //   if (newKeywords.length > 0 || removedKeywords.length > 0) {
+  //     // Sync previousKeywords with detected keywords
+  //     previousKeywords.clear();
+  //     matches.forEach((keyword) => previousKeywords.add(keyword));
+
+  //     // Apply debounce mechanisim
+  //     if (debouncerTimer) clearTimeout(debouncerTimer);
+  //     debouncerTimer = setTimeout(() => {
+  //       console.log("🔄 Debounced Scan Triggered...");
+  //       scanAllFilesContainKeywords();
+  //       recentlyUpdated = true; // Scan was already done!
+  //     }, 500);
+  //   } else {
+  //     console.log("✅ No real keyword changes detected, skipping rescan.");
+  //   }
+  // });
 };
 
 // Modify `setSidebarCallback`
