@@ -45,8 +45,13 @@ async function highlightWords() {
       });
     }
 
+    // Checking & applying predefined custom Keyword style, if presents
+    const foundKeyword = predefinedKeywordColors.find(
+      (item) => item.keyword === uppercaseKeyword
+    );
+
     let bgColor =
-      predefinedKeywordColors.get(uppercaseKeyword) ||
+      foundKeyword?.color ||
       getKeywordHighlightColor(uppercaseKeyword).backgroundColor;
 
     if (!decorationTypes.has(uppercaseKeyword)) {

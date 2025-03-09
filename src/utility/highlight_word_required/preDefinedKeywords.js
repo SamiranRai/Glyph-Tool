@@ -1,14 +1,6 @@
-module.exports = new Map([
-  ["TODO:", "#FF4500"], // Orange Red
-  ["FIXME:", "#FF6347"], // Tomato
-  ["BUG:", "#DC143C"], // Crimson
-]);
-//
-/*
-const addKeyword = (keyword, color) => {
-  keywords.set(keyword, color);
-};
-
-const removeKeyword = (keyword, color) => {
-  keywords.delete()
-}*/
+module.exports = [
+  { keyword: "TODO:", color: "#FF4500" },
+  { keyword: "FIXME:", color: "#FF6347" },
+  { keyword: "BUG:", color: "#DC143C" },
+  { keyword: "DONE:", color: "#082A4A" },
+];
