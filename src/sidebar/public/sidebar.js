@@ -41,6 +41,7 @@ function updateSidebarUI(newData) {
       item;
 
     console.log(`${keyword}: ${timeStamp}`);
+    console.log(timeAgo(timeStamp));
 
     // Neccesery Data Trabsformation (ex. TimeStamp)
 

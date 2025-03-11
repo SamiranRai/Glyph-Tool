@@ -8,13 +8,13 @@ async function initDB(context, highlightTimeStamps) {
     db = new Level(`${storagePath}/timestamps-db`, { valueEncoding: "json" });
     await loadTimestampsFromDB(highlightTimeStamps);
   } catch (error) {
-    console.error("❌ Failed to initialize LevelDB:", error);
+    console.error("Failed to initialize LevelDB:", error);
   }
 }
 
 async function saveTimestamp(keyword, highlightTimeStamps) {
   if (!db) {
-    console.error("❌ LevelDB is not initialized. Cannot save.");
+    console.error("LevelDB is not initialized. Cannot save.");
     return;
   }
 
@@ -27,7 +27,7 @@ async function saveTimestamp(keyword, highlightTimeStamps) {
     await db.put(keyword, currentTime);
     highlightTimeStamps.set(keyword, currentTime);
   } catch (error) {
-    console.error(`❌ Error saving timestamp for ${keyword}:`, error);
+    console.error(`Error saving timestamp for ${keyword}:`, error);
   }
 }
 
@@ -37,7 +37,7 @@ async function deleteTimestamp(keyword, highlightTimeStamps) {
     await db.del(keyword);
     highlightTimeStamps.delete(keyword);
   } catch (error) {
-    console.error(`❌ Failed to delete ${keyword}:`, error);
+    console.error(`Failed to delete ${keyword}:`, error);
   }
 }
 

@@ -5,6 +5,7 @@ const path = require("path");
 const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
 // Importing "highlightTimeStamps"
 const { highlightTimeStamps } = require("./highlightWord"); // store all keyword timeStamp
+const { saveTimestamp } = require("./../db/levelDb");
 
 // Store the data
 const resultData = [];
@@ -127,7 +128,7 @@ const watchFiles = async () => {
 
   // Detect real-time text changes (even before saving)
 
-  vscode.workspace.onDidChangeTextDocument((event) => {
+  vscode.workspace.onDidChangeTextDocument(async (event) => {
     if (!initialScanCompleted) return; // Skip scanning before initial load
 
     const activeEditor = vscode.window.activeTextEditor;
@@ -158,6 +159,13 @@ const watchFiles = async () => {
     if (removedComments.length > 0 || addedComments.length > 0) {
       console.log("🔄 Changes detected in comments. Rescanning...");
 
+      for (const comment of addedComments) {
+        const keyword = comment.split(":")[0];
+        const newTimestamp = new Date().toISOString();
+        highlightTimeStamps.set(keyword + ":", newTimestamp);
+        await saveTimestamp(keyword + ":", newTimestamp);
+      }
+
       previousComments.clear();
       newComments.forEach((comment) => previousComments.set(comment, true));
 
@@ -172,41 +180,6 @@ const watchFiles = async () => {
       );
     }
   });
-
-  // vscode.workspace.onDidChangeTextDocument((event) => {
-  //   if (!initialScanCompleted) return; // Prevent unnecessary re-scans
-
-  //   const activeEditor = vscode.window.activeTextEditor;
-  //   if (!activeEditor || event.document !== activeEditor.document) return;
-
-  //   const text = event.document.getText();
-  //   const regex = /\/\/[^\n]*\b(\w+):/g;
-  //   const matches = [...text.matchAll(regex)].map((match) => match[1]);
-
-  //   const removedKeywords = [...previousKeywords].filter(
-  //     (keyword) => !matches.includes(keyword)
-  //   );
-
-  //   const newKeywords = matches.filter(
-  //     (keyword) => !previousKeywords.has(keyword)
-  //   );
-
-  //   if (newKeywords.length > 0 || removedKeywords.length > 0) {
-  //     // Sync previousKeywords with detected keywords
-  //     previousKeywords.clear();
-  //     matches.forEach((keyword) => previousKeywords.add(keyword));
-
-  //     // Apply debounce mechanisim
-  //     if (debouncerTimer) clearTimeout(debouncerTimer);
-  //     debouncerTimer = setTimeout(() => {
-  //       console.log("🔄 Debounced Scan Triggered...");
-  //       scanAllFilesContainKeywords();
-  //       recentlyUpdated = true; // Scan was already done!
-  //     }, 500);
-  //   } else {
-  //     console.log("✅ No real keyword changes detected, skipping rescan.");
-  //   }
-  // });
 };
 
 // Modify `setSidebarCallback`

@@ -1,6 +1,7 @@
 const vscode = require("vscode");
 const getKeywordHighlightColor = require("../utility/highlight_word_required/getKeywordHighlightColor");
 const predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+// Database releated
 const {
   initDB,
   saveTimestamp,
@@ -42,6 +43,9 @@ async function highlightWords(context) {
 
     // ✅ Safe DB call
     if (!highlightTimeStamps.has(uppercaseKeyword)) {
+      // || (uppercaseKeyword, match.input) )
+      const newTimestamp = new Date().toISOString(); // Generate new timestamp
+      highlightTimeStamps.set(uppercaseKeyword, newTimestamp);
       await saveTimestamp(uppercaseKeyword, highlightTimeStamps);
     }
 
