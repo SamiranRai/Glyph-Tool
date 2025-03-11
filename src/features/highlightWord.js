@@ -1,74 +1,16 @@
 const vscode = require("vscode");
-const { Level } = require("level");
 const getKeywordHighlightColor = require("../utility/highlight_word_required/getKeywordHighlightColor");
 const predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+const {
+  initDB,
+  saveTimestamp,
+  deleteTimestamp,
+  loadTimestampsFromDB,
+} = require("./../db/levelDb");
 
 let isEditing = false;
 let decorationTypes = new Map();
 let highlightTimeStamps = new Map(); // Store timestamp for each keyword instance
-let db; // level instance
-
-// ✅ Ensure DB is initialized before use
-async function initDB(context) {
-  try {
-    const storagePath = context.globalStorageUri.fsPath;
-    db = new Level(`${storagePath}/timestamps-db`, { valueEncoding: "json" });
-    await loadTimestampsFromDB(); // Load timestamps after DB initializes
-  } catch (error) {
-    console.error("❌ Failed to initialize LevelDB:", error);
-  }
-}
-
-// ✅ Safe save to DB
-async function saveTimestamp(keyword) {
-  if (!db) {
-    console.error("❌ LevelDB is not initialized. Cannot save:", db);
-    return;
-  }
-
-  const currentTime = Date.now();
-
-  try {
-    // Check If value exist and it's same
-    const existingTime = highlightTimeStamps.get(keyword);
-    if (existingTime && existingTime === currentTime) return;
-
-    await db.put(keyword, currentTime);
-    highlightTimeStamps.set(keyword, currentTime);
-  } catch (error) {
-    console.error(`❌ Error saving timestamp for ${keyword}:`, error);
-  }
-}
-
-// ✅ Safe delete from DB
-async function deleteTimestamp(keyword) {
-  if (!db) return;
-  try {
-    await db.del(keyword);
-    highlightTimeStamps.delete(keyword);
-  } catch (error) {
-    console.error(`❌ Failed to delete ${keyword}:`, error);
-  }
-}
-
-// ✅ Ensure DB is initialized before loading
-async function loadTimestampsFromDB() {
-  try {
-    // Clear the loacl cache before populate with data
-    highlightTimeStamps.clear();
-
-    for await (const [key, value] of db.iterator()) {
-      // Updating the local Cache with latest data.
-      highlightTimeStamps.set(key.toString(), value.toString());
-    }
-
-    console.log(
-      "highlightTimeStamps:::" + JSON.stringify([...highlightTimeStamps])
-    );
-  } catch (error) {
-    console.error("Error laoding... data from LevelDB", { error });
-  }
-}
 
 async function highlightWords(context) {
   if (isEditing) return;
@@ -100,7 +42,7 @@ async function highlightWords(context) {
 
     // ✅ Safe DB call
     if (!highlightTimeStamps.has(uppercaseKeyword)) {
-      await saveTimestamp(uppercaseKeyword);
+      await saveTimestamp(uppercaseKeyword, highlightTimeStamps);
     }
 
     // Ensure keyword is converted to uppercase in the document
@@ -144,7 +86,7 @@ async function highlightWords(context) {
   // ✅ Remove timestamps for deleted keywords
   for (const key of highlightTimeStamps.keys()) {
     if (!existingKeywords.has(key)) {
-      await deleteTimestamp(key);
+      await deleteTimestamp(key, highlightTimeStamps);
     }
   }
 
@@ -165,7 +107,7 @@ async function highlightWords(context) {
 
 // **Activation Function**
 async function activate(context) {
-  await initDB(context);
+  await initDB(context, highlightTimeStamps);
 
   const disposableTextChange = vscode.workspace.onDidChangeTextDocument(
     async (event) => {
@@ -186,7 +128,6 @@ async function activate(context) {
 
 module.exports = {
   activate,
-  initDB,
   highlightWords,
   highlightTimeStamps,
 };

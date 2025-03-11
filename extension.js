@@ -1,7 +1,10 @@
 const vscode = require("vscode");
 
 // Importing "highlightWords functions"
-const { highlightWords } = require("./src/features/highlightWord");
+const {
+  highlightWords,
+  highlightTimeStamps,
+} = require("./src/features/highlightWord");
 
 // Importing "scanAllFilesContainKeywords" && "watchFiles"
 const {
@@ -10,13 +13,13 @@ const {
 } = require("./src/features/fileScanner");
 
 // Importing initDB
-const { initDB } = require("./src/features/highlightWord");
+const { initDB } = require("./src/db/levelDb");
 
 // Importing "CustomSidebarProvider"
 const CustomSidebarProvider = require("./src/sidebar/customSidebar");
 
 async function activate(context) {
-  await initDB(context); // Init initDB() ->first
+  await initDB(context, highlightTimeStamps); // Init initDB() ->first
 
   // Registering Highlight Word Command
   let highlightWordCommand = vscode.commands.registerCommand(
