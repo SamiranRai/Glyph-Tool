@@ -9,14 +9,19 @@ const {
   watchFiles,
 } = require("./src/features/fileScanner");
 
+// Importing initDB
+const { initDB } = require("./src/features/highlightWord");
+
 // Importing "CustomSidebarProvider"
 const CustomSidebarProvider = require("./src/sidebar/customSidebar");
 
-function activate(context) {
+async function activate(context) {
+  await initDB(context); // Init initDB() ->first
+
   // Registering Highlight Word Command
   let highlightWordCommand = vscode.commands.registerCommand(
     "highlightWord.afterColon",
-    highlightWords
+    async () => await highlightWords(context)
   );
 
   // Register File Scanner Command
@@ -24,7 +29,6 @@ function activate(context) {
     "scanAllfiles.containDefaultKeyword",
     scanAllFilesContainKeywords
   );
-
 
   // Registering Custom SideBar
   let customSidebar = vscode.window.registerWebviewViewProvider(
@@ -42,7 +46,7 @@ function activate(context) {
   // Apply highlight automatically
   vscode.window.onDidChangeActiveTextEditor(highlightWords);
   vscode.workspace.onDidChangeTextDocument(highlightWords);
-  highlightWords();
+  await highlightWords(context);
 }
 
 function deactivate() {}

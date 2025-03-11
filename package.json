@@ -6,7 +6,9 @@
   "engines": {
     "vscode": "^1.92.2"
   },
-  "categories": ["Other"],
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [
     "onCommand:scanAllfiles.containDefaultKeyword",
     "onCommand:highlightWord.afterColon",
@@ -24,8 +26,7 @@
         "title": "Highlight Word:"
       }
     ],
-    "keybindings": [
-    ],
+    "keybindings": [],
     "viewsContainers": {
       "activitybar": [
         {
@@ -59,6 +60,7 @@
     "eslint": "^9.16.0"
   },
   "dependencies": {
+    "level": "^9.0.0",
     "tinycolor2": "^1.6.0"
   }
 }
