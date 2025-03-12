@@ -67,7 +67,7 @@ function checkKeyword(keyword) {
     (pre) => pre.keyword === keyword + ":"
   );
 
-  let bgColor = foundKeyword?.color || "hash-bg-color-function-return-bg-color";
+  let bgColor = foundKeyword?.color || generateColor(keyword + ":");
   return bgColor;
 }
 

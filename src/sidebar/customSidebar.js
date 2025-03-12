@@ -39,6 +39,12 @@ class CustomSidebarProvider {
       )
     );
 
+    const generateColorUri = webviewView.webview.asWebviewUri(
+      vscode.Uri.file(
+        path.join(this.context.extensionPath, "src/shared/colorGenerator.js")
+      )
+    );
+
     // 🔹 Convert the icons folder path into a webview-safe URI
     const iconsBaseUri = webviewView.webview.asWebviewUri(
       vscode.Uri.file(
@@ -50,7 +56,8 @@ class CustomSidebarProvider {
     htmlContent = htmlContent
       .replace("{{styleUri}}", cssURI)
       .replace("{{scriptUri}}", jsURI)
-      .replace("{{iconsBaseUri}}", iconsBaseUri); // Pass icons URI to HTML;
+      .replace("{{iconsBaseUri}}", iconsBaseUri)
+      .replace("{{generateColorUri}}", generateColorUri); // Pass icons URI to HTML;
 
     webviewView.webview.html = htmlContent;
 

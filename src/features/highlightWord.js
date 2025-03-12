@@ -68,6 +68,7 @@ async function highlightWords(context) {
       foundKeyword?.color ||
       getKeywordHighlightColor(uppercaseKeyword).backgroundColor;
 
+    //console.log(uppercaseKeyword + " : " + bgColor);
     if (!decorationTypes.has(uppercaseKeyword)) {
       decorationTypes.set(
         uppercaseKeyword,
