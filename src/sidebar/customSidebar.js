@@ -6,6 +6,13 @@ const {
   setSidebarCallback,
 } = require("../features/fileScanner");
 
+const {
+  loadKeywords,
+  updateKeyword,
+  addKeyword,
+  removeKeyword,
+} = require("./../utility/highlight_word_required/keywordManager");
+
 class CustomSidebarProvider {
   constructor(context) {
     this.context = context;
@@ -49,23 +56,46 @@ class CustomSidebarProvider {
 
     // Listen for message from Sidebar (when requesting fresh data)
     webviewView.webview.onDidReceiveMessage(async (message) => {
-      if (message.command === "fetchData") {
-        const data = await scanAllFilesContainKeywords();
-        webviewView.webview.postMessage({ command: "updateData", data });
+      switch (message.command) {
+        case "fetchData":
+          this.sendSidebarUpdate(await scanAllFilesContainKeywords());
+          break;
+
+        case "loadKeywords":
+          this.sendSidebarUpdate(await loadKeywords());
+          break;
+
+        case "updateKeyword":
+          await updateKeyword(message.keyword, message.newColor);
+          this.sendSidebarUpdate(await loadKeywords());
+          break;
+
+        case "addKeyword":
+          await addKeyword(message.keyword, message.color);
+          this.sendSidebarUpdate(await loadKeywords());
+          break;
+
+        case "removeKeyword":
+          await removeKeyword(message.keyword);
+          this.sendSidebarUpdate(await loadKeywords());
+          break;
+
+        default:
+          console.warn("⚠️ Unknown command received:", message.command);
       }
     });
 
-    setSidebarCallback((updatedData) => {
-      if (this.webviewView) {
-        console.log("✅ Sending data to sidebar:", updatedData);
-        this.webviewView.webview.postMessage({
-          command: "updateData",
-          data: updatedData,
-        });
-      } else {
-        console.error("❌ Sidebar webviewView is NOT available.");
-      }
+    setSidebarCallback((updateData) => {
+      this.sendSidebarUpdate(updateData);
     });
+  }
+
+  sendSidebarUpdate(data) {
+    if (this.webviewView && this.webviewView.webview) {
+      this.webviewView.webview.postMessage({ command: "updateData", data });
+    } else {
+      console.warn("⚠️ Sidebar webview is unavailable. Could not send update.");
+    }
   }
 }
 

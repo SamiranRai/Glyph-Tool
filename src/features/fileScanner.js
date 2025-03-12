@@ -1,6 +1,8 @@
 const vscode = require("vscode");
 const path = require("path");
 
+// Importing "preDefinedKeywords"
+const preDefinedKeywords = require("./../utility/highlight_word_required/preDefinedKeywords");
 // Importing "fileExtensions"
 const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
 // Importing "highlightTimeStamps"
@@ -26,6 +28,9 @@ const scanAllFilesContainKeywords = async () => {
   // Regular expression to match the "keyword present" files
   const regex = /\/\/\s*\b([A-Z_]+):/gm;
 
+  // Push the preDefinedKeywords once outside the loop
+  resultData.push({ preDefinedKeywords });
+
   for (const file of files) {
     try {
       let content;
@@ -44,6 +49,7 @@ const scanAllFilesContainKeywords = async () => {
           await vscode.workspace.fs.readFile(file)
         ).toString("utf8");
       }
+      //resultData.push({ preDefinedKeywords });
 
       const lines = content.split("\n");
       for (let i = 0; i < lines.length; i++) {
@@ -65,6 +71,7 @@ const scanAllFilesContainKeywords = async () => {
             timeStamp:
               highlightTimeStamps.get(match[1] + ":") || "NO-TIME_STAMP",
             snippet: lines[i].trim(),
+            //preDefinedKeywords: preDefinedKeywords,
           });
         }
       }

@@ -8,51 +8,113 @@ window.addEventListener("message", (event) => {
   }
 });
 
-// Conversion of timeStamp into readble format
-const timeAgo = (timestamp) => {
-  const now = Date.now();
-  const diffInSeconds = Math.floor((now - timestamp) / 1000);
+// Function to send message to the backend
+function sendMessageToBackend(command, payload = {}) {
+  vscode.postMessage({ command, ...payload });
+}
 
-  const intervals = {
-    year: 31536000,
-    month: 2592000,
-    week: 604800,
-    day: 86400,
-    hour: 3600,
-    minute: 60,
-  };
+// Fetch all keyword from Backend
+// function fetchAllKeywords() {
+//   sendMessageToBackend("loadKeywords");
+// }
 
-  for (const [unit, seconds] of Object.entries(intervals)) {
-    const count = Math.floor(diffInSeconds / seconds);
-    if (count >= 1) {
-      return `${count} ${unit}${count > 1 ? "s" : ""} ago`;
-    }
+// Add a keyword
+function addAKeyword(keyword, color) {
+  // Send message to the backend
+  sendMessageToBackend("addKeyword", { keyword, color });
+}
+
+// ✅ Update an existing keyword's color
+// function updateExistingKeyword() {
+//   const keyword = prompt("Enter keyword to update:");
+//   if (!keyword) return;
+//   const newColor = prompt("Enter new color for keyword:", "#FF5733");
+//   sendMessageToBackend("updateKeyword", { keyword, newColor });
+// }
+
+// // ✅ Remove a keyword
+// function removeExistingKeyword() {
+//   const keyword = prompt("Enter keyword to remove:");
+//   if (!keyword) return;
+//   const confirmDelete = confirm(
+//     `Are you sure you want to remove "${keyword}"?`
+//   );
+//   if (confirmDelete) {
+//     sendMessageToBackend("removeKeyword", { keyword });
+//   }
+// }
+
+// Highlighting keyword based on Text Hashing Algo.
+// function getBgColorBasedOnText(keyword) {
+//   return 0;
+// }
+
+// Global Flag
+let isButtonAtached = false;
+let preDefinedKeywords = [];
+
+function updatepreDefinedKeywords(newKeywords) {
+  if (!Array.isArray(newKeywords)) {
+    return;
   }
+  // Clear the old one and store the new one
+  preDefinedKeywords = [...newKeywords];
+  console.log("Updated Keywords:", preDefinedKeywords);
+}
 
-  return "Just now";
-};
+function checkKeyword(keyword) {
+  const foundKeyword = preDefinedKeywords.find(
+    (pre) => pre.keyword === keyword + ":"
+  );
+
+  let bgColor = foundKeyword?.color || "hash-bg-color-function-return-bg-color";
+  return bgColor;
+}
 
 // Function to update the UI dynamically (optimized)
-function updateSidebarUI(newData) {
-  // Looping through each data - Obj
+async function updateSidebarUI(newData) {
+  const button1 = document.getElementById("add-keyword");
+  if (!isButtonAtached) {
+    button1.addEventListener("click", () => {
+      const input = document.getElementById("input-filter-task").value; // Get latest value inside event
+      addAKeyword(input, input);
+      console.log("Successfully added +:", input);
+    });
+
+    isButtonAtached = true;
+  }
   newData.forEach((item) => {
     // Extracted data from Item - Obj
-    const { keyword, description, file, fullPath, line, timeStamp, snippet } =
-      item;
+    const {
+      keyword,
+      description,
+      file,
+      fullPath,
+      line,
+      timeStamp,
+      snippet,
+      preDefinedKeywords,
+    } = item;
 
-    console.log(`${keyword}: ${timeStamp}`);
-    console.log(timeAgo(timeStamp));
+    // Store the predefined keyword in global array
+    updatepreDefinedKeywords(preDefinedKeywords);
+
+    // Check, if the keyword is undefind
+    const freshKeyword = typeof keyword === "string" ? keyword : null;
+    if (!freshKeyword) {
+      return null;
+    }
+    // get bgColor
+    const bgColor = checkKeyword(freshKeyword);
+    console.log({ keyword, bgColor });
 
     // Neccesery Data Trabsformation (ex. TimeStamp)
 
-    // Each keyword get's their background color based on "String Hashing algorithm, already aplied in backend"
+    // Each keyword gets its background color based on "String Hashing algorithm, already applied in backend"
 
     // Render -> Final Step;
   });
 }
-
-// Load the icons
-loadIcons();
 
 // FRONTEND ONLY CODE --->
 // Static UI Part --->
@@ -72,3 +134,6 @@ const loadIcons = () => {
       );
   });
 };
+
+// Load the icons
+loadIcons();
