@@ -46,6 +46,10 @@ async function highlightWords(context) {
       // || (uppercaseKeyword, match.input) )
       const newTimestamp = new Date().toISOString(); // Generate new timestamp
       highlightTimeStamps.set(uppercaseKeyword, newTimestamp);
+      console.log(
+        "Debug::highlightTimeStamps::highlightWord",
+        highlightTimeStamps
+      );
       await saveTimestamp(uppercaseKeyword, highlightTimeStamps);
     }
 

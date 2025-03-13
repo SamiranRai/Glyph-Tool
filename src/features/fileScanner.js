@@ -170,7 +170,7 @@ const watchFiles = async () => {
         const keyword = comment.split(":")[0];
         const newTimestamp = new Date().toISOString();
         highlightTimeStamps.set(keyword + ":", newTimestamp);
-        await saveTimestamp(keyword + ":", newTimestamp);
+        await saveTimestamp(keyword + ":", highlightTimeStamps);
       }
 
       previousComments.clear();

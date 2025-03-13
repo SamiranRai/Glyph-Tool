@@ -62,5 +62,9 @@ module.exports = [
   {
     "keyword": "task",
     "color": "task"
+  },
+  {
+    "keyword": "aaa",
+    "color": "aaa"
   }
 ];

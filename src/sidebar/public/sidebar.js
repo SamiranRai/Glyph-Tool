@@ -71,6 +71,22 @@ function checkKeyword(keyword) {
   return bgColor;
 }
 
+function timeAgo(timeStamp) {
+  if (timeStamp === "NO-TIME_STAMP") return "no-time-stamp-aviable";
+
+  // calc the diff
+  const now = Date.now();
+  const diff = Math.floor((now - timeStamp) / 1000);
+
+  if (diff < 60) return `${diff} seconds ago`;
+  if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 604800)} weeks ago`;
+  if (diff < 31536000) return `${Math.floor(diff / 2592000)} months ago`;
+  return `${Math.floor(diff / 31536000)} years ago`;
+}
+
 // Function to update the UI dynamically (optimized)
 async function updateSidebarUI(newData) {
   const button1 = document.getElementById("add-keyword");
@@ -98,6 +114,8 @@ async function updateSidebarUI(newData) {
 
     // Store the predefined keyword in global array
     updatepreDefinedKeywords(preDefinedKeywords);
+
+    console.log(timeAgo(timeStamp));
 
     // Check, if the keyword is undefind
     const freshKeyword = typeof keyword === "string" ? keyword : null;
