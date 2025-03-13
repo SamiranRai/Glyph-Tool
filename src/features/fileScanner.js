@@ -61,6 +61,8 @@ const scanAllFilesContainKeywords = async () => {
               ? descriptionMatch[1].trim()
               : "No Description.";
 
+          const timeStamp =
+            highlightTimeStamps.get(match[1] + ":") || "NO-time-stamp";
           // Push the date to "resultData" array
           resultData.push({
             keyword: match[1],
@@ -68,8 +70,7 @@ const scanAllFilesContainKeywords = async () => {
             file: path.basename(file.fsPath),
             fullPath: file.fsPath,
             line: i + 1,
-            timeStamp:
-              highlightTimeStamps.get(match[1] + ":") || "NO-TIME_STAMP",
+            timeStamp,
             snippet: lines[i].trim(),
             //preDefinedKeywords: preDefinedKeywords,
           });
@@ -152,6 +153,15 @@ const watchFiles = async () => {
       matches.set(`${keyword}: ${description}`, true); // Store full pair
     }
 
+    // Populate `previousComments` only once after the initial scan
+    if (!previousComments.size) {
+      matches.forEach((_, comment) => previousComments.set(comment, true));
+      console.log("📝 Initial comments recorded:", [
+        ...previousComments.keys(),
+      ]);
+      return;
+    }
+
     // Detect added and removed comments
     const newComments = [...matches.keys()];
     const oldComments = [...previousComments.keys()];
@@ -162,6 +172,11 @@ const watchFiles = async () => {
     const addedComments = newComments.filter(
       (comment) => !previousComments.has(comment)
     );
+
+    console.log({
+      "Debug::removedComments": removedComments,
+      "Debug::addedComments": addedComments,
+    });
 
     if (removedComments.length > 0 || addedComments.length > 0) {
       console.log("🔄 Changes detected in comments. Rescanning...");

@@ -72,19 +72,28 @@ function checkKeyword(keyword) {
 }
 
 function timeAgo(timeStamp) {
-  if (timeStamp === "NO-TIME_STAMP") return "no-time-stamp-aviable";
+  if (!timeStamp || isNaN(timeStamp)) return "Invalid timestamp";
 
-  // calc the diff
   const now = Date.now();
-  const diff = Math.floor((now - timeStamp) / 1000);
+  if (timeStamp > now) return "In the future";
 
-  if (diff < 60) return `${diff} seconds ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)} minutes ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)} days ago`;
-  if (diff < 2592000) return `${Math.floor(diff / 604800)} weeks ago`;
-  if (diff < 31536000) return `${Math.floor(diff / 2592000)} months ago`;
-  return `${Math.floor(diff / 31536000)} years ago`;
+  const diff = Math.floor((now - timeStamp) / 1000); // Difference in seconds
+
+  const units = [
+    { label: "year", seconds: 31536000 },
+    { label: "month", seconds: 2592000 },
+    { label: "week", seconds: 604800 },
+    { label: "day", seconds: 86400 },
+    { label: "hour", seconds: 3600 },
+    { label: "minute", seconds: 60 },
+  ];
+
+  for (const unit of units) {
+    const count = Math.floor(diff / unit.seconds);
+    if (count >= 1) return `${count} ${unit.label}${count > 1 ? "s" : ""} ago`;
+  }
+
+  return `${diff} second${diff !== 1 ? "s" : ""} ago`;
 }
 
 // Function to update the UI dynamically (optimized)
@@ -115,7 +124,7 @@ async function updateSidebarUI(newData) {
     // Store the predefined keyword in global array
     updatepreDefinedKeywords(preDefinedKeywords);
 
-    console.log(timeAgo(timeStamp));
+    console.log("Time:", timeAgo(timeStamp)); // Example usage
 
     // Check, if the keyword is undefind
     const freshKeyword = typeof keyword === "string" ? keyword : null;
