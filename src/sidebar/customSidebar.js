@@ -6,6 +6,10 @@ const {
   setSidebarCallback,
 } = require("../features/fileScanner");
 
+// Importing "highlightTimeStamps"
+const { highlightTimeStamps } = require("./../features/highlightWord"); // store all keyword timeStamp
+const { saveTimestamp } = require("./../db/levelDb");
+
 const {
   loadKeywords,
   updateKeyword,
@@ -87,6 +91,43 @@ class CustomSidebarProvider {
           this.sendSidebarUpdate(await loadKeywords());
           break;
 
+        // Backend: CustomSidebarProvider.js
+        case "markAsDone":
+          console.log("Debug:MarkAsDone: Case called!");
+
+          // Read and update file content in one go
+          const fileContent = fs
+            .readFileSync(message.fullPath, "utf-8")
+            .split("\n");
+          if (message.line < 0 || message.line >= fileContent.length) {
+            console.warn("Invalid line number:", message.line);
+            break;
+          }
+
+          // Generate timestamp and apply change
+          const timestamp = new Date().toISOString();
+          const updatedLine = `// DONE: "${message.keyword}" - ${message.comment}. "${timestamp}"`;
+          fileContent[message.line] = updatedLine;
+
+          // Write updated content and send sidebar update
+          fs.writeFileSync(message.fullPath, fileContent.join("\n"));
+          this.sendSidebarUpdate(await scanAllFilesContainKeywords());
+          break;
+
+        case "vscode.open":
+          const { fullPath, line } = message;
+          console.log("got!", message.fullPath, message.line);
+
+          // Open the file and jump to the exact line
+          vscode.window.showTextDocument(vscode.Uri.file(fullPath), {
+            selection: new vscode.Range(
+              new vscode.Position(line - 1, 0),
+              new vscode.Position(line - 1, 0)
+            ),
+          });
+
+          console.log("Successfully File Opend!");
+          break;
         default:
           console.warn("⚠️ Unknown command received:", message.command);
       }

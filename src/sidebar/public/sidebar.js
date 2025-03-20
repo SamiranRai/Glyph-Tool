@@ -13,6 +13,50 @@ function sendMessageToBackend(command, payload = {}) {
   vscode.postMessage({ command, ...payload });
 }
 
+// Function to mark as DONE
+function markDone(keyword, comment, fileName, fullPath, line) {
+  // get the relevent item - where done is clicked;
+  const message = {
+    keyword,
+    comment,
+    fileName,
+    fullPath,
+    line,
+  };
+
+  console.log("Debug::Data:", message);
+  // Send back to the backend
+  sendMessageToBackend("markAsDone", message);
+  console.log("Debug::MarkAsDOne: Successfully sent data to backend!");
+}
+
+// Function to mark as UNDO
+function undoDone(keyword, comment, fileName, fullPath, line) {
+  // get the relevent item - where done is clicked;
+  const message = {
+    keyword,
+    comment,
+    fileName,
+    fullPath,
+    line,
+  };
+
+  // Send back to the backend
+  sendMessageToBackend("undoDone", message);
+}
+
+const button1 = document.getElementById("add-keyword");
+button1.addEventListener("click", () => {
+  console.log("Debug::EevntListener is Working!");
+  markDone(
+    (keyword = "NAME_LIST"),
+    (comment = "fix the name list."),
+    (fileName = "movementModel.js"),
+    (fullPath = "/Users/samiranray/projects/Bankist/models/movementModel.js"),
+    (line = 0)
+  );
+});
+
 // Fetch all keyword from Backend
 // function fetchAllKeywords() {
 //   sendMessageToBackend("loadKeywords");
@@ -53,6 +97,7 @@ function addAKeyword(keyword, color) {
 let isButtonAtached = false;
 let preDefinedKeywords = [];
 
+// UPDATE PREDEFINED KEYWORD
 function updatepreDefinedKeywords(newKeywords) {
   if (!Array.isArray(newKeywords)) {
     return;
@@ -62,6 +107,7 @@ function updatepreDefinedKeywords(newKeywords) {
   console.log("Updated Keywords:", preDefinedKeywords);
 }
 
+// CHECK KEYWORD
 function checkKeyword(keyword) {
   const foundKeyword = preDefinedKeywords.find(
     (pre) => pre.keyword === keyword + ":"
@@ -71,6 +117,7 @@ function checkKeyword(keyword) {
   return bgColor;
 }
 
+// CONVERT THE TIMESTAMP INTO READBLE FORMAT
 function timeAgo(timeStamp) {
   if (!timeStamp || isNaN(timeStamp)) return "Invalid timestamp";
 
@@ -96,50 +143,193 @@ function timeAgo(timeStamp) {
   return `${diff} second${diff !== 1 ? "s" : ""} ago`;
 }
 
-// Function to update the UI dynamically (optimized)
-async function updateSidebarUI(newData) {
-  const button1 = document.getElementById("add-keyword");
-  if (!isButtonAtached) {
-    button1.addEventListener("click", () => {
-      const input = document.getElementById("input-filter-task").value; // Get latest value inside event
-      addAKeyword(input, input);
-      console.log("Successfully added +:", input);
-    });
+// FINAL RENDER->>>
+// TASK CONTAINER for "HOLDING EACH TASK"
+const taskContainer = document.getElementById("tasks");
+const currentItems = new Map();
 
-    isButtonAtached = true;
-  }
+// UPDATESIDEBARUI() FUNCTION UPDATE AUTOMATICLY WHEN NEW DATA ARRIVES
+// async function updateSidebarUI(newData) {
+//   // FUNCTION FOR ADD, UPDATE, DELETE OF PREDEFINED KEYWORD
+//   // const button1 = document.getElementById("add-keyword");
+//   // if (!isButtonAtached) {
+//   //   button1.addEventListener("click", () => {
+//   //     const input = document.getElementById("input-filter-task").value; // Get latest value inside event
+//   //     addAKeyword(input, input);
+//   //     console.log("Successfully added +:", input);
+//   //   });
+
+//   //   isButtonAtached = true;
+//   // }
+
+//   // FRAGMENT TO RENDER DATA
+//   const fragment = document.createDocumentFragment();
+//   // STORING KEYS IN newKeys
+//   const newKeys = new Set(newData.map((item) => `${item.file}:${item.line}`));
+
+//   // LOOPING THROUGH EACH OBJECT
+//   newData.forEach((item) => {
+//     // EXTRACT THE DATA FROM EACH ITEM - OBJ
+//     const {
+//       keyword,
+//       description,
+//       file,
+//       fullPath,
+//       line,
+//       timeStamp,
+//       snippet,
+//       preDefinedKeywords,
+//     } = item;
+
+//     // STORE THE PREEFINED KEYWORD IN GLOBAL ARRAY
+//     updatepreDefinedKeywords(preDefinedKeywords);
+
+//     // CHECK IF THE KEYWORD IS UNDEFIND!
+//     const freshKeyword = typeof keyword === "string" ? keyword : null;
+//     if (!freshKeyword) {
+//       return null;
+//     }
+//     // RETURN BACKGROUND COLOR
+//     const bgColor = checkKeyword(freshKeyword);
+
+//     // MAKE A UNIQUE KEY USING FILE:LINE
+//     const key = `${file}:${line}`;
+//     if (!currentItems.has(key)) {
+//       const el = document.createElement("div");
+//       el.className = "sidebar-item";
+//       el.innerHTML = `
+//             <div class="sidebar-content-wrapper">
+//                 <div class="first-line">
+//                     <div class="keyword-n-description">
+//                         <div class="keyword" style="background-color: #679a73;">${keyword}:</div>
+//                         <div class="keyword-description">${description}</div>
+//                     </div>
+//                     <div class="done">DONE</div>
+//                 </div>
+//                 <div class="second-line">
+//                     <div class="file-name-wrapper second-line-item">
+//                         <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
+//                         <span class="fileName"> ${file} </span>
+//                     </div>
+//                     <div class="devider-line"></div>
+//                     <div class="code-line-number-wrapper second-line-item">
+//                         <span class="icon-container codeLineNumber-icon--container" data-icon="codeLineNumber-icon"></span>
+//                         <span class="codeLineNumber"> Line: ${line} </span>
+//                     </div>
+//                     <div class="devider-line"></div>
+//                     <div class="edited-time-wrapper second-line-item">
+//                         <span class="icon-container time-icon--container" data-icon="time-icon"></span>
+//                         <span class="timeStamp"> ${timeAgo(timeStamp)} </span>
+//                     </div>
+//                 </div>
+//             </div>`;
+//       currentItems.set(key, el);
+//       fragment.appendChild(el);
+//     }
+//   });
+
+//   taskContainer.appendChild(fragment);
+// }
+
+// UPDATESIDEBARUI() FUNCTION UPDATES AUTOMATICALLY WHEN NEW DATA ARRIVES
+async function updateSidebarUI(newData) {
+  const fragment = document.createDocumentFragment();
+  const newKeys = new Set(newData.map((item) => `${item.file}:${item.line}`));
+
+  // Update or Add Items
   newData.forEach((item) => {
-    // Extracted data from Item - Obj
     const {
       keyword,
+      fullPath,
       description,
       file,
-      fullPath,
       line,
       timeStamp,
-      snippet,
       preDefinedKeywords,
     } = item;
-
-    // Store the predefined keyword in global array
     updatepreDefinedKeywords(preDefinedKeywords);
 
-    console.log("Time:", timeAgo(timeStamp)); // Example usage
-
-    // Check, if the keyword is undefind
     const freshKeyword = typeof keyword === "string" ? keyword : null;
-    if (!freshKeyword) {
-      return null;
-    }
-    // get bgColor
+    if (!freshKeyword) return;
+
+    // RETURN BACKGROUND COLOR
     const bgColor = checkKeyword(freshKeyword);
-    console.log({ keyword, bgColor });
+    console.log("Debug::", { keyword, bgColor });
 
-    // Neccesery Data Trabsformation (ex. TimeStamp)
+    const key = `${file}:${line}`;
+    if (!currentItems.has(key)) {
+      const el = document.createElement("div");
+      el.className = "sidebar-item";
+      el.dataset.file = file;
+      el.dataset.line = line;
+      el.innerHTML = `
+        <div class="sidebar-content-wrapper">
+          <div class="first-line">
+            <div class="keyword-n-description">
+              <div class="keyword" style=${
+                "background-color:" + bgColor + ";"
+              }>${keyword}:</div>
+              <div class="keyword-description">${description}</div>
+            </div>
+            <div class="done">DONE</div>
+          </div>
+          <div class="second-line">
+            <div class="file-name-wrapper second-line-item">
+              <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
+              <span class="fileName"> ${file} </span>
+            </div>
+            <div class="devider-line"></div>
+            <div class="code-line-number-wrapper second-line-item">
+              <span class="icon-container codeLineNumber-icon--container" data-icon="codeLineNumber-icon"></span>
+              <span class="codeLineNumber"> Line: ${line} </span>
+            </div>
+            <div class="devider-line"></div>
+            <div class="edited-time-wrapper second-line-item">
+              <span class="icon-container time-icon--container" data-icon="time-icon"></span>
+              <span class="timeStamp"> ${timeAgo(timeStamp)} </span>
+            </div>
+          </div>
+        </div>`;
 
-    // Each keyword gets its background color based on "String Hashing algorithm, already applied in backend"
+      // Add click event listener to jump to file and line
+      el.addEventListener("click", () => jumpToFileAndLine(fullPath, line));
 
-    // Render -> Final Step;
+      currentItems.set(key, el);
+      fragment.appendChild(el);
+    } else {
+      const existingEl = currentItems.get(key);
+      const descriptionEl = existingEl.querySelector(".keyword-description");
+      if (descriptionEl.textContent !== description) {
+        descriptionEl.textContent = description;
+        existingEl.classList.add("updated");
+        setTimeout(() => existingEl.classList.remove("updated"), 1000);
+      }
+    }
+  });
+
+  // Remove Deleted Items
+  currentItems.forEach((el, key) => {
+    if (!newKeys.has(key)) {
+      el.classList.add("deleted");
+      setTimeout(() => {
+        taskContainer.removeChild(el);
+        currentItems.delete(key);
+      }, 1000);
+    }
+  });
+
+  // Append only new items
+  taskContainer.appendChild(fragment);
+}
+
+// Function to handle jumping to file and line
+function jumpToFileAndLine(fullPath, line) {
+  console.log({ fullPath, line });
+
+  // Send message to the Backend
+  sendMessageToBackend("vscode.open", {
+    fullPath,
+    line,
   });
 }
 

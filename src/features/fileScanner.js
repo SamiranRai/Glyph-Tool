@@ -1,17 +1,39 @@
 const vscode = require("vscode");
 const path = require("path");
 
+// TODO: Fix the work
+
 // Importing "preDefinedKeywords"
 const preDefinedKeywords = require("./../utility/highlight_word_required/preDefinedKeywords");
 // Importing "fileExtensions"
 const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
 // Importing "highlightTimeStamps"
 const { highlightTimeStamps } = require("./highlightWord"); // store all keyword timeStamp
-const { saveTimestamp } = require("./../db/levelDb");
+const { saveTimestamp, loadTimestampsFromDB } = require("./../db/levelDb");
 
 // Store the data
 const resultData = [];
 let updateSidebar = null; // Store the sidebar update function
+// Constant to set past timestamp (5 minutes ago)
+const PAST_OFFSET = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+async function getTimestamp(keyword, highlightTimeStamps) {
+  try {
+    // Check if the keyword already has a timestamp
+    if (!highlightTimeStamps.has(keyword + ":")) {
+      // Calculate past timestamp correctly
+      const timeStamp = new Date(Date.now() - PAST_OFFSET).toISOString();
+
+      // Add the timestamp to the highlightTimestamp
+      highlightTimeStamps.set(keyword + ":", timeStamp);
+      await saveTimestamp(keyword + ":", highlightTimeStamps);
+    } else {
+      console.log("✅ Timestamp already exists for:", keyword);
+    }
+  } catch (error) {
+    console.error("Failed to save timestamp", { error });
+  }
+}
 
 const scanAllFilesContainKeywords = async () => {
   resultData.length = 0; // Clear previous results
@@ -61,8 +83,20 @@ const scanAllFilesContainKeywords = async () => {
               ? descriptionMatch[1].trim()
               : "No Description.";
 
-          const timeStamp =
-            highlightTimeStamps.get(match[1] + ":") || "NO-time-stamp";
+          let timeStamp = highlightTimeStamps.get(match[1] + ":");
+          console.log({
+            "keyword: ": match[1],
+            "timeStamp: ": highlightTimeStamps.get(match[1] + ":"),
+            "highlightTimeStampsInside: ": JSON.stringify([
+              ...highlightTimeStamps,
+            ]),
+          });
+
+          if (!timeStamp) {
+            await getTimestamp(match[1], highlightTimeStamps);
+            timeStamp = highlightTimeStamps.get(match[1] + ":");
+          }
+
           // Push the date to "resultData" array
           resultData.push({
             keyword: match[1],
@@ -93,6 +127,8 @@ const scanAllFilesContainKeywords = async () => {
   // also returning "resultData" for watchFiles--> previous keyword init scanning
   return resultData;
 };
+
+console.log("Before scan:", highlightTimeStamps);
 
 //Store previously detected keywords to avoid unnecessary scans
 let previousComments = new Map(); // Stores keyword-description pairs

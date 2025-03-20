@@ -62,7 +62,7 @@ async function loadTimestampsFromDB(highlightTimeStamps) {
     }
 
     console.log(
-      "highlightTimeStamps:::",
+      "highlightTimeStampsLoadedfromDB:::",
       JSON.stringify([...highlightTimeStamps])
     );
   } catch (error) {

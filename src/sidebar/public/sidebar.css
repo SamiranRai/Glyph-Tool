@@ -71,6 +71,7 @@ ul {
 /* Tab Header TabBar: Tasks, Collections, Done */
 
 .tab-header-container ul {
+  border-bottom: 1px solid rgba(128, 128, 128, .40); /*need dyanmic color */
   margin: 0;
   padding: 0;
   display: flex;
@@ -82,7 +83,8 @@ ul {
   font-size: 14px;
   font-weight: 500;
   font-style: none;
-  padding: 20px 0;
+  letter-spacing: 0.05px;
+  padding: 18px 4.5px 7px 4px;
   margin: 0 6px;
   display: flex;
   align-items: center;
@@ -90,18 +92,19 @@ ul {
 }
 
 .tabs-header li.active {
-  color: var(--vscode-tab-activeForeground)
+  color: var(--vscode-tab-activeForeground);
+  border-bottom: 2.399px solid var(--vscode-button-background);
 }
 
 .tab-header-container li:nth-child(1) {
-  gap: 6.42px;
+  gap: 5px;
 }
 
 .tab-header-container li:nth-child(2) {
-  gap: 6.42px;
+  gap: 5px;
 }
 .tab-header-container li:nth-child(3) {
-  gap: 6px;
+  gap: 4.1px;
 }
 
 .icon-container-style-tabbar {
@@ -111,8 +114,8 @@ ul {
 }
 
 .icon-container-style-tabbar svg {
-  width: 95%;
-  height: 95%;
+  width: 90%;
+  height: 90%;
 }
 .icon-container svg path {
   fill: currentColor;
@@ -136,18 +139,19 @@ ul {
 
 input.input-filter {
   width: 100%;
-  font-size: 13.9px;
-  padding: 6.5px 11px;
-  border-radius: 9.5px;
+  font-size: 13.5px;
+  padding: 3.5px 12px;
+  border-radius: 16.5px;
   background-color: transparent;
   color: var(--vscode-input-foreground);
-  border: 1px solid var(--vscode-input-border);
+  border: 1px solid rgba(128, 128, 128, .40);
+  letter-spacing: 0.05px;
   outline: none !important;
 
 }
 
 input.input-filter::placeholder {
-  color: red;
+  color: var(--vscode-input-foreground);
 }
 
 input.input-filter:focus {
@@ -162,7 +166,7 @@ input.input-filter:focus {
 /*Sidebar Item*/
 .sidebar-item {
   border-bottom: 0.9px solid rgba(var(--dynamic-border-color), var(--dynamic-opacity));
-  padding: 30px 20px;
+  padding: 27.5px 20px;
   cursor: pointer;
 }
 .sidebar-content-wrapper {
@@ -188,11 +192,11 @@ input.input-filter:focus {
 }
 
 .first-line .keyword {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   text-transform: capitalize;
-  padding: 1.35px 6px;
-  background-color: #79bb89;
+  padding: 1.25px 5px;
+  background-color: #c56767;
   color: white;
   border-radius: 7.1px;
   letter-spacing: 0.1px;
@@ -200,10 +204,12 @@ input.input-filter:focus {
 
 .first-line .keyword-description {
   color: var(--vscode-sideBar-foreground, var(--vscode-foreground, #777));
-  font-size: 14.5px;
+  font-weight: 500;
+  font-size: 14.1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  letter-spacing: 0.1px;
 }
 
 .first-line .done {
