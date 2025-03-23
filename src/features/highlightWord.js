@@ -1,7 +1,9 @@
 const vscode = require("vscode");
+const fs = require("fs");
+const path = require("path");
 const getKeywordHighlightColor = require("../utility/highlight_word_required/getKeywordHighlightColor");
-const predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
-// Database releated
+let predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+// Database related
 const {
   initDB,
   saveTimestamp,
@@ -12,6 +14,19 @@ const {
 let isEditing = false;
 let decorationTypes = new Map();
 let highlightTimeStamps = new Map(); // Store timestamp for each keyword instance
+
+// Watch for changes in preDefinedKeywords.js
+const keywordsFilePath = path.join(
+  __dirname,
+  "../utility/highlight_word_required/preDefinedKeywords.js"
+);
+fs.watchFile(keywordsFilePath, (curr, prev) => {
+  delete require.cache[
+    require.resolve("../utility/highlight_word_required/preDefinedKeywords")
+  ];
+  predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+  console.log("preDefinedKeywords updated:", predefinedKeywordColors);
+});
 
 async function highlightWords(context) {
   if (isEditing) return;
@@ -26,7 +41,6 @@ async function highlightWords(context) {
   const text = editor.document.getText();
   const regex = /\/\/[^\n]*\b(\w+):/gm;
   let keywordRanges = new Map();
-  let keywordDetails = [];
   let existingKeywords = new Set(); // For Keyword Tracking purpose
 
   let match;
@@ -43,7 +57,6 @@ async function highlightWords(context) {
 
     // ✅ Safe DB call
     if (!highlightTimeStamps.has(uppercaseKeyword)) {
-      // || (uppercaseKeyword, match.input) )
       const newTimestamp = new Date().toISOString(); // Generate new timestamp
       highlightTimeStamps.set(uppercaseKeyword, newTimestamp);
       console.log(
@@ -63,7 +76,7 @@ async function highlightWords(context) {
       });
     }
 
-    // Checking & applying predefined custom Keyword style, if presents
+    // Checking & applying predefined custom Keyword style, if present
     const foundKeyword = predefinedKeywordColors.find(
       (item) => item.keyword === uppercaseKeyword
     );
@@ -72,7 +85,6 @@ async function highlightWords(context) {
       foundKeyword?.color ||
       getKeywordHighlightColor(uppercaseKeyword).backgroundColor;
 
-    //console.log(uppercaseKeyword + " : " + bgColor);
     if (!decorationTypes.has(uppercaseKeyword)) {
       decorationTypes.set(
         uppercaseKeyword,

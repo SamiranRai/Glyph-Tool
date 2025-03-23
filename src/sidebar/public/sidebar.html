@@ -15,6 +15,7 @@
   <body>
     <!--Main UI-->
     <!--Sidebar Header-->
+    <div id="main-features-wrapper">
     <div class="sidebar-header">
       <div class="header-section">
         <div class="header-button">
@@ -29,7 +30,7 @@
       </div>
     </div>
     <!--Sidebar Tab Section-->
-    <div class="tabs-section">
+    <div class="tabs-section" id="tab-section-management-view">
       <div class="tabs-container">
         <!--Tab Header-->
         <div class="tab-header-container">
@@ -260,6 +261,41 @@
         </ul>
         <!--<div class="line"></div>-->
       </div>
+      </div>
+
+      <!-- Keyword Management View (Initially Hidden) -->
+  <div id="keyword-management-view"  style="display: none;">
+    <div id="keyword-header">
+      <button id="back-to-main">← Back</button>
+      <h3>Manage Keywords</h3>
+    </div>
+
+    <!-- New Keyword Form -->
+    <form id="new-keyword-form">
+      <div class="input-keyword-wrapper">
+        <label for="keyword-input">Keyword:</label>
+        <input type="text" id="keyword-input" placeholder="Enter keyword" required>
+      </div>
+      <div class="input-color-picker-wrapper">
+        <label for="color-input">Color:</label>
+        <input type="color" id="color-input" value="#ffffff">
+      </div>
+
+
+      <button id="newKeywordForm" type="button">Add Keyword</button>
+    </form>
+
+    <!-- Existing Keywords List -->
+    <div id="keyword-list-container">
+      <h4>Existing Keywords</h4>
+      <div id="keyword-list">
+        <!-- Keywords will be dynamically added here -->
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+  </div>
+  <div id="toast" class="hidden"></div>
     </div>
 
     <!--Js Part-->

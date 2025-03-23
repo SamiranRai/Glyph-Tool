@@ -270,6 +270,34 @@ input.input-filter:focus {
   justify-content: flex-start;
 }
 
+#keyword-header {
+  display: flex;
+}
+#new-keyword-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-keyword-wrapper, .input-color-picker-wrapper {
+  display: flex;
+}
+
+#toast {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff5252;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  z-index: 1000;
+  animation: fadein 0.3s, fadeout 0.5s 2.5s;
+}
+.hidden { display: none; }
+@keyframes fadein { from {opacity: 0;} to {opacity: 1;} }
+@keyframes fadeout { from {opacity: 1;} to {opacity: 0;} }
+
 
 /* HIDE */
 #collections-tab, #dones-tab {

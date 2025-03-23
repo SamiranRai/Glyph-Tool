@@ -116,8 +116,6 @@ class CustomSidebarProvider {
 
         case "vscode.open":
           const { fullPath, line } = message;
-          console.log("got!", message.fullPath, message.line);
-
           // Open the file and jump to the exact line
           vscode.window.showTextDocument(vscode.Uri.file(fullPath), {
             selection: new vscode.Range(
@@ -125,8 +123,6 @@ class CustomSidebarProvider {
               new vscode.Position(line - 1, 0)
             ),
           });
-
-          console.log("Successfully File Opend!");
           break;
         default:
           console.warn("⚠️ Unknown command received:", message.command);
