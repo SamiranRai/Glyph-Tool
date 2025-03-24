@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const getKeywordHighlightColor = require("../utility/highlight_word_required/getKeywordHighlightColor");
 let predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+
 // Database related
 const {
   initDB,
@@ -25,7 +26,13 @@ fs.watchFile(keywordsFilePath, (curr, prev) => {
     require.resolve("../utility/highlight_word_required/preDefinedKeywords")
   ];
   predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
-  console.log("preDefinedKeywords updated:", predefinedKeywordColors);
+
+  // Reset decorations
+  decorationTypes.forEach((decoration) => {
+    vscode.window.activeTextEditor?.setDecorations(decoration, []);
+  });
+  decorationTypes.clear(); // Clear all old decorations
+  highlightWords(); // Call to reassign color
 });
 
 async function highlightWords(context) {
@@ -55,7 +62,7 @@ async function highlightWords(context) {
 
     existingKeywords.add(uppercaseKeyword); // Track Seen Keyword
 
-    // ✅ Safe DB call
+    // Safe DB call
     if (!highlightTimeStamps.has(uppercaseKeyword)) {
       const newTimestamp = new Date().toISOString(); // Generate new timestamp
       highlightTimeStamps.set(uppercaseKeyword, newTimestamp);
@@ -77,13 +84,22 @@ async function highlightWords(context) {
     }
 
     // Checking & applying predefined custom Keyword style, if present
-    const foundKeyword = predefinedKeywordColors.find(
-      (item) => item.keyword === uppercaseKeyword
-    );
+    console.log("predefinedKeywordColors:InsideHW.js", predefinedKeywordColors);
 
-    let bgColor =
-      foundKeyword?.color ||
-      getKeywordHighlightColor(uppercaseKeyword).backgroundColor;
+    let foundKeyword;
+    for (const item of predefinedKeywordColors) {
+      if (item.keyword === uppercaseKeyword) {
+        foundKeyword = item;
+        break;
+      }
+    }
+
+    let bgColor;
+    if (foundKeyword) {
+      bgColor = foundKeyword.color;
+    } else {
+      bgColor = getKeywordHighlightColor(uppercaseKeyword).backgroundColor;
+    }
 
     if (!decorationTypes.has(uppercaseKeyword)) {
       decorationTypes.set(
@@ -104,14 +120,14 @@ async function highlightWords(context) {
       .push(new vscode.Range(startPos, endPos));
   }
 
-  // ✅ Remove timestamps for deleted keywords
+  // Remove timestamps for deleted keywords
   for (const key of highlightTimeStamps.keys()) {
     if (!existingKeywords.has(key)) {
       await deleteTimestamp(key, highlightTimeStamps);
     }
   }
 
-  // Apply decorations
+  // Apply decorations (RESET before applying new ones)
   decorationTypes.forEach((decoration) => {
     editor.setDecorations(decoration, []);
   });

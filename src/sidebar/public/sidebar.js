@@ -123,7 +123,19 @@ function renderKeywordList() {
     const keywordItem = document.createElement("div");
     keywordItem.className = "keyword-item";
     keywordItem.style.backgroundColor = color;
-    keywordItem.textContent = keyword;
+
+    // Keyword text
+    const keywordText = document.createElement("span");
+    keywordText.textContent = keyword;
+
+    // Delete button
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "X";
+    deleteButton.className = "delete-button";
+    deleteButton.onclick = () => removeExistingKeyword(keyword);
+
+    keywordItem.appendChild(keywordText);
+    keywordItem.appendChild(deleteButton);
     keywordList.appendChild(keywordItem);
   });
 }
@@ -142,6 +154,22 @@ function addAKeyword(keyword, color) {
   renderKeywordList();
 }
 
+// Remove a keyword
+function removeExistingKeyword(keywordToDelete) {
+  console.log("removeExistingKeyword:", keywordToDelete);
+
+  // send message to the backend
+  sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
+
+  // Update the array
+  preDefinedKeywords = preDefinedKeywords.filter(
+    ({ keyword }) => keyword !== keywordToDelete
+  );
+
+  // render the list
+  renderKeywordList();
+}
+
 // ✅ Update an existing keyword's color
 // function updateExistingKeyword() {
 //   const keyword = prompt("Enter keyword to update:");
@@ -150,30 +178,29 @@ function addAKeyword(keyword, color) {
 //   sendMessageToBackend("updateKeyword", { keyword, newColor });
 // }
 
-// // ✅ Remove a keyword
-// function removeExistingKeyword() {
-//   const keyword = prompt("Enter keyword to remove:");
-//   if (!keyword) return;
-//   const confirmDelete = confirm(
-//     `Are you sure you want to remove "${keyword}"?`
-//   );
-//   if (confirmDelete) {
-//     sendMessageToBackend("removeKeyword", { keyword });
-//   }
-// }
-
 // Highlighting keyword based on Text Hashing Algo.
 // function getBgColorBasedOnText(keyword) {
 //   return 0;
 // }
 
 // UPDATE PREDEFINED KEYWORD
+// function updatepreDefinedKeywords(newKeywords) {
+//   if (!Array.isArray(newKeywords)) {
+//     return;
+//   }
+//   // Clear the old one and store the new one
+//   preDefinedKeywords = [...newKeywords];
+// }
+
 function updatepreDefinedKeywords(newKeywords) {
   if (!Array.isArray(newKeywords)) {
     return;
   }
-  // Clear the old one and store the new one
-  preDefinedKeywords = [...newKeywords];
+  newKeywords.forEach((newKeyword) => {
+    if (!preDefinedKeywords.some((pre) => pre.keyword === newKeyword.keyword)) {
+      preDefinedKeywords.push(newKeyword);
+    }
+  });
 }
 
 // CHECK KEYWORD

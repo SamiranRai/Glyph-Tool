@@ -87,7 +87,8 @@ class CustomSidebarProvider {
           break;
 
         case "removeKeyword":
-          await removeKeyword(message.keyword);
+          console.log("Message received:", message.keyword);
+          await removeKeyword(message.keyword); // Await here
           this.sendSidebarUpdate(await loadKeywords());
           break;
 

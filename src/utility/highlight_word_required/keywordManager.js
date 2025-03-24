@@ -24,10 +24,16 @@ const addKeyword = (keyword, color) => {
   }
 };
 
-// Remove a keyword
-const removeKeyword = (keyword) => {
-  const keywords = loadKeywords().filter((k) => k.keyword !== keyword);
-  saveKeywords(keywords);
+const removeKeyword = async (keyword) => {
+  // Wait for keywords to load
+  const keywords = await loadKeywords();
+  console.log("keywords:cheking::", keywords);
+  const index = keywords.findIndex((k) => k.keyword === keyword);
+  console.log("index:", index);
+  if (index !== -1) {
+    keywords.splice(index, 1); // Remove the keyword directly
+    await saveKeywords(keywords); // Update the storage
+  }
 };
 
 // Update a keyword color
