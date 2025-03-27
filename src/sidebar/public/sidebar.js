@@ -1,61 +1,10 @@
-const vscode = acquireVsCodeApi(); // ✅ Get VS Code API to communicate
-// Global Flag
+const vscode = acquireVsCodeApi(); // GET THE VSCODE API TO COMMUNICATE
+
+// GLOBAL FLAG
 let isButtonAtached = false;
 let preDefinedKeywords = [];
 
-// Fetch all keywords when the sidebar loads
-window.onload = () => {
-  fetchAllKeywords();
-};
-
-window.addEventListener("message", (event) => {
-  console.log("✅ Sidebar received message:", event.data);
-
-  if (event.data.command === "updateData") {
-    updateSidebarUI(event.data.data);
-    updatepreDefinedKeywords(event.data.keyword);
-    renderKeywordList();
-  }
-});
-
-// Function to send message to the backend
-function sendMessageToBackend(command, payload = {}) {
-  vscode.postMessage({ command, ...payload });
-}
-
-// Function to mark as DONE
-function markDone(keyword, comment, fileName, fullPath, line) {
-  // get the relevent item - where done is clicked;
-  const message = {
-    keyword,
-    comment,
-    fileName,
-    fullPath,
-    line,
-  };
-
-  console.log("Debug::Data:", message);
-  // Send back to the backend
-  sendMessageToBackend("markAsDone", message);
-  console.log("Debug::MarkAsDOne: Successfully sent data to backend!");
-}
-
-// Function to mark as UNDO
-function undoDone(keyword, comment, fileName, fullPath, line) {
-  // get the relevent item - where done is clicked;
-  const message = {
-    keyword,
-    comment,
-    fileName,
-    fullPath,
-    line,
-  };
-
-  // Send back to the backend
-  sendMessageToBackend("undoDone", message);
-}
-
-// KEYWORD MANAGEMENT -> ADD, DELETE, UPDATE, MODIFY
+// KEYWORD MANAGEMENT ELEMENTS
 const inputKeyword = document.getElementById("keyword-input");
 const inputColor = document.getElementById("color-input");
 const newKeywordForm = document.getElementById("newKeywordForm");
@@ -66,6 +15,57 @@ const keywordManagementView = document.getElementById(
 );
 const addKeyword = document.getElementById("add-keyword");
 const backToMain = document.getElementById("back-to-main");
+
+// FETCH ALL KEYWORDS WHEN THE SIDEBAR LOAD..
+window.onload = () => {
+  fetchAllKeywords();
+};
+
+// MAIN EVENT LISTENER
+window.addEventListener("message", (event) => {
+  console.log("✅ Sidebar received message:", event.data);
+
+  if (event.data.command === "updateData") {
+    updateSidebarUI(event.data.data);
+    updatepreDefinedKeywords(event.data.keyword);
+    renderKeywordList();
+  }
+});
+
+// FUNCTION TO SEND MESSAGE TO BACKEND
+function sendMessageToBackend(command, payload = {}) {
+  vscode.postMessage({ command, ...payload });
+}
+
+// FUNCTION TO MARK AS DONE
+function markDone(keyword, comment, fileName, fullPath, line) {
+  // get the relevent item - where done is clicked;
+  const message = {
+    keyword,
+    comment,
+    fileName,
+    fullPath,
+    line,
+  };
+
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("markAsDone", message);
+}
+
+// FUNCTION TO MARK AS UNDO
+function undoDone(keyword, comment, fileName, fullPath, line) {
+  // get the relevent item - where done is clicked;
+  const message = {
+    keyword,
+    comment,
+    fileName,
+    fullPath,
+    line,
+  };
+
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("undoDone", message);
+}
 
 // CUSTOM ERROR MESSAGE (FRONTEND)
 function showToast(message) {
@@ -97,7 +97,7 @@ newKeywordForm.addEventListener("click", () => {
   keyword = keyword.toUpperCase() + ":";
   addAKeyword(keyword, color);
 
-  // Reset form after adding
+  // RESET FORM
   inputKeyword.value = "";
   inputColor.value = "#ffffff";
 });
@@ -110,25 +110,25 @@ addKeyword.addEventListener("click", () => {
 
 // BACK TO MAIN UI(FRONTEND)
 backToMain.addEventListener("click", () => {
-  keywordManagementView.style.display = "none"; // hide it
-  mainFeaturesWrapper.style.display = "block"; // display it
+  keywordManagementView.style.display = "none"; // HIDE IT
+  mainFeaturesWrapper.style.display = "block"; // DISPLAY IT
 });
 
 // RENDER PREDEFINED KEYWORDS(FRONTEND)
 function renderKeywordList() {
   const keywordList = document.getElementById("keyword-list");
-  keywordList.innerHTML = ""; // Clear existing keywords
+  keywordList.innerHTML = ""; // CLEAR EXISTING KEYWORD
 
   preDefinedKeywords.forEach(({ keyword, color }) => {
     const keywordItem = document.createElement("div");
     keywordItem.className = "keyword-item";
     keywordItem.style.backgroundColor = color;
 
-    // Keyword text
+    // KEYWORD TEXT
     const keywordText = document.createElement("span");
     keywordText.textContent = keyword;
 
-    // Delete button
+    // DELETE BUTTON
     const deleteButton = document.createElement("button");
     deleteButton.textContent = "X";
     deleteButton.className = "delete-button";
@@ -141,7 +141,6 @@ function renderKeywordList() {
 }
 
 // BACKEND CALL FOR MANAGING KEYWORDS -> CREATE, UPDATE, DELETE
-
 // FETCH ALL KEYWORDS
 function fetchAllKeywords() {
   sendMessageToBackend("loadKeywords");
@@ -150,47 +149,25 @@ function fetchAllKeywords() {
 // ADD A KEYWORD(CREATE)
 function addAKeyword(keyword, color) {
   sendMessageToBackend("addKeyword", { keyword, color });
-  preDefinedKeywords.push({ keyword, color }); // Optimistic update
+  preDefinedKeywords.push({ keyword, color }); // OPTIMISTIC UPDATE
   renderKeywordList();
 }
 
-// Remove a keyword
+// REMOVE A EXITING KEYWORD
 function removeExistingKeyword(keywordToDelete) {
   console.log("removeExistingKeyword:", keywordToDelete);
 
-  // send message to the backend
+  // SEND MESSAGE TO BACKEND
   sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
 
-  // Update the array
+  // UPDATE THE ARRAY
   preDefinedKeywords = preDefinedKeywords.filter(
     ({ keyword }) => keyword !== keywordToDelete
   );
 
-  // render the list
+  // RENDER THE LIST
   renderKeywordList();
 }
-
-// ✅ Update an existing keyword's color
-// function updateExistingKeyword() {
-//   const keyword = prompt("Enter keyword to update:");
-//   if (!keyword) return;
-//   const newColor = prompt("Enter new color for keyword:", "#FF5733");
-//   sendMessageToBackend("updateKeyword", { keyword, newColor });
-// }
-
-// Highlighting keyword based on Text Hashing Algo.
-// function getBgColorBasedOnText(keyword) {
-//   return 0;
-// }
-
-// UPDATE PREDEFINED KEYWORD
-// function updatepreDefinedKeywords(newKeywords) {
-//   if (!Array.isArray(newKeywords)) {
-//     return;
-//   }
-//   // Clear the old one and store the new one
-//   preDefinedKeywords = [...newKeywords];
-// }
 
 function updatepreDefinedKeywords(newKeywords) {
   if (!Array.isArray(newKeywords)) {
@@ -220,7 +197,7 @@ function timeAgo(timeStamp) {
   const now = Date.now();
   if (timeStamp > now) return "In the future";
 
-  const diff = Math.floor((now - timeStamp) / 1000); // Difference in seconds
+  const diff = Math.floor((now - timeStamp) / 1000); // DIFFERENCE IN SECONDS
 
   const units = [
     { label: "year", seconds: 31536000 },
@@ -244,83 +221,32 @@ function timeAgo(timeStamp) {
 const taskContainer = document.getElementById("tasks");
 const currentItems = new Map();
 
+// Automatically Assign based on active tab
+let Tab = "Task";
+
 // UPDATESIDEBARUI() FUNCTION UPDATES AUTOMATICALLY WHEN NEW DATA ARRIVES
 async function updateSidebarUI(newData) {
   const fragment = document.createDocumentFragment();
   const newKeys = new Set(newData.map((item) => `${item.file}:${item.line}`));
 
-  // Update or Add Items
-  newData.forEach((item) => {
-    const {
-      keyword,
-      fullPath,
-      description,
-      file,
-      line,
-      timeStamp,
-      preDefinedKeywords,
-    } = item;
-    updatepreDefinedKeywords(preDefinedKeywords);
+  // FILTER THE DATA ACCORDINT TO ACTIVE TAB
+  const filteredData =
+    {
+      Task: newData.filter((item) => item.keyword !== "DONE"),
+      Done: newData.filter((item) => item.keyword === "DONE"),
+      Collection: "COLLECTION-DATA",
+    }[Tab] || [];
 
-    const freshKeyword = typeof keyword === "string" ? keyword : null;
-    if (!freshKeyword) return;
+  // CHECK IF THE TAB HAVE DATA!
+  if (!filteredData || filteredData.length === 0) {
+    console.log("NO-DATA-AVIALBLE");
+    return;
+  }
 
-    // RETURN BACKGROUND COLOR
-    const bgColor = checkKeyword(freshKeyword);
-    console.log("Debug::", { keyword, bgColor });
+  // RENDER THE ITEM BASED ON TAB
+  filteredData.forEach((item) => renderItems(fragment, item));
 
-    const key = `${file}:${line}`;
-    if (!currentItems.has(key)) {
-      const el = document.createElement("div");
-      el.className = "sidebar-item";
-      el.dataset.file = file;
-      el.dataset.line = line;
-      el.innerHTML = `
-        <div class="sidebar-content-wrapper">
-          <div class="first-line">
-            <div class="keyword-n-description">
-              <div class="keyword" style=${
-                "background-color:" + bgColor + ";"
-              }>${keyword}:</div>
-              <div class="keyword-description">${description}</div>
-            </div>
-            <div class="done">DONE</div>
-          </div>
-          <div class="second-line">
-            <div class="file-name-wrapper second-line-item">
-              <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
-              <span class="fileName"> ${file} </span>
-            </div>
-            <div class="devider-line"></div>
-            <div class="code-line-number-wrapper second-line-item">
-              <span class="icon-container codeLineNumber-icon--container" data-icon="codeLineNumber-icon"></span>
-              <span class="codeLineNumber"> Line: ${line} </span>
-            </div>
-            <div class="devider-line"></div>
-            <div class="edited-time-wrapper second-line-item">
-              <span class="icon-container time-icon--container" data-icon="time-icon"></span>
-              <span class="timeStamp"> ${timeAgo(timeStamp)} </span>
-            </div>
-          </div>
-        </div>`;
-
-      // Add click event listener to jump to file and line
-      el.addEventListener("click", () => jumpToFileAndLine(fullPath, line));
-
-      currentItems.set(key, el);
-      fragment.appendChild(el);
-    } else {
-      const existingEl = currentItems.get(key);
-      const descriptionEl = existingEl.querySelector(".keyword-description");
-      if (descriptionEl.textContent !== description) {
-        descriptionEl.textContent = description;
-        existingEl.classList.add("updated");
-        setTimeout(() => existingEl.classList.remove("updated"), 1000);
-      }
-    }
-  });
-
-  // Remove Deleted Items
+  // REMOVE DELTED ITEMS
   currentItems.forEach((el, key) => {
     if (!newKeys.has(key)) {
       el.classList.add("deleted");
@@ -331,11 +257,220 @@ async function updateSidebarUI(newData) {
     }
   });
 
-  // Append only new items
+  // APPEND ONLY NEW ITEMS
   taskContainer.appendChild(fragment);
 }
 
-// Function to handle jumping to file and line
+// FUNCTION TO RENDER ITEMS
+function renderItems(fragment, item) {
+  // EXTRACT THE DATA FROM ITEM
+  const {
+    keyword,
+    fullPath,
+    description,
+    file,
+    line,
+    timeStamp,
+    preDefinedKeywords,
+  } = item;
+
+  // LOAD "updatepreDefinedKeywords"
+  updatepreDefinedKeywords(preDefinedKeywords);
+
+  // CHECK FOR FRESHKEYWORD
+  const freshKeyword = typeof keyword === "string" ? keyword : null;
+  if (!freshKeyword) return;
+
+  // RETURN BACKGROUND COLOR
+  const bgColor = checkKeyword(freshKeyword);
+
+  // KEY
+  const key = `${file}:${line}`;
+
+  // BASIC UI HTML STRUCTURE
+  const el = document.createElement("div");
+  el.className = "sidebar-item";
+  el.dataset.file = file;
+  el.dataset.line = line;
+
+  // HOLD ACTIVE TAB DATA
+  let dataToRender = null;
+
+  // PASS DATA ACCORING TO ACTIVE TAB
+  switch (Tab) {
+    // PASS TASK DATA
+    case "Task":
+      dataToRender = {
+        keyword,
+        description,
+        bgColor,
+        file,
+        line,
+        timeStamp,
+        Tab,
+      };
+      break;
+
+    // PASS DONE DATA
+    case "Done":
+      dataToRender = {
+        bgColor,
+        file,
+        line,
+        timeStamp,
+        taskKeyword,
+        detailDescription,
+        Tab,
+      };
+      break;
+
+    // PASS COLLECTION DATA
+    case "Collection":
+      console.log("Collection UI Render");
+      return; // Exit early since no UI updates needed
+
+    // PASS DEFAULT DATA
+    default:
+      console.log("NO TAB IS OPEN!");
+      return; // Exit early
+  }
+
+  // RENDER ONLY IF THE ITEM IS NOT IN CURRENTITEMS
+  if (!currentItems.has(key)) {
+    el.innerHTML = getItemHtml(dataToRender);
+    el.addEventListener("click", () => jumpToFileAndLine(fullPath, line));
+    currentItems.set(key, el);
+    fragment.appendChild(el);
+  } else {
+    // IF ALREDAY EXIST, UPDATE ONLY DESCRIPTION IF IT CHNAGED
+    const existingEl = currentItems.get(key);
+    const descriptionEl = existingEl.querySelector(".keyword-description");
+    if (descriptionEl.textContent !== description) {
+      descriptionEl.textContent = description;
+      existingEl.classList.add("updated");
+      setTimeout(() => existingEl.classList.remove("updated"), 1000);
+    }
+  }
+}
+
+// FUNCTION TO HANDLE ONLY HTML PART
+function getItemHtml({
+  keyword,
+  description,
+  bgColor,
+  file,
+  line,
+  timeStamp,
+  taskKeyword,
+  detailDescription,
+  Tab,
+}) {
+  switch (Tab) {
+    // TASK UI -> HTML
+    case "Task":
+      return `<div class="sidebar-content-wrapper">
+      <div class="first-line">
+        <div class="keyword-n-description">
+          <div class="keyword" style=${
+            "background-color:" + bgColor + ";"
+          }>${keyword}:</div>
+          <div class="keyword-description">${description}</div>
+        </div>
+        <div class="done">UNDO</div>
+      </div>
+      <div class="second-line">
+        <div class="file-name-wrapper second-line-item">
+          <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
+          <span class="fileName"> ${file} </span>
+        </div>
+        <div class="devider-line"></div>
+        <div class="code-line-number-wrapper second-line-item">
+          <span class="icon-container codeLineNumber-icon--container" data-icon="codeLineNumber-icon"></span>
+          <span class="codeLineNumber"> Line: ${line} </span>
+        </div>
+        <div class="devider-line"></div>
+        <div class="edited-time-wrapper second-line-item">
+          <span class="icon-container time-icon--container" data-icon="time-icon"></span>
+          <span class="timeStamp"> ${timeAgo(timeStamp)} </span>
+        </div>
+      </div>
+    </div>`;
+
+    // DONE UI -> HTML
+    case "Done":
+      return `
+          <div class="sidebar-content-wrapper">
+            <div class="first-line">
+              <div class="keyword-n-description">
+                <div class="keyword" style=${
+                  "background-color:" + bgColor + ";"
+                }>${taskKeyword}:</div>
+                <div class="keyword-description">${detailDescription} - (FIXED!)</div>
+              </div>
+              <div class="done">UNDO</div>
+            </div>
+            <div class="second-line">
+              <div class="file-name-wrapper second-line-item">
+                <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
+                <span class="fileName"> ${file} </span>
+              </div>
+              <div class="devider-line"></div>
+              <div class="code-line-number-wrapper second-line-item">
+                <span class="icon-container codeLineNumber-icon--container" data-icon="codeLineNumber-icon"></span>
+                <span class="codeLineNumber"> Line: ${line} </span>
+              </div>
+              <div class="devider-line"></div>
+              <div class="edited-time-wrapper second-line-item">
+                <span class="icon-container time-icon--container" data-icon="time-icon"></span>
+                <span class="timeStamp"> ${timeAgo(timeStamp)} </span>
+              </div>
+            </div>
+          </div>`;
+
+    // COLLECTION UI -> HTML
+    case "Collection":
+      return "COLLECTION-DATA";
+
+    // DEFAULT UI -> HTML
+    default:
+      return "DEFAULT-DATA";
+  }
+}
+
+// PARSE INFORMATION FOR DONE
+function parseDescription(item) {
+  const {
+    keyword,
+    fullPath,
+    description,
+    file,
+    line,
+    timeStamp,
+    preDefinedKeywords,
+  } = item;
+
+  // Extract task name (inside the first quotes)
+  const taskMatch = description.match(/^"([^"]+)"/);
+  const taskKeyword = taskMatch ? taskMatch[1] : "Unknown Task";
+
+  // Extract timestamp (inside the last quotes)
+  const timestampMatch = description.match(/"([^"]+\d{1,2}[:.]\d{2}[APM]*)"/);
+  const timestamp = timestampMatch ? timestampMatch[1] : "Unknown Time";
+
+  // Extract pure description (middle part between keyword and timestamp)
+  const descMatch = description.match(/^"[^"]+"\s*-\s*([^"]+)\s*"[^"]+"$/);
+  const detailDescription = descMatch
+    ? descMatch[1].trim()
+    : "No description available";
+
+  return {
+    taskKeyword,
+    timeStamp,
+    detailDescription,
+  };
+}
+
+// FUNCTION TO JUMPING FILE AND LINE...
 function jumpToFileAndLine(fullPath, line) {
   // Send message to the Backend
   sendMessageToBackend("vscode.open", {
@@ -345,7 +480,7 @@ function jumpToFileAndLine(fullPath, line) {
 }
 
 // FRONTEND ONLY CODE --->
-// Static UI Part --->
+// STATIC UI PART --->
 
 const loadIcons = () => {
   document.querySelectorAll(".icon-container").forEach((iconElement) => {
@@ -363,5 +498,5 @@ const loadIcons = () => {
   });
 };
 
-// Load the icons
+// LOAD...
 loadIcons();

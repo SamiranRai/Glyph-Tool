@@ -1,6 +1,1 @@
-module.exports = [
-  {
-    "keyword": "GREAT:",
-    "color": "#ffffff"
-  }
-];
+module.exports = [];
