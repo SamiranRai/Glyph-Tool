@@ -35,21 +35,21 @@
         <!--Tab Header-->
         <div class="tab-header-container">
           <ul class="tabs-header topheader">
-            <li class="default active" id="tab-tasks">
+            <li class="" id="Task">
               <span
                 class="icon-container icon-container-style-tabbar task-icon--container"
                 data-icon="task-icon"
               ></span>
               Tasks
             </li>
-            <li id="tab-collections">
+            <li class="" id="Collection">
               <span
                 class="icon-container icon-container-style-tabbar collection-icon--container"
                 data-icon="collection-icon"
               ></span>
               Collections
             </li>
-            <li id="tab-done">
+            <li class="" id="Done">
               <span
                 class="icon-container icon-container-style-tabbar done-icon--container"
                 data-icon="done-icon"
@@ -81,144 +81,8 @@
             </div>
             <!--Task Wrapper-->
             <div class="task-wrapper">
-              <div class="tab-content" id="tasks">
-                <!--First Sidebar Item-->
-                <div class="sidebar-item">
-                  <div class="sidebar-content-wrapper">
-                    <!--First Line Data-->
-                    <div class="first-line">
-                      <div class="keyword-n-description">
-                        <div class="keyword">PAYMENT_CONFIGURATION:</div>
-                        <div class="keyword-description">
-                          Fix the App Notification Panel.
-                        </div>
-                      </div>
-                      <div class="done">DONE</div>
-                    </div>
-                    <!--<div class="options"></div> :if needed-->
-                    <!--Second Line Data-->
-                    <div class="second-line">
-                      <div class="file-name-wrapper second-line-item">
-                        <span
-                          class="icon-container fileName-icon--container"
-                          data-icon="fileName-icon"
-                        ></span>
-                        <span class="fileName"> App.js </span>
-                      </div>
-                      <!--Devider Line-->
-                      <div class="devider-line"></div>
-                      <div class="code-line-number-wrapper second-line-item">
-                        <span
-                          class="icon-container codeLineNumber-icon--container"
-                          data-icon="codeLineNumber-icon"
-                        ></span>
-                        <span class="codeLineNumber"> Line: 40 </span>
-                      </div>
-                      <!--Devider Line-->
-                      <div class="devider-line"></div>
-                      <div class="edited-time-wrapper second-line-item">
-                        <span
-                          class="icon-container time-icon--container"
-                          data-icon="time-icon"
-                        ></span>
-                        <span class="timeStamp"> 11:30 AM </span>
-                      </div>
-                    </div>
-                    <!--<div class="Done"></div> :soon will be add-->
-                  </div>
-                </div>
-
-
-                <div class="sidebar-item">
-                  <div class="sidebar-content-wrapper">
-                    <!--First Line Data-->
-                    <div class="first-line">
-                      <div class="keyword-n-description">
-                        <div class="keyword">FIX_TIMESTAMP:</div>
-                        <div class="keyword-description">
-                          Fix the Time Stamp.
-                        </div>
-                      </div>
-                      <div class="done">DONE</div>
-                    </div>
-                    <!--<div class="options"></div> :if needed-->
-                    <!--Second Line Data-->
-                    <div class="second-line">
-                      <div class="file-name-wrapper second-line-item">
-                        <span
-                          class="icon-container fileName-icon--container"
-                          data-icon="fileName-icon"
-                        ></span>
-                        <span class="fileName"> App.js </span>
-                      </div>
-                      <!--Devider Line-->
-                      <div class="devider-line"></div>
-                      <div class="code-line-number-wrapper second-line-item">
-                        <span
-                          class="icon-container codeLineNumber-icon--container"
-                          data-icon="codeLineNumber-icon"
-                        ></span>
-                        <span class="codeLineNumber"> Line: 40 </span>
-                      </div>
-                      <!--Devider Line-->
-                      <div class="devider-line"></div>
-                      <div class="edited-time-wrapper second-line-item">
-                        <span
-                          class="icon-container time-icon--container"
-                          data-icon="time-icon"
-                        ></span>
-                        <span class="timeStamp"> 11:30 AM </span>
-                      </div>
-                    </div>
-                    <!--<div class="Done"></div> :soon will be add-->
-                  </div>
-                </div>
-
-                <div class="sidebar-item">
-                  <div class="sidebar-content-wrapper">
-                    <!--First Line Data-->
-                    <div class="first-line">
-                      <div class="keyword-n-description">
-                        <div class="keyword">DB_INIT:</div>
-                        <div class="keyword-description">
-                          Init the DataBase ASAP.
-                        </div>
-                      </div>
-                      <div class="done">DONE</div>
-                    </div>
-                    <!--<div class="options"></div> :if needed-->
-                    <!--Second Line Data-->
-                    <div class="second-line">
-                      <div class="file-name-wrapper second-line-item">
-                        <span
-                          class="icon-container fileName-icon--container"
-                          data-icon="fileName-icon"
-                        ></span>
-                        <span class="fileName"> App.js </span>
-                      </div>
-                      <!--Devider Line-->
-                      <div class="devider-line"></div>
-                      <div class="code-line-number-wrapper second-line-item">
-                        <span
-                          class="icon-container codeLineNumber-icon--container"
-                          data-icon="codeLineNumber-icon"
-                        ></span>
-                        <span class="codeLineNumber"> Line: 40 </span>
-                      </div>
-                      <!--Devider Line-->
-                      <div class="devider-line"></div>
-                      <div class="edited-time-wrapper second-line-item">
-                        <span
-                          class="icon-container time-icon--container"
-                          data-icon="time-icon"
-                        ></span>
-                        <span class="timeStamp"> 11:30 AM </span>
-                      </div>
-                    </div>
-                    <!--<div class="Done"></div> :soon will be add-->
-                  </div>
-                </div>
-
+              <div class="tab-content" id="Task-content">
+                <!--Sidebar Items-->
                 </div>
               </div>
             </div>
@@ -238,7 +102,9 @@
             </div>
             <!--Collection Wrapper-->
             <div class="collection-wrapper">
-              <div class="tab-content" id="collections"></div>
+              <div class="tab-content" id="Collection-content">
+                <!--Collection Items-->
+              </div>
             </div>
           </li>
 
@@ -255,7 +121,9 @@
             </div>
             <!--Done Wrapper-->
             <div class="done-wrapper">
-              <div class="tab-content" id="dones"></div>
+              <div class="tab-content" id="Done-content">
+                <!--Done Items-->
+              </div>
             </div>
           </li>
         </ul>

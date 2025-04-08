@@ -304,7 +304,6 @@ input.input-filter:focus {
 @keyframes fadeout { from {opacity: 1;} to {opacity: 0;} }
 
 
-/* HIDE */
 #collections-tab, #dones-tab {
   display: none;
 }

@@ -75,6 +75,8 @@ function showToast(message) {
   setTimeout(() => toast.classList.add("hidden"), 3000);
 }
 
+// <--------- KEYWORD MANAGEMENT UI :START --------->
+
 // BUTTON TO ADD KEYWORD(FRONTEND)
 newKeywordForm.addEventListener("click", () => {
   let keyword = inputKeyword.value.trim();
@@ -169,6 +171,10 @@ function removeExistingKeyword(keywordToDelete) {
   renderKeywordList();
 }
 
+// <--------- KEYWORD MANAGEMENT UI :END --------->
+
+// <--------- BASIC UI SUUPPORTS :START --------->
+
 function updatepreDefinedKeywords(newKeywords) {
   if (!Array.isArray(newKeywords)) {
     return;
@@ -216,18 +222,88 @@ function timeAgo(timeStamp) {
   return `${diff} second${diff !== 1 ? "s" : ""} ago`;
 }
 
+// <--------- KEYWORD MANAGEMENT UI :END --------->
+
+// <--------- MAIN UI RENDER :START --------->
+
 // FINAL RENDER->>>
 // TASK CONTAINER for "HOLDING EACH TASK"
-const taskContainer = document.getElementById("tasks");
-const currentItems = new Map();
+const taskContainer = document.getElementById("Task-content");
+const collectionContainer = document.getElementById("Collection-content");
+const doneContainer = document.getElementById("Done-content");
 
+const currentItems = new Map();
 // Automatically Assign based on active tab
-let Tab = "Task";
+let Tab = "Task"; // Default Tab -> "Task"
+
+// function getActiveTab() {
+//   return document.querySelector(".tabs-header .active")?.id || Tab;
+// }
+
+// // TAB SWITCHING MECHANISIM
+// document.querySelectorAll(".tabs-header li").forEach((tab) => {
+//   tab.addEventListener("click", function () {
+//     // REMOVE ACTIVE CLASS FROM ALL THE TABS
+//     document.querySelectorAll(".tabs-header li").forEach((t) => {
+//       t.classList.remove("active");
+//       document.getElementById(t.id + "-content").style.display = "none"; // Hide all tab content
+//     });
+
+//     // ADD ACTIVE CLASS TO CLICKED TAB
+//     this.classList.add("active");
+
+//     // UPDATE THE TAB VARIABLE WITH ACTIVE TAB ID
+//     Tab = this.id;
+
+//     // SHOW THE CONTENT OF ACTIVE TAB
+//     document.getElementById(this.id + "-content").style.display = "block";
+
+//     // Log the active tab inside the event listener
+//     console.log("Active Tab (Inside Event):", getActiveTab());
+//   });
+// });
+
+// // INTIALLY SHOW ONLY ACTIVE TAB CONTENT
+// document.addEventListener("DOMContentLoaded", () => {
+//   document.querySelectorAll(".tabs-header li").forEach((tab) => {
+//     if (tab.id === Tab) {
+//       tab.classList.add("active");
+//       document.getElementById(tab.id + "-content").style.display = "block";
+//     } else {
+//       document.getElementById(tab.id + "-content").style.display = "none";
+//     }
+//   });
+
+//   // Log the active tab after page load
+//   console.log("Active Tab (On Load):", getActiveTab());
+// });
+
+// // Example: Log active tab anytime outside of click event
+// setInterval(() => {
+//   console.log("Active Tab (Outside Event):", getActiveTab());
+// }, 2000); // Check every 2 seconds
+
+// console.log("Tab:Debug", Tab);
 
 // UPDATESIDEBARUI() FUNCTION UPDATES AUTOMATICALLY WHEN NEW DATA ARRIVES
 async function updateSidebarUI(newData) {
   const fragment = document.createDocumentFragment();
+
+  // UNIQUE KEYS FOR EACH SIDEBAR-ITEM
   const newKeys = new Set(newData.map((item) => `${item.file}:${item.line}`));
+
+  // DETERMINE WHICH CONTAINER TO USE BASED ON ACTIVE TAB
+  const targetTabContainer = {
+    Task: taskContainer,
+    Done: doneContainer,
+    Collection: collectionContainer,
+  }[Tab];
+
+  // CHECKED: console.log("Debug::targetTabContainer:", targetTabContainer);
+
+  // CLEAR THE PREVIOUS CONTENT ACCODING TO TAB
+  targetTabContainer.innerHTML = ""; //-- IMP! -- issue can be here
+  currentItems.clear();
 
   // FILTER THE DATA ACCORDINT TO ACTIVE TAB
   const filteredData =
@@ -237,6 +313,8 @@ async function updateSidebarUI(newData) {
       Collection: "COLLECTION-DATA",
     }[Tab] || [];
 
+  // CHECKED: console.log("Debug::filteredData:", filteredData);
+
   // CHECK IF THE TAB HAVE DATA!
   if (!filteredData || filteredData.length === 0) {
     console.log("NO-DATA-AVIALBLE");
@@ -244,25 +322,30 @@ async function updateSidebarUI(newData) {
   }
 
   // RENDER THE ITEM BASED ON TAB
-  filteredData.forEach((item) => renderItems(fragment, item));
+  filteredData.forEach((item) =>
+    renderItems(fragment, item, targetTabContainer)
+  );
 
+  // CHECKED: console.log("Debug::currentItems:", currentItems);
+  // CHECKED: console.log("Debug::newKeys:", newKeys);
   // REMOVE DELTED ITEMS
   currentItems.forEach((el, key) => {
+    // CHECKED: console.log("Debug::currentItems:", { el, key });
     if (!newKeys.has(key)) {
       el.classList.add("deleted");
       setTimeout(() => {
-        taskContainer.removeChild(el);
-        currentItems.delete(key);
+        targetTabContainer.remove(el); // Update Tab-Content
+        currentItems.delete(key); // update currentItems
       }, 1000);
     }
   });
 
   // APPEND ONLY NEW ITEMS
-  taskContainer.appendChild(fragment);
+  targetTabContainer.appendChild(fragment);
 }
 
 // FUNCTION TO RENDER ITEMS
-function renderItems(fragment, item) {
+function renderItems(fragment, item, targetTabContainer) {
   // EXTRACT THE DATA FROM ITEM
   const {
     keyword,
@@ -286,6 +369,7 @@ function renderItems(fragment, item) {
 
   // KEY
   const key = `${file}:${line}`;
+  console.log("Debug::key:", key);
 
   // BASIC UI HTML STRUCTURE
   const el = document.createElement("div");
@@ -313,11 +397,14 @@ function renderItems(fragment, item) {
 
     // PASS DONE DATA
     case "Done":
+      // EXTRACTING DATA FROM "parseDescription" FUNCTION
+      const { taskKeyword, createdTimeStamp, detailDescription } =
+        parseDescription(item);
       dataToRender = {
         bgColor,
         file,
         line,
-        timeStamp,
+        createdTimeStamp,
         taskKeyword,
         detailDescription,
         Tab,
@@ -335,22 +422,36 @@ function renderItems(fragment, item) {
       return; // Exit early
   }
 
-  // RENDER ONLY IF THE ITEM IS NOT IN CURRENTITEMS
   if (!currentItems.has(key)) {
-    el.innerHTML = getItemHtml(dataToRender);
+    console.log("New Items Added");
+    console.log("Debug::Adding new item:", key);
+    try {
+      console.log("Debug::Data to render:", dataToRender);
+      el.innerHTML = getItemHtml(dataToRender);
+    } catch (error) {
+      console.error("Error in getItemHtml:", error);
+    }
+
     el.addEventListener("click", () => jumpToFileAndLine(fullPath, line));
     currentItems.set(key, el);
     fragment.appendChild(el);
   } else {
-    // IF ALREDAY EXIST, UPDATE ONLY DESCRIPTION IF IT CHNAGED
+    console.log("n");
+    console.log(
+      "Debug::Item already exists, checking for description update..."
+    );
     const existingEl = currentItems.get(key);
     const descriptionEl = existingEl.querySelector(".keyword-description");
-    if (descriptionEl.textContent !== description) {
+
+    if (descriptionEl && descriptionEl.textContent !== description) {
+      console.log("Debug::Updating description...");
       descriptionEl.textContent = description;
       existingEl.classList.add("updated");
       setTimeout(() => existingEl.classList.remove("updated"), 1000);
     }
   }
+
+  targetTabContainer.appendChild(fragment);
 }
 
 // FUNCTION TO HANDLE ONLY HTML PART
@@ -361,10 +462,16 @@ function getItemHtml({
   file,
   line,
   timeStamp,
+  createdTimeStamp,
   taskKeyword,
   detailDescription,
   Tab,
 }) {
+  console.log("Debug::getItemHtml:", {
+    message: "getItemHtml is Called!",
+    Tab,
+  });
+
   switch (Tab) {
     // TASK UI -> HTML
     case "Task":
@@ -422,7 +529,7 @@ function getItemHtml({
               <div class="devider-line"></div>
               <div class="edited-time-wrapper second-line-item">
                 <span class="icon-container time-icon--container" data-icon="time-icon"></span>
-                <span class="timeStamp"> ${timeAgo(timeStamp)} </span>
+                <span class="timeStamp"> ${timeAgo(createdTimeStamp)} </span>
               </div>
             </div>
           </div>`;
@@ -455,7 +562,7 @@ function parseDescription(item) {
 
   // Extract timestamp (inside the last quotes)
   const timestampMatch = description.match(/"([^"]+\d{1,2}[:.]\d{2}[APM]*)"/);
-  const timestamp = timestampMatch ? timestampMatch[1] : "Unknown Time";
+  const createdTimeStamp = timestampMatch ? timestampMatch[1] : "Unknown Time";
 
   // Extract pure description (middle part between keyword and timestamp)
   const descMatch = description.match(/^"[^"]+"\s*-\s*([^"]+)\s*"[^"]+"$/);
@@ -465,7 +572,7 @@ function parseDescription(item) {
 
   return {
     taskKeyword,
-    timeStamp,
+    createdTimeStamp,
     detailDescription,
   };
 }
