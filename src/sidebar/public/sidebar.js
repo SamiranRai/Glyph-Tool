@@ -4,6 +4,10 @@ const vscode = acquireVsCodeApi(); // GET THE VSCODE API TO COMMUNICATE
 let isButtonAtached = false;
 let preDefinedKeywords = [];
 
+// SAVE LATEST BACKEDN DATA EVERYTIME
+let latestBackendData = null;
+let latestKeywordData = null;
+
 // KEYWORD MANAGEMENT ELEMENTS
 const inputKeyword = document.getElementById("keyword-input");
 const inputColor = document.getElementById("color-input");
@@ -21,11 +25,22 @@ window.onload = () => {
   fetchAllKeywords();
 };
 
+// On page load, activate the correct tab
+document.addEventListener("DOMContentLoaded", () => {
+  setActiveTab(Tab);
+  console.log("Active Tab (On Load):", getActiveTab());
+});
+
 // MAIN EVENT LISTENER
 window.addEventListener("message", (event) => {
   console.log("✅ Sidebar received message:", event.data);
 
   if (event.data.command === "updateData") {
+    // Save the everytime a new data arrive
+    latestBackendData = event.data.data;
+    latestKeywordData = event.data.keyword;
+
+    // FUNCTION CALLED ->>
     updateSidebarUI(event.data.data);
     updatepreDefinedKeywords(event.data.keyword);
     renderKeywordList();
@@ -234,59 +249,49 @@ const doneContainer = document.getElementById("Done-content");
 
 const currentItems = new Map();
 // Automatically Assign based on active tab
-let Tab = "Task"; // Default Tab -> "Task"
+let Tab = "Done"; // Default
 
-// function getActiveTab() {
-//   return document.querySelector(".tabs-header .active")?.id || Tab;
-// }
+// tab element and contents
+const tabElements = document.querySelectorAll(".tabs-header li");
+const tabContents = document.querySelectorAll(".whole-tab-content");
 
-// // TAB SWITCHING MECHANISIM
-// document.querySelectorAll(".tabs-header li").forEach((tab) => {
-//   tab.addEventListener("click", function () {
-//     // REMOVE ACTIVE CLASS FROM ALL THE TABS
-//     document.querySelectorAll(".tabs-header li").forEach((t) => {
-//       t.classList.remove("active");
-//       document.getElementById(t.id + "-content").style.display = "none"; // Hide all tab content
-//     });
+function setActiveTab(tabId) {
+  // // Remove active class and hide all contents
+  tabElements.forEach((tab) => tab.classList.remove("active"));
+  tabContents.forEach((content) => (content.style.display = "none"));
 
-//     // ADD ACTIVE CLASS TO CLICKED TAB
-//     this.classList.add("active");
+  // Add active class to current tab and show its content
+  const activeTab = document.getElementById(tabId);
+  const activeContent = document.getElementById(`${tabId}-tab-content`);
 
-//     // UPDATE THE TAB VARIABLE WITH ACTIVE TAB ID
-//     Tab = this.id;
+  if (activeTab && activeContent) {
+    activeTab.classList.add("active"); // add "active" class to current active tab
+    activeContent.style.display = "Block"; // and set diplay "block" to the current actie tab-content
+    Tab = activeTab.id; // set the tab here
 
-//     // SHOW THE CONTENT OF ACTIVE TAB
-//     document.getElementById(this.id + "-content").style.display = "block";
+    // ✅ Use the previously stored backend data
+    if (latestBackendData && latestKeywordData !== null) {
+      updateSidebarUI(latestBackendData);
+      updatepreDefinedKeywords(latestKeywordData);
+      renderKeywordList();
+    }
+  }
+}
 
-//     // Log the active tab inside the event listener
-//     console.log("Active Tab (Inside Event):", getActiveTab());
-//   });
-// });
+function getActiveTab() {
+  const active = document.querySelectorAll("tabs-header .active");
+  return active?.id || Tab; // return -> "Task" // "Collection" // "Done"
+}
 
-// // INTIALLY SHOW ONLY ACTIVE TAB CONTENT
-// document.addEventListener("DOMContentLoaded", () => {
-//   document.querySelectorAll(".tabs-header li").forEach((tab) => {
-//     if (tab.id === Tab) {
-//       tab.classList.add("active");
-//       document.getElementById(tab.id + "-content").style.display = "block";
-//     } else {
-//       document.getElementById(tab.id + "-content").style.display = "none";
-//     }
-//   });
-
-//   // Log the active tab after page load
-//   console.log("Active Tab (On Load):", getActiveTab());
-// });
-
-// // Example: Log active tab anytime outside of click event
-// setInterval(() => {
-//   console.log("Active Tab (Outside Event):", getActiveTab());
-// }, 2000); // Check every 2 seconds
-
-// console.log("Tab:Debug", Tab);
+// setup tab click event listener
+tabElements.forEach((tab) => {
+  tab.addEventListener("click", () => setActiveTab(tab.id));
+});
 
 // UPDATESIDEBARUI() FUNCTION UPDATES AUTOMATICALLY WHEN NEW DATA ARRIVES
 async function updateSidebarUI(newData) {
+  console.log("updateSidebarUI is called!");
+  console.log("current Active Tab: ", Tab);
   const fragment = document.createDocumentFragment();
 
   // UNIQUE KEYS FOR EACH SIDEBAR-ITEM
@@ -298,8 +303,6 @@ async function updateSidebarUI(newData) {
     Done: doneContainer,
     Collection: collectionContainer,
   }[Tab];
-
-  // CHECKED: console.log("Debug::targetTabContainer:", targetTabContainer);
 
   // CLEAR THE PREVIOUS CONTENT ACCODING TO TAB
   targetTabContainer.innerHTML = ""; //-- IMP! -- issue can be here
@@ -313,8 +316,6 @@ async function updateSidebarUI(newData) {
       Collection: "COLLECTION-DATA",
     }[Tab] || [];
 
-  // CHECKED: console.log("Debug::filteredData:", filteredData);
-
   // CHECK IF THE TAB HAVE DATA!
   if (!filteredData || filteredData.length === 0) {
     console.log("NO-DATA-AVIALBLE");
@@ -326,11 +327,8 @@ async function updateSidebarUI(newData) {
     renderItems(fragment, item, targetTabContainer)
   );
 
-  // CHECKED: console.log("Debug::currentItems:", currentItems);
-  // CHECKED: console.log("Debug::newKeys:", newKeys);
   // REMOVE DELTED ITEMS
   currentItems.forEach((el, key) => {
-    // CHECKED: console.log("Debug::currentItems:", { el, key });
     if (!newKeys.has(key)) {
       el.classList.add("deleted");
       setTimeout(() => {
@@ -369,7 +367,6 @@ function renderItems(fragment, item, targetTabContainer) {
 
   // KEY
   const key = `${file}:${line}`;
-  console.log("Debug::key:", key);
 
   // BASIC UI HTML STRUCTURE
   const el = document.createElement("div");
@@ -450,8 +447,6 @@ function renderItems(fragment, item, targetTabContainer) {
       setTimeout(() => existingEl.classList.remove("updated"), 1000);
     }
   }
-
-  targetTabContainer.appendChild(fragment);
 }
 
 // FUNCTION TO HANDLE ONLY HTML PART

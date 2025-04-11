@@ -81,6 +81,11 @@ class CustomSidebarProvider {
           this.sendSidebarUpdate(await loadKeywords());
           break;
 
+        case "tabSwitched":
+          await updateKeyword(message.keyword, message.newColor);
+          this.sendSidebarUpdate(await loadKeywords());
+          break;
+
         case "addKeyword":
           await addKeyword(message.keyword, message.color);
           this.sendSidebarUpdate(await loadKeywords());
