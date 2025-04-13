@@ -170,6 +170,7 @@ input.input-filter:focus {
   cursor: pointer;
 }
 
+
 .sidebar-item:hover {
   background-color: var(--vscode-list-hoverBackground);
 }
@@ -216,10 +217,21 @@ input.input-filter:focus {
   letter-spacing: 0.1px;
 }
 
-.first-line .done {
+.first-line .done, .undo {
+  /* position: absolute;
+  z-index: 10; */
   margin-left: 10px;
   background-color: black;
 }
+
+.done:hover{
+  background-color: rgb(39, 176, 255);
+}
+
+.undo:hover{
+  background-color: rgb(255, 81, 0);
+}
+
 
 
 .second-line {

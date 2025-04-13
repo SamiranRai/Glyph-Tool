@@ -1,5 +1,7 @@
 const vscode = acquireVsCodeApi(); // GET THE VSCODE API TO COMMUNICATE
 
+// <--------- TOP LEVEL CODES :START --------->
+
 // GLOBAL FLAG
 let isButtonAtached = false;
 let preDefinedKeywords = [];
@@ -8,7 +10,13 @@ let preDefinedKeywords = [];
 let latestBackendData = null;
 let latestKeywordData = null;
 
-// KEYWORD MANAGEMENT ELEMENTS
+// AUTOMATICALLY ASSIGN BASED ON ACTIVE TAB
+let Tab = "Task"; // Default
+
+// CURRENT ITEMS
+const currentItems = new Map();
+
+// KEYWORD MANAGEMENT ELEMENTS & TAB HOLDER(CONTAINER)
 const inputKeyword = document.getElementById("keyword-input");
 const inputColor = document.getElementById("color-input");
 const newKeywordForm = document.getElementById("newKeywordForm");
@@ -20,67 +28,15 @@ const keywordManagementView = document.getElementById(
 const addKeyword = document.getElementById("add-keyword");
 const backToMain = document.getElementById("back-to-main");
 
-// FETCH ALL KEYWORDS WHEN THE SIDEBAR LOAD..
-window.onload = () => {
-  fetchAllKeywords();
-};
+// TAB ELEMENTS
+const taskContainer = document.getElementById("Task-content");
+const collectionContainer = document.getElementById("Collection-content");
+const doneContainer = document.getElementById("Done-content");
+const tabElements = document.querySelectorAll(".tabs-header li");
+const tabContents = document.querySelectorAll(".whole-tab-content");
 
-// On page load, activate the correct tab
-document.addEventListener("DOMContentLoaded", () => {
-  setActiveTab(Tab);
-  console.log("Active Tab (On Load):", getActiveTab());
-});
-
-// MAIN EVENT LISTENER
-window.addEventListener("message", (event) => {
-  console.log("✅ Sidebar received message:", event.data);
-
-  if (event.data.command === "updateData") {
-    // Save the everytime a new data arrive
-    latestBackendData = event.data.data;
-    latestKeywordData = event.data.keyword;
-
-    // FUNCTION CALLED ->>
-    updateSidebarUI(event.data.data);
-    updatepreDefinedKeywords(event.data.keyword);
-    renderKeywordList();
-  }
-});
-
-// FUNCTION TO SEND MESSAGE TO BACKEND
-function sendMessageToBackend(command, payload = {}) {
-  vscode.postMessage({ command, ...payload });
-}
-
-// FUNCTION TO MARK AS DONE
-function markDone(keyword, comment, fileName, fullPath, line) {
-  // get the relevent item - where done is clicked;
-  const message = {
-    keyword,
-    comment,
-    fileName,
-    fullPath,
-    line,
-  };
-
-  // SEND MESSAGE TO BACKEND
-  sendMessageToBackend("markAsDone", message);
-}
-
-// FUNCTION TO MARK AS UNDO
-function undoDone(keyword, comment, fileName, fullPath, line) {
-  // get the relevent item - where done is clicked;
-  const message = {
-    keyword,
-    comment,
-    fileName,
-    fullPath,
-    line,
-  };
-
-  // SEND MESSAGE TO BACKEND
-  sendMessageToBackend("undoDone", message);
-}
+// TASK SEARCH INPUT
+taskSearchInput = document.getElementById("input-filter-task");
 
 // CUSTOM ERROR MESSAGE (FRONTEND)
 function showToast(message) {
@@ -90,6 +46,99 @@ function showToast(message) {
   setTimeout(() => toast.classList.add("hidden"), 3000);
 }
 
+// <--------- TOP LEVEL CODES :END --------->
+//
+//
+//
+//
+//
+// <--------- BACKEND DATA LISTENING & SENDING :START --------->
+
+// FETCH ALL KEYWORDS WHEN THE SIDEBAR LOAD..
+window.onload = () => {
+  fetchAllKeywords();
+};
+
+// ON PAGE LOAD ACTIVATE THE CURRENT TAB
+document.addEventListener("DOMContentLoaded", () => {
+  setActiveTab(Tab);
+});
+
+// ACTIVELY LISTEN FOR DATA SENT FROM BACKEND
+window.addEventListener("message", (event) => {
+  console.log("Sidebar received message:", event.data);
+
+  if (event.data.command === "updateData") {
+    const data = event.data.data || [];
+    const keyword = event.data.keyword || [];
+
+    // Prevent updating with empty data
+    if (data.length === 0) {
+      console.warn("⚠️ Skipped updateSidebarUI: Empty data received.");
+      return;
+    }
+
+    // STORE LATEST DATA
+    latestBackendData = data;
+    latestKeywordData = keyword;
+
+    // RENDER UI WITH NEW DATA
+    console.log(" Calling updateSidebarUI with fresh data");
+    updateSidebarUI(data);
+    updatepreDefinedKeywords(keyword);
+    renderKeywordList();
+  }
+});
+
+// FUNCTION TO SEND MESSAGE TO BACKEND
+function sendMessageToBackend(command, payload = {}) {
+  vscode.postMessage({ command, ...payload });
+}
+
+// <--------- BACKEND DATA LISTENING & SENDING :END --------->
+//
+//
+//
+//
+//
+// <--------- MARK-DONE-FEATURES :START --------->
+
+// FUNCTION TO MARK DONE
+function markDone(keyword, comment, fileName, fullPath, line) {
+  const message = {
+    action: "done",
+    keyword,
+    comment,
+    fileName,
+    fullPath,
+    line,
+  };
+
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("toggleMark", message);
+}
+
+// FUNCTION TO MARK UNDO
+function markUndo(keyword, comment, fileName, fullPath, line) {
+  const message = {
+    action: "undo",
+    keyword,
+    comment,
+    fileName,
+    fullPath,
+    line,
+  };
+
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("toggleMark", message);
+}
+
+// <--------- MARK-DONE-FEATURES :END --------->
+//
+//
+//
+//
+//
 // <--------- KEYWORD MANAGEMENT UI :START --------->
 
 // BUTTON TO ADD KEYWORD(FRONTEND)
@@ -187,9 +236,14 @@ function removeExistingKeyword(keywordToDelete) {
 }
 
 // <--------- KEYWORD MANAGEMENT UI :END --------->
+//
+//
+//
+//
+//
+// <--------- BASIC UI SUUPPORTS & COMPONENTS :START --------->
 
-// <--------- BASIC UI SUUPPORTS :START --------->
-
+// UPDATE PREDEFINED KEYWORDS
 function updatepreDefinedKeywords(newKeywords) {
   if (!Array.isArray(newKeywords)) {
     return;
@@ -237,23 +291,13 @@ function timeAgo(timeStamp) {
   return `${diff} second${diff !== 1 ? "s" : ""} ago`;
 }
 
-// <--------- KEYWORD MANAGEMENT UI :END --------->
-
-// <--------- MAIN UI RENDER :START --------->
-
-// FINAL RENDER->>>
-// TASK CONTAINER for "HOLDING EACH TASK"
-const taskContainer = document.getElementById("Task-content");
-const collectionContainer = document.getElementById("Collection-content");
-const doneContainer = document.getElementById("Done-content");
-
-const currentItems = new Map();
-// Automatically Assign based on active tab
-let Tab = "Done"; // Default
-
-// tab element and contents
-const tabElements = document.querySelectorAll(".tabs-header li");
-const tabContents = document.querySelectorAll(".whole-tab-content");
+// <--------- BASIC UI SUUPPORTS & COMPONENTS :END --------->
+//
+//
+//
+//
+//
+// <--------- ACTIVE TAB FEATURES :START --------->
 
 function setActiveTab(tabId) {
   // // Remove active class and hide all contents
@@ -285,13 +329,57 @@ function getActiveTab() {
 
 // setup tab click event listener
 tabElements.forEach((tab) => {
-  tab.addEventListener("click", () => setActiveTab(tab.id));
+  tab.addEventListener("click", () => {
+    setActiveTab(tab.id);
+
+    if (latestBackendData.length > 0) {
+      updateSidebarUI(latestBackendData);
+      updatepreDefinedKeywords(latestKeywordData);
+      renderKeywordList();
+    } else {
+      console.warn("⚠️ No cached data available yet.");
+    }
+  });
 });
 
+// <--------- ACTIVE TAB FEATURES :END --------->
+//
+//
+//
+//
+//
+// <--------- TASK SEARCH FILTER :START --------->
+
+taskSearchInput.addEventListener("input", (e) => {
+  const searchTerm = e.target.value.toLowerCase();
+  const filteredSerachData = filterTasksBySearch(latestBackendData, searchTerm);
+  console.log(filteredSerachData);
+
+  // PASS THIS FILTERTED DATA INTO UPDATESIDEBAR UI FUNCTION()
+  updateSidebarUI(filteredSerachData);
+});
+
+function filterTasksBySearch(data, searchTerm) {
+  return data.filter((item) => {
+    return (
+      item.description?.toLowerCase().includes(searchTerm) ||
+      item.keyword?.toLowerCase().includes(searchTerm) ||
+      item.file?.toLowerCase().includes(searchTerm)
+    );
+  });
+}
+
+// <--------- TASK SEARCH FILTER :END --------->
+//
+//
+//
+//
+//
+// <--------- SIDEBAR UI RENDER :START --------->
+
+// FINAL RENDER->>>
 // UPDATESIDEBARUI() FUNCTION UPDATES AUTOMATICALLY WHEN NEW DATA ARRIVES
 async function updateSidebarUI(newData) {
-  console.log("updateSidebarUI is called!");
-  console.log("current Active Tab: ", Tab);
   const fragment = document.createDocumentFragment();
 
   // UNIQUE KEYS FOR EACH SIDEBAR-ITEM
@@ -342,7 +430,7 @@ async function updateSidebarUI(newData) {
   targetTabContainer.appendChild(fragment);
 }
 
-// FUNCTION TO RENDER ITEMS
+// FUNCTION TO (RENDER-ITEMS)
 function renderItems(fragment, item, targetTabContainer) {
   // EXTRACT THE DATA FROM ITEM
   const {
@@ -386,6 +474,7 @@ function renderItems(fragment, item, targetTabContainer) {
         description,
         bgColor,
         file,
+        fullPath,
         line,
         timeStamp,
         Tab,
@@ -400,6 +489,7 @@ function renderItems(fragment, item, targetTabContainer) {
       dataToRender = {
         bgColor,
         file,
+        fullPath,
         line,
         createdTimeStamp,
         taskKeyword,
@@ -429,7 +519,16 @@ function renderItems(fragment, item, targetTabContainer) {
       console.error("Error in getItemHtml:", error);
     }
 
-    el.addEventListener("click", () => jumpToFileAndLine(fullPath, line));
+    el.addEventListener("click", (e) => {
+      if (
+        e.target.closest(".mark-done-btn") ||
+        e.target.closest(".mark-undo-btn")
+      ) {
+        return; // Ignore click one done btn
+      }
+      // if the click doesnt from done btn then proceed to JumpToFileAndLine
+      jumpToFileAndLine(fullPath, line);
+    });
     currentItems.set(key, el);
     fragment.appendChild(el);
   } else {
@@ -455,6 +554,7 @@ function getItemHtml({
   description,
   bgColor,
   file,
+  fullPath,
   line,
   timeStamp,
   createdTimeStamp,
@@ -478,7 +578,16 @@ function getItemHtml({
           }>${keyword}:</div>
           <div class="keyword-description">${description}</div>
         </div>
-        <div class="done">UNDO</div>
+        <div
+        class="done mark-done-btn"
+        data-keyword="${keyword}"
+        data-comment="${description}"
+        data-filename="${file}"
+        data-fullpath="${fullPath}"
+        data-line="${line}"
+        >
+        DONE
+        </div>
       </div>
       <div class="second-line">
         <div class="file-name-wrapper second-line-item">
@@ -509,7 +618,15 @@ function getItemHtml({
                 }>${taskKeyword}:</div>
                 <div class="keyword-description">${detailDescription} - (FIXED!)</div>
               </div>
-              <div class="done">UNDO</div>
+              <div class="undo mark-undo-btn"
+              data-keyword="${taskKeyword}"
+              data-comment="${detailDescription}"
+              data-filename="${file}"
+              data-fullpath="${fullPath}"
+              data-line="${line}"
+              >
+              UNDO
+              </div>
             </div>
             <div class="second-line">
               <div class="file-name-wrapper second-line-item">
@@ -580,6 +697,50 @@ function jumpToFileAndLine(fullPath, line) {
     line,
   });
 }
+
+// MARK DONE and UNDO BUTTON ELEMENTS
+document.addEventListener("click", (e) => {
+  // TARGET BUTTONS
+  const markDoneBtn = e.target.closest(".mark-done-btn");
+  const markUndoBtn = e.target.closest(".mark-undo-btn");
+
+  // MARK DONE BUTTON
+  if (markDoneBtn) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // EXTRACT DATA
+    const {
+      keyword,
+      comment,
+      filename,
+      fullpath,
+      line: rawLine,
+    } = markDoneBtn.dataset;
+    const line = parseInt(rawLine, 10);
+
+    // MARK DONE FUNCTION
+    markDone(keyword, comment, filename, fullpath, line);
+
+    // MARK UNDO BUTTON
+  } else if (markUndoBtn) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // EXTRACT DATA
+    const {
+      keyword,
+      comment,
+      filename,
+      fullpath,
+      line: rawLine,
+    } = markUndoBtn.dataset;
+    const line = parseInt(rawLine, 10);
+
+    // MARK UNDO FUNCTION
+    markUndo(keyword, comment, filename, fullpath, line);
+  }
+});
 
 // FRONTEND ONLY CODE --->
 // STATIC UI PART --->

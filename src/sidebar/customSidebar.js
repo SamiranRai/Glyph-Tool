@@ -17,6 +17,11 @@ const {
   removeKeyword,
 } = require("./../utility/highlight_word_required/keywordManager");
 
+function isFileUnchanged(filePath, prevMtime) {
+  const currentMtime = fs.statSync(filePath).mtimeMs;
+  return prevMtime === currentMtime;
+}
+
 class CustomSidebarProvider {
   constructor(context) {
     this.context = context;
@@ -97,25 +102,52 @@ class CustomSidebarProvider {
           this.sendSidebarUpdate(await loadKeywords());
           break;
 
-        // Backend: CustomSidebarProvider.js
-        case "markAsDone":
-          console.log("Debug:MarkAsDone: Case called!");
+        case "toggleMark":
+          console.log("Debug:ToggleMark: Case called!");
 
-          // Read and update file content in one go
+          // 1. Get timestamp before reading the file
+          const mtimeBefore = fs.statSync(message.fullPath).mtimeMs;
+
+          // 2. Read file content
           const fileContent = fs
             .readFileSync(message.fullPath, "utf-8")
             .split("\n");
+
           if (message.line < 0 || message.line >= fileContent.length) {
             console.warn("Invalid line number:", message.line);
             break;
           }
 
-          // Generate timestamp and apply change
-          const timestamp = new Date().toISOString();
-          const updatedLine = `// DONE: "${message.keyword}" - ${message.comment}. "${timestamp}"`;
-          fileContent[message.line] = updatedLine;
+          // 3. Apply line update based on action
+          let updatedLine;
+          if (message.action === "done") {
+            const timestamp = new Date();
+            const options = { day: "2-digit", month: "short", year: "numeric" };
+            const formattedTimestamp = timestamp.toLocaleDateString(
+              "en-GB",
+              options
+            );
+            updatedLine = `// DONE: "${message.keyword}" - ${message.comment} "${formattedTimestamp}"`;
+          } else if (message.action === "undo") {
+            updatedLine = `// ${message.keyword}: ${message.comment}`;
+          } else {
+            console.warn("Unknown action type:", message.action);
+            break;
+          }
 
-          // Write updated content and send sidebar update
+          // 4. Update the target line
+          fileContent[message.line - 1] = updatedLine;
+
+          // 5. Check if file has changed since our read
+          const mtimeAfterRead = fs.statSync(message.fullPath).mtimeMs;
+          if (mtimeBefore !== mtimeAfterRead) {
+            console.warn(
+              "File modified externally during toggleMark. Aborting write."
+            );
+            break;
+          }
+
+          // 6. Proceed to write safely
           fs.writeFileSync(message.fullPath, fileContent.join("\n"));
           this.sendSidebarUpdate(await scanAllFilesContainKeywords());
           break;
