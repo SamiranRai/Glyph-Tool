@@ -38,6 +38,12 @@ const tabContents = document.querySelectorAll(".whole-tab-content");
 // TASK SEARCH INPUT
 taskSearchInput = document.getElementById("input-filter-task");
 
+// DONE SEARCH INPUT
+doneSearchInput = document.getElementById("input-filter-done");
+
+// COLLECTION SEARCH INPUT
+collectionSearchInput = document.getElementById("input-filter-collection");
+
 // CUSTOM ERROR MESSAGE (FRONTEND)
 function showToast(message) {
   const toast = document.getElementById("toast");
@@ -83,7 +89,6 @@ window.addEventListener("message", (event) => {
     latestKeywordData = keyword;
 
     // RENDER UI WITH NEW DATA
-    console.log(" Calling updateSidebarUI with fresh data");
     updateSidebarUI(data);
     updatepreDefinedKeywords(keyword);
     renderKeywordList();
@@ -221,8 +226,6 @@ function addAKeyword(keyword, color) {
 
 // REMOVE A EXITING KEYWORD
 function removeExistingKeyword(keywordToDelete) {
-  console.log("removeExistingKeyword:", keywordToDelete);
-
   // SEND MESSAGE TO BACKEND
   sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
 
@@ -313,6 +316,9 @@ function setActiveTab(tabId) {
     activeContent.style.display = "Block"; // and set diplay "block" to the current actie tab-content
     Tab = activeTab.id; // set the tab here
 
+    // Clear search input for InActive Tab
+    clearSearchInputForTab(Tab);
+
     // ✅ Use the previously stored backend data
     if (latestBackendData && latestKeywordData !== null) {
       updateSidebarUI(latestBackendData);
@@ -342,6 +348,32 @@ tabElements.forEach((tab) => {
   });
 });
 
+// helper function to clear the search input for InActive tab
+function clearSearchInputForTab(Tab) {
+  // clear by deafult
+  [taskSearchInput, doneSearchInput, collectionSearchInput].forEach(
+    (item) => (item.value = "")
+  );
+
+  // Case to clear input
+  switch (Tab) {
+    case "Task":
+      doneSearchInput.value = "";
+      collectionSearchInput.value = "";
+      break;
+
+    case "Done":
+      taskSearchInput.value = "";
+      collectionSearchInput.value = "";
+      break;
+
+    case "Collection":
+      taskSearchInput.value = "";
+      doneSearchInput.value = "";
+      break;
+  }
+}
+
 // <--------- ACTIVE TAB FEATURES :END --------->
 //
 //
@@ -350,14 +382,18 @@ tabElements.forEach((tab) => {
 //
 // <--------- TASK SEARCH FILTER :START --------->
 
-taskSearchInput.addEventListener("input", (e) => {
-  const searchTerm = e.target.value.toLowerCase();
-  const filteredSerachData = filterTasksBySearch(latestBackendData, searchTerm);
-  console.log(filteredSerachData);
+function setupSearchListener(searchInputElement) {
+  searchInputElement.addEventListener("input", (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    const filteredSerachData = filterTasksBySearch(
+      latestBackendData,
+      searchTerm
+    );
 
-  // PASS THIS FILTERTED DATA INTO UPDATESIDEBAR UI FUNCTION()
-  updateSidebarUI(filteredSerachData);
-});
+    // PASS THIS FILTERTED DATA INTO UPDATESIDEBAR UI FUNCTION()
+    updateSidebarUI(filteredSerachData);
+  });
+}
 
 function filterTasksBySearch(data, searchTerm) {
   return data.filter((item) => {
@@ -369,6 +405,9 @@ function filterTasksBySearch(data, searchTerm) {
   });
 }
 
+setupSearchListener(taskSearchInput); // TASK SEARCH
+setupSearchListener(doneSearchInput); // DONE SEARCH
+
 // <--------- TASK SEARCH FILTER :END --------->
 //
 //
@@ -376,6 +415,34 @@ function filterTasksBySearch(data, searchTerm) {
 //
 //
 // <--------- SIDEBAR UI RENDER :START --------->
+
+// GROUP DATA BY FILES & KEYWORDS "COLLECTION DATA"
+function groupData(data) {
+  const groupByFileAndKeyword = {};
+  const groupByKeyword = {};
+
+  data.forEach((item) => {
+    const file = item.file;
+    const keyword = item.keyword;
+
+    // Group by File and Keyword
+    if (!groupByFileAndKeyword[file]) {
+      groupByFileAndKeyword[file] = {};
+    }
+    if (!groupByFileAndKeyword[file][keyword]) {
+      groupByFileAndKeyword[file][keyword] = [];
+    }
+    groupByFileAndKeyword[file][keyword].push(item);
+
+    // Group by Keyword only
+    if (!groupByKeyword[keyword]) {
+      groupByKeyword[keyword] = [];
+    }
+    groupByKeyword[keyword].push(item);
+  });
+
+  return [groupByKeyword, groupByFileAndKeyword];
+}
 
 // FINAL RENDER->>>
 // UPDATESIDEBARUI() FUNCTION UPDATES AUTOMATICALLY WHEN NEW DATA ARRIVES
@@ -401,7 +468,7 @@ async function updateSidebarUI(newData) {
     {
       Task: newData.filter((item) => item.keyword !== "DONE"),
       Done: newData.filter((item) => item.keyword === "DONE"),
-      Collection: "COLLECTION-DATA",
+      Collection: groupData(newData.filter((item) => item.keyword !== "DONE")), // !for testing purpose
     }[Tab] || [];
 
   // CHECK IF THE TAB HAVE DATA!
@@ -432,6 +499,13 @@ async function updateSidebarUI(newData) {
 
 // FUNCTION TO (RENDER-ITEMS)
 function renderItems(fragment, item, targetTabContainer) {
+  console.log("renderItems:", {
+    fragment,
+    targetTabContainer,
+    item,
+    Tab,
+  });
+
   // EXTRACT THE DATA FROM ITEM
   const {
     keyword,
@@ -442,6 +516,8 @@ function renderItems(fragment, item, targetTabContainer) {
     timeStamp,
     preDefinedKeywords,
   } = item;
+
+  console.log("item::", item);
 
   // LOAD "updatepreDefinedKeywords"
   updatepreDefinedKeywords(preDefinedKeywords);
@@ -500,8 +576,19 @@ function renderItems(fragment, item, targetTabContainer) {
 
     // PASS COLLECTION DATA
     case "Collection":
-      console.log("Collection UI Render");
-      return; // Exit early since no UI updates needed
+      dataToRender = {
+        keyword,
+        description,
+        bgColor,
+        file,
+        fullPath,
+        line,
+        timeStamp,
+        Tab,
+        item,
+      };
+
+      break;
 
     // PASS DEFAULT DATA
     default:
@@ -510,10 +597,7 @@ function renderItems(fragment, item, targetTabContainer) {
   }
 
   if (!currentItems.has(key)) {
-    console.log("New Items Added");
-    console.log("Debug::Adding new item:", key);
     try {
-      console.log("Debug::Data to render:", dataToRender);
       el.innerHTML = getItemHtml(dataToRender);
     } catch (error) {
       console.error("Error in getItemHtml:", error);
@@ -532,15 +616,10 @@ function renderItems(fragment, item, targetTabContainer) {
     currentItems.set(key, el);
     fragment.appendChild(el);
   } else {
-    console.log("n");
-    console.log(
-      "Debug::Item already exists, checking for description update..."
-    );
     const existingEl = currentItems.get(key);
     const descriptionEl = existingEl.querySelector(".keyword-description");
 
     if (descriptionEl && descriptionEl.textContent !== description) {
-      console.log("Debug::Updating description...");
       descriptionEl.textContent = description;
       existingEl.classList.add("updated");
       setTimeout(() => existingEl.classList.remove("updated"), 1000);
@@ -550,6 +629,7 @@ function renderItems(fragment, item, targetTabContainer) {
 
 // FUNCTION TO HANDLE ONLY HTML PART
 function getItemHtml({
+  item = {},
   keyword,
   description,
   bgColor,
@@ -562,11 +642,6 @@ function getItemHtml({
   detailDescription,
   Tab,
 }) {
-  console.log("Debug::getItemHtml:", {
-    message: "getItemHtml is Called!",
-    Tab,
-  });
-
   switch (Tab) {
     // TASK UI -> HTML
     case "Task":
@@ -648,7 +723,9 @@ function getItemHtml({
 
     // COLLECTION UI -> HTML
     case "Collection":
-      return "COLLECTION-DATA";
+      return `<div class="sidebar-content-wrapper">
+      Hey
+    </div>`;
 
     // DEFAULT UI -> HTML
     default:

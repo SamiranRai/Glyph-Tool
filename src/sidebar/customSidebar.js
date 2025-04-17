@@ -88,18 +88,18 @@ class CustomSidebarProvider {
 
         case "tabSwitched":
           await updateKeyword(message.keyword, message.newColor);
-          this.sendSidebarUpdate(await loadKeywords());
+          this.sendSidebarUpdate(await scanAllFilesContainKeywords());
           break;
 
         case "addKeyword":
           await addKeyword(message.keyword, message.color);
-          this.sendSidebarUpdate(await loadKeywords());
+          this.sendSidebarUpdate(await scanAllFilesContainKeywords());
           break;
 
         case "removeKeyword":
           console.log("Message received:", message.keyword);
           await removeKeyword(message.keyword); // Await here
-          this.sendSidebarUpdate(await loadKeywords());
+          this.sendSidebarUpdate(await scanAllFilesContainKeywords());
           break;
 
         case "toggleMark":
