@@ -3,6 +3,9 @@
    /* Default (Light Theme) */
    --dynamic-border-color: 100, 100, 100;  /* Equivalent to rgba(100, 100, 100, .1) */
    --dynamic-opacity: .1;
+   --custom-dropdown-shadow-color: rgba(0, 0, 0, 0.7);
+   --tc-border-color: rgba(128, 128, 128, .40);
+   --custom-input-border-color: var(--tc-border-color);
 }
 
 /* html, body {
@@ -392,3 +395,61 @@ input.input-filter:focus {
 .section .section-header::before {
   content: "▶ ";
 }
+
+
+.filter-button {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.filter-button-option {
+  position: absolute;
+  right: 20px;
+  top: 120px;
+  display: none;
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.filter-button-option.show-options {
+  display: block;
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.filter-button-option .option-container {
+  border-radius: 6px;
+  background-color: var(--vscode-editor-background);
+  box-shadow: 0 8px 16px 0 var(--custom-dropdown-shadow-color);
+  border: .5px solid var(--custom-input-border-color);
+
+}
+
+
+
+.option-container .option-ul {
+  padding: 3px 1px;
+}
+
+.option-container .option-ul .option-li {
+  cursor: pointer;
+  padding: 3.8px 40px 3.8px 10px;
+  display: block;
+  font-size: 13.5px !important;
+  margin: .5px 2.4px;    
+  border-radius: 5px;
+  text-align: left;
+}
+
+.option-container .option-ul .option-li:hover {
+  background-color: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground);
+}
+
+/* color: var(--custom-dropdown-color);
+    text-decoration: none; */
+    

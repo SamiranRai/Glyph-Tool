@@ -44,6 +44,18 @@ doneSearchInput = document.getElementById("input-filter-done");
 // COLLECTION SEARCH INPUT
 collectionSearchInput = document.getElementById("input-filter-collection");
 
+// FILTER BUTTON
+const filter_button = document.getElementById("filter-button");
+const option_parent = document.querySelector(".filter-button");
+
+// FILTER OPTION BUTTONS
+const filter_option_buttons = document.querySelectorAll(".option-li");
+
+// FILTER BUTTON OPTIONS CONTAINER
+const filter_option_container = document.querySelector(
+  ".filter-option-container"
+);
+
 // CUSTOM ERROR MESSAGE (FRONTEND)
 function showToast(message) {
   const toast = document.getElementById("toast");
@@ -72,8 +84,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // ACTIVELY LISTEN FOR DATA SENT FROM BACKEND
 window.addEventListener("message", (event) => {
-  console.log("Sidebar received message:", event.data);
-
   if (event.data.command === "updateData") {
     const data = event.data.data || [];
     const keyword = event.data.keyword || [];
@@ -90,7 +100,7 @@ window.addEventListener("message", (event) => {
 
     // RENDER UI WITH NEW DATA
     updateSidebarUI(data);
-    updatepreDefinedKeywords(keyword);
+    updatepreDefinedKeywords(latestKeywordData);
     renderKeywordList();
   }
 });
@@ -226,13 +236,13 @@ function addAKeyword(keyword, color) {
 
 // REMOVE A EXITING KEYWORD
 function removeExistingKeyword(keywordToDelete) {
-  // SEND MESSAGE TO BACKEND
-  sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
-
   // UPDATE THE ARRAY
   preDefinedKeywords = preDefinedKeywords.filter(
-    ({ keyword }) => keyword !== keywordToDelete
+    (item) => item.keyword.toLowerCase() !== keywordToDelete.toLowerCase()
   );
+
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
 
   // RENDER THE LIST
   renderKeywordList();
@@ -414,6 +424,92 @@ setupSearchListener(doneSearchInput); // DONE SEARCH
 //
 //
 //
+// <--------- TASK FILTER (TESTING! AND ON THE WAY) :START --------->
+
+// FILTER BUTTON
+
+filter_button.addEventListener("click", (e) => {
+  e.stopPropagation; // Prevent click from bubbling to document
+
+  // toggle
+  filter_option_container.classList.toggle("show-options");
+});
+
+// HIDE OPTIONS WHEN CLICKING OUTSIDE DOCUMENT
+document.addEventListener("click", (e) => {
+  // check if click is outside the event
+  if (!option_parent.contains(e.target)) {
+    // remove the show-options classes
+    filter_option_container.classList.remove("show-options");
+  }
+});
+
+// Detect when the webview loses focus
+// window.addEventListener("blur", () => {
+//   setTimeout(() => {
+//     if (document.activeElement.tagName === "IFRAME") {
+//       optionContainer.classList.remove("show-options");
+//     }
+//   }, 50);
+// });
+
+// filter_button.addEventListener("click", () => {
+//   // FILTER DATA BASED ON CONDITIONS
+//   const filterData = sortDataByAlphabetically(latestBackendData);
+
+//   // PASS THE FILTERED DATA
+//   updateSidebarUI(filterData);
+// });
+
+// ALL SORTING FUNCTION
+const dataSortFunctions = {
+  alphabetical: sortDataByAlphabetically,
+  aesthetic: sortDataByKeywordLength,
+  time: sortDataByTime,
+};
+
+// FILTER BUTTON
+filter_option_buttons.forEach((btn) => {
+  btn.addEventListener("click", (e) => {
+    const type = btn.dataset.sort;
+    const filteredData = dataSortFunctions[type](latestBackendData);
+
+    // PASS UPDATED DATA INTO SIDEBAR UI FUNCTIONS
+    updateSidebarUI(filteredData);
+  });
+});
+
+// FILTER DATA BY TIME
+function sortDataByTime(data) {
+  return data.sort((a, b) => {
+    return b.timeStamp - a.timeStamp;
+  });
+}
+
+// FILTER DATA BY KEYWORD LENGTH (FOR GOOD ASESTHETIC UI)
+function sortDataByKeywordLength(data) {
+  return data.sort((a, b) => {
+    const lenA = (a.keyword || "").length;
+    const lenB = (b.keyword || "").length;
+    return lenA - lenB;
+  });
+}
+
+function sortDataByAlphabetically(data) {
+  return data.slice().sort((a, b) => {
+    const keyword_A = a.keyword?.toLowerCase() || "";
+    const keyword_B = b.keyword?.toLowerCase() || "";
+
+    return keyword_A.localeCompare(keyword_B);
+  });
+}
+
+// <--------- TASK FILTER :END --------->
+//
+//
+//
+//
+//
 // <--------- SIDEBAR UI RENDER :START --------->
 
 // GROUP DATA BY FILES & KEYWORDS "COLLECTION DATA"
@@ -499,13 +595,6 @@ async function updateSidebarUI(newData) {
 
 // FUNCTION TO (RENDER-ITEMS)
 function renderItems(fragment, item, targetTabContainer) {
-  console.log("renderItems:", {
-    fragment,
-    targetTabContainer,
-    item,
-    Tab,
-  });
-
   // EXTRACT THE DATA FROM ITEM
   const {
     keyword,
@@ -516,8 +605,6 @@ function renderItems(fragment, item, targetTabContainer) {
     timeStamp,
     preDefinedKeywords,
   } = item;
-
-  console.log("item::", item);
 
   // LOAD "updatepreDefinedKeywords"
   updatepreDefinedKeywords(preDefinedKeywords);

@@ -78,12 +78,12 @@ class CustomSidebarProvider {
           break;
 
         case "loadKeywords":
-          this.sendSidebarUpdate(await loadKeywords());
+          this.sendSidebarUpdate(await loadKeywords()); // changed
           break;
 
         case "updateKeyword":
           await updateKeyword(message.keyword, message.newColor);
-          this.sendSidebarUpdate(await loadKeywords());
+          this.sendSidebarUpdate(await loadKeywords()); // changed
           break;
 
         case "tabSwitched":
@@ -99,57 +99,70 @@ class CustomSidebarProvider {
         case "removeKeyword":
           console.log("Message received:", message.keyword);
           await removeKeyword(message.keyword); // Await here
-          this.sendSidebarUpdate(await scanAllFilesContainKeywords());
+          this.sendSidebarUpdate(await removeKeyword());
           break;
 
         case "toggleMark":
-          console.log("Debug:ToggleMark: Case called!");
+          console.log("Debug: toggleMark: Case called!");
 
-          // 1. Get timestamp before reading the file
-          const mtimeBefore = fs.statSync(message.fullPath).mtimeMs;
+          try {
+            const uri = vscode.Uri.file(message.fullPath);
+            const openDoc = vscode.workspace.textDocuments.find(
+              (doc) => doc.uri.fsPath === message.fullPath
+            );
 
-          // 2. Read file content
-          const fileContent = fs
-            .readFileSync(message.fullPath, "utf-8")
-            .split("\n");
-
-          if (message.line < 0 || message.line >= fileContent.length) {
-            console.warn("Invalid line number:", message.line);
-            break;
-          }
-
-          // 3. Apply line update based on action
-          let updatedLine;
-          if (message.action === "done") {
+            let updatedLine = "";
             const timestamp = new Date();
             const options = { day: "2-digit", month: "short", year: "numeric" };
             const formattedTimestamp = timestamp.toLocaleDateString(
               "en-GB",
               options
             );
-            updatedLine = `// DONE: "${message.keyword}" - ${message.comment} "${formattedTimestamp}"`;
-          } else if (message.action === "undo") {
-            updatedLine = `// ${message.keyword}: ${message.comment}`;
-          } else {
-            console.warn("Unknown action type:", message.action);
-            break;
+
+            if (message.action === "done") {
+              updatedLine = `// DONE: "${message.keyword}" - ${message.comment} "${formattedTimestamp}"`;
+            } else if (message.action === "undo") {
+              updatedLine = `// ${message.keyword}: ${message.comment}`;
+            } else {
+              console.warn("❌ Unknown toggleMark action:", message.action);
+              break;
+            }
+
+            if (openDoc) {
+              // ✅ If file is open, edit using VS Code API
+              const editor = vscode.window.visibleTextEditors.find(
+                (ed) => ed.document.uri.fsPath === message.fullPath
+              );
+
+              if (editor) {
+                await editor.edit((editBuilder) => {
+                  const line = openDoc.lineAt(message.line - 1);
+                  editBuilder.replace(line.range, updatedLine);
+                });
+              } else {
+                console.warn("⚠️ Document is open but editor is not visible.");
+              }
+            } else {
+              // ✅ If file is not open, edit directly via fs
+              const fileBuffer = await vscode.workspace.fs.readFile(uri);
+              const lines = fileBuffer.toString("utf-8").split("\n");
+
+              if (message.line <= 0 || message.line > lines.length) {
+                console.warn("❌ Invalid line number:", message.line);
+                break;
+              }
+
+              lines[message.line - 1] = updatedLine;
+              const updatedBuffer = Buffer.from(lines.join("\n"), "utf-8");
+              await vscode.workspace.fs.writeFile(uri, updatedBuffer);
+            }
+
+            // 🔄 Update sidebar UI
+            this.sendSidebarUpdate(await scanAllFilesContainKeywords());
+          } catch (err) {
+            console.error("🚨 toggleMark error:", err);
           }
 
-          // 4. Update the target line
-          fileContent[message.line - 1] = updatedLine;
-
-          // 5. Check if file has changed since our read
-          const mtimeAfterRead = fs.statSync(message.fullPath).mtimeMs;
-          if (mtimeBefore !== mtimeAfterRead) {
-            console.warn(
-              "File modified externally during toggleMark. Aborting write."
-            );
-            break;
-          }
-
-          // 6. Proceed to write safely
-          fs.writeFileSync(message.fullPath, fileContent.join("\n"));
-          this.sendSidebarUpdate(await scanAllFilesContainKeywords());
           break;
 
         case "vscode.open":
