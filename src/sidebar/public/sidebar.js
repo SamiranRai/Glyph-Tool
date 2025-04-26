@@ -961,6 +961,8 @@ function getItemHtml({
 
 // PARSE INFORMATION FOR DONE
 function parseDescription(item) {
+  // debug
+  console.log("parseDescription func() is called!");
   const {
     keyword,
     fullPath,
@@ -971,22 +973,26 @@ function parseDescription(item) {
     preDefinedKeywords,
   } = item;
 
-  // Extract task name (inside the first quotes)
+  // Extract task keyword (inside the first quotes)
   const taskMatch = description.match(/^"([^"]+)"/);
   const taskKeyword = taskMatch ? taskMatch[1] : "Unknown Task";
 
-  // Extract timestamp (inside the last quotes)
-  const timestampMatch = description.match(/"([^"]+\d{1,2}[:.]\d{2}[APM]*)"/);
-  const createdTimeStamp = timestampMatch ? timestampMatch[1] : "Unknown Time";
+  // Extract timestamp part (inside the square brackets)
+  const timestampMatch = description.match(/\[(\d{2} \w{3} \d{4}) \| (\d+)\]/);
+  const createdDate = timestampMatch ? timestampMatch[1] : "Unknown Date";
+  const createdTimeStamp = timestampMatch
+    ? timestampMatch[2]
+    : "Unknown Timestamp";
 
-  // Extract pure description (middle part between keyword and timestamp)
-  const descMatch = description.match(/^"[^"]+"\s*-\s*([^"]+)\s*"[^"]+"$/);
+  // Extract pure description (middle part after - and before [)
+  const descMatch = description.match(/^"[^"]+"\s*-\s*(.*?)\s*\[/);
   const detailDescription = descMatch
     ? descMatch[1].trim()
     : "No description available";
 
   return {
     taskKeyword,
+    createdDate,
     createdTimeStamp,
     detailDescription,
   };

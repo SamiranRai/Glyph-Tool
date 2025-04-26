@@ -119,10 +119,12 @@ class CustomSidebarProvider {
               options
             );
 
+            const milliseconds = timestamp.getTime(); // <-- getTime() gives milliseconds
+
             let isDeleteAction = false; // 👈 Track delete separately
 
             if (message.action === "done") {
-              updatedLine = `// DONE: "${message.keyword}" - ${message.comment} "${formattedTimestamp}"`;
+              updatedLine = `// DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
             } else if (message.action === "undo") {
               updatedLine = `// ${message.keyword}: ${message.comment}`;
             } else if (message.action === "disable") {
