@@ -119,10 +119,16 @@ class CustomSidebarProvider {
               options
             );
 
+            let isDeleteAction = false; // 👈 Track delete separately
+
             if (message.action === "done") {
               updatedLine = `// DONE: "${message.keyword}" - ${message.comment} "${formattedTimestamp}"`;
             } else if (message.action === "undo") {
               updatedLine = `// ${message.keyword}: ${message.comment}`;
+            } else if (message.action === "disable") {
+              updatedLine = `// ${message.keyword} : ${message.comment}`;
+            } else if (message.action === "delete") {
+              isDeleteAction = true; // Mark delete action
             } else {
               console.warn("❌ Unknown toggleMark action:", message.action);
               break;
@@ -137,7 +143,11 @@ class CustomSidebarProvider {
               if (editor) {
                 await editor.edit((editBuilder) => {
                   const line = openDoc.lineAt(message.line - 1);
-                  editBuilder.replace(line.range, updatedLine);
+                  if (isDeleteAction) {
+                    editBuilder.delete(line.rangeIncludingLineBreak); // 💥 Remove entire line
+                  } else {
+                    editBuilder.replace(line.range, updatedLine);
+                  }
                 });
               } else {
                 console.warn("⚠️ Document is open but editor is not visible.");
@@ -152,7 +162,12 @@ class CustomSidebarProvider {
                 break;
               }
 
-              lines[message.line - 1] = updatedLine;
+              if (isDeleteAction) {
+                lines.splice(message.line - 1, 1); // 💥 Remove the line entirely
+              } else {
+                lines[message.line - 1] = updatedLine;
+              }
+
               const updatedBuffer = Buffer.from(lines.join("\n"), "utf-8");
               await vscode.workspace.fs.writeFile(uri, updatedBuffer);
             }
@@ -164,6 +179,87 @@ class CustomSidebarProvider {
           }
 
           break;
+
+        // case "toggleMark":
+        //   console.log("Debug: toggleMark: Case called!");
+
+        //   try {
+        //     const uri = vscode.Uri.file(message.fullPath);
+        //     const openDoc = vscode.workspace.textDocuments.find(
+        //       (doc) => doc.uri.fsPath === message.fullPath
+        //     );
+
+        //     let updatedLine = "";
+        //     const timestamp = new Date();
+        //     const options = { day: "2-digit", month: "short", year: "numeric" };
+        //     const formattedTimestamp = timestamp.toLocaleDateString(
+        //       "en-GB",
+        //       options
+        //     );
+
+        //     // BY DEFAULT SET FALSE
+        //     let deleteAction = false;
+        //     let deleteAllAction = false;
+
+        //     if (message.action === "done") {
+        //       updatedLine = `// DONE: "${message.keyword}" - ${message.comment} "${formattedTimestamp}"`;
+        //     } else if (message.action === "undo") {
+        //       updatedLine = `// ${message.keyword}: ${message.comment}`;
+        //     } else if (message.action === "disable") {
+        //       updatedLine = `// ${message.keyword} : ${message.comment}`;
+        //     } else if (message.action === "delete") {
+        //       // SET TRUE
+        //       deleteAction = true;
+        //     } else if (message.action === "deleteAll") {
+        //       // SET TRUE
+        //       deleteAllAction = true;
+        //     } else {
+        //       console.warn("❌ Unknown toggleMark action:", message.action);
+        //       break;
+        //     }
+
+        //     if (openDoc) {
+        //       // ✅ If file is open, edit using VS Code API
+        //       const editor = vscode.window.visibleTextEditors.find(
+        //         (ed) => ed.document.uri.fsPath === message.fullPath
+        //       );
+
+        //       if (editor) {
+        //         await editor.edit((editBuilder) => {
+        //           const line = openDoc.lineAt(message.line - 1);
+        //           editBuilder.replace(line.range, updatedLine);
+        //         });
+        //       } else {
+        //         console.warn("⚠️ Document is open but editor is not visible.");
+        //       }
+        //     } else {
+        //       // ✅ If file is not open, edit directly via fs
+        //       const fileBuffer = await vscode.workspace.fs.readFile(uri);
+        //       const lines = fileBuffer.toString("utf-8").split("\n");
+
+        //       if (message.line <= 0 || message.line > lines.length) {
+        //         console.warn("❌ Invalid line number:", message.line);
+        //         break;
+        //       }
+
+        //       // check for delete action
+        //       if (deleteAction) {
+        //         lines.splice(message.line - 1, 1); // 💥 Remove the line entirely
+        //       } else {
+        //         lines[message.line - 1] = updatedLine;
+        //       }
+
+        //       const updatedBuffer = Buffer.from(lines.join("\n"), "utf-8");
+        //       await vscode.workspace.fs.writeFile(uri, updatedBuffer);
+        //     }
+
+        //     // 🔄 Update sidebar UI
+        //     this.sendSidebarUpdate(await scanAllFilesContainKeywords());
+        //   } catch (err) {
+        //     console.error("🚨 toggleMark error:", err);
+        //   }
+
+        //   break;
 
         case "vscode.open":
           const { fullPath, line } = message;

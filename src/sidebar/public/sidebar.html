@@ -47,6 +47,7 @@
                 class="icon-container icon-container-style-tabbar collection-icon--container"
                 data-icon="collection-icon"
               ></span>
+              <span class="coming-soon-message">Coming Soon</span>
               Collections
             </li>
             <li class="" id="Done">
@@ -107,7 +108,34 @@
                 id="input-filter-collection"
                 type="text"
               />
-              <div class="filter-button"></div>
+              <div class="filter-button">
+                <button class="filter-button" id="filter-button">
+                  <span
+                    class="icon-container icon-container-style-filter-button"
+                    data-icon="filter-icon"
+                  ></span>
+                </button>
+                <div class="filter-button-option filter-option-container">
+                  <div class="option-container">
+                    <ul class="option-ul">
+                      <li class="option-li" data-sort="time">By Time</li>
+                      <li class="option-li" data-sort="alphabetical">Alphabetical</li>
+                      <li class="option-li" data-sort="aesthetic">Aesthetic</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="imp-message-wrapper">
+              <h1>
+                Something Awesome is 
+                <span class="inside-h1-design">
+                  😍 Coming!
+                </span>
+              </h1>
+              <p>
+                "We're building something special. Your collection will be worth the wait."
+              </p>
             </div>
             <!--Collection Wrapper-->
             <div class="collection-wrapper">
@@ -126,7 +154,24 @@
                 id="input-filter-done"
                 type="text"
               />
-              <div class="filter-button"></div>
+              <div class="filter-button">
+                <button class="filter-button" id="filter-button">
+                  <span
+                    class="icon-container icon-container-style-filter-button"
+                    data-icon="filter-icon"
+                  ></span>
+                </button>
+                <div class="filter-button-option filter-option-container">
+                  <div class="option-container">
+                    <ul class="option-ul">
+                      <li class="option-li" data-sort="time">By Time</li>
+                      <li class="option-li" data-sort="alphabetical">Alphabetical</li>
+                      <li class="option-li" data-sort="aesthetic">Aesthetic</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <button id="deleteAllDoneitemBtn">DeleteAll</button>
             </div>
             <!--Done Wrapper-->
             <div class="done-wrapper">
@@ -143,25 +188,38 @@
       <!-- Keyword Management View (Initially Hidden) -->
   <div id="keyword-management-view"  style="display: none;">
     <div id="keyword-header">
-      <button id="back-to-main">← Back</button>
+      <button id="back-to-main" class="back-to-main-button">
+        <span
+                    class="icon-container"
+                    data-icon="back-icon"
+                  ></span>
+        Back
+      </button>
       <h3>Manage Keywords</h3>
+      <p>
+        Create your own keywords and choose a color for each. For example, add a keyword like "fix" and pick a color—next time you write "fix", it will appear in that color.
+      </p>
+      </p>
     </div>
 
     <!-- New Keyword Form -->
     <form id="new-keyword-form">
+      <!-- ONLY INPUT -->
+      <div class="only-input">
       <div class="input-keyword-wrapper">
-        <label for="keyword-input">Keyword:</label>
+        <label for="keyword-input">Keyword</label>
         <input type="text" id="keyword-input" placeholder="Enter keyword" required>
       </div>
       <div class="input-color-picker-wrapper">
-        <label for="color-input">Color:</label>
+        <label for="color-input">Color</label>
         <input type="color" id="color-input" value="#ffffff">
       </div>
-
-
+      </div>
+      <!--Submit Button-->
       <button id="newKeywordForm" type="button">Add Keyword</button>
     </form>
-
+    <!---Devider Line-->
+    <div class="devider-line-for-keyManUI"></div>
     <!-- Existing Keywords List -->
     <div id="keyword-list-container">
       <h4>Existing Keywords</h4>

@@ -56,6 +56,9 @@ const filter_option_container = document.querySelector(
   ".filter-option-container"
 );
 
+// DELETE ALL DONE ITEM BUTTON
+const deleteAllDoneItemBtn = document.getElementById("deleteAllDoneitemBtn");
+
 // CUSTOM ERROR MESSAGE (FRONTEND)
 function showToast(message) {
   const toast = document.getElementById("toast");
@@ -148,6 +151,51 @@ function markUndo(keyword, comment, fileName, fullPath, line) {
   sendMessageToBackend("toggleMark", message);
 }
 
+// FUNCTION TO MARK DISABLE
+function markDisable(keyword, comment, fileName, fullPath, line) {
+  const message = {
+    action: "disable",
+    keyword,
+    comment,
+    fileName,
+    fullPath,
+    line,
+  };
+
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("toggleMark", message);
+}
+
+// FUNCTION TO MARK DELETE
+function markDelete(keyword, comment, fileName, fullPath, line) {
+  const message = {
+    action: "delete",
+    keyword,
+    comment,
+    fileName,
+    fullPath,
+    line,
+  };
+
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("toggleMark", message);
+}
+
+// FUNCTION TO MARK DELETE ALL IN SINGLE CLICK (TESTING!)
+function markDeleteAll() {
+  const message = {
+    action: "deleteAll",
+  };
+
+  // SEND MESSAGE TO THE BACKEND
+  sendMessageToBackend("toggleMark", message);
+}
+
+deleteAllDoneItemBtn.addEventListener("click", () => {
+  console.log("Mark DeleteAll function get Called!");
+  markDeleteAll();
+});
+
 // <--------- MARK-DONE-FEATURES :END --------->
 //
 //
@@ -157,7 +205,22 @@ function markUndo(keyword, comment, fileName, fullPath, line) {
 // <--------- KEYWORD MANAGEMENT UI :START --------->
 
 // BUTTON TO ADD KEYWORD(FRONTEND)
-newKeywordForm.addEventListener("click", () => {
+
+// prevent form submit reload
+newKeywordForm.addEventListener("click", (e) => {
+  e.preventDefault();
+  handleAddKeyword();
+});
+
+// handle enter key
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    handleAddKeyword();
+  }
+});
+
+function handleAddKeyword() {
   let keyword = inputKeyword.value.trim();
   const color = inputColor.value;
 
@@ -181,7 +244,7 @@ newKeywordForm.addEventListener("click", () => {
   // RESET FORM
   inputKeyword.value = "";
   inputColor.value = "#ffffff";
-});
+}
 
 // OPEN THE KEYWORD MANGEMENT UI(FRONTEND)
 addKeyword.addEventListener("click", () => {
@@ -203,16 +266,29 @@ function renderKeywordList() {
   preDefinedKeywords.forEach(({ keyword, color }) => {
     const keywordItem = document.createElement("div");
     keywordItem.className = "keyword-item";
-    keywordItem.style.backgroundColor = color;
+    //keywordItem.style.backgroundColor = color; - Changes Made here!
 
     // KEYWORD TEXT
     const keywordText = document.createElement("span");
     keywordText.textContent = keyword;
+    keywordText.style.backgroundColor = color; // - Changes Made here!
 
     // DELETE BUTTON
     const deleteButton = document.createElement("button");
-    deleteButton.textContent = "X";
     deleteButton.className = "delete-button";
+
+    // CREATE A SPAN ELEMENT FOR THE ICON
+    const iconSpan = document.createElement("span");
+    iconSpan.className = "icon-container";
+    iconSpan.setAttribute("data-icon", "delete-icon");
+
+    // DELETE BUTTON TEXT NODE
+    const buttonText = document.createTextNode("Delete");
+
+    // ADD ICON SPAN and Button Text TO THE BUTTON
+    deleteButton.appendChild(iconSpan);
+    deleteButton.appendChild(buttonText);
+
     deleteButton.onclick = () => removeExistingKeyword(keyword);
 
     keywordItem.appendChild(keywordText);
@@ -236,13 +312,13 @@ function addAKeyword(keyword, color) {
 
 // REMOVE A EXITING KEYWORD
 function removeExistingKeyword(keywordToDelete) {
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
+
   // UPDATE THE ARRAY
   preDefinedKeywords = preDefinedKeywords.filter(
     (item) => item.keyword.toLowerCase() !== keywordToDelete.toLowerCase()
   );
-
-  // SEND MESSAGE TO BACKEND
-  sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
 
   // RENDER THE LIST
   renderKeywordList();
@@ -261,6 +337,7 @@ function updatepreDefinedKeywords(newKeywords) {
   if (!Array.isArray(newKeywords)) {
     return;
   }
+
   newKeywords.forEach((newKeyword) => {
     if (!preDefinedKeywords.some((pre) => pre.keyword === newKeyword.keyword)) {
       preDefinedKeywords.push(newKeyword);
@@ -461,7 +538,7 @@ document.addEventListener("click", (e) => {
 //   updateSidebarUI(filterData);
 // });
 
-// ALL SORTING FUNCTION
+// ALL SORTING FUNCTION OBJ
 const dataSortFunctions = {
   alphabetical: sortDataByAlphabetically,
   aesthetic: sortDataByKeywordLength,
@@ -472,12 +549,31 @@ const dataSortFunctions = {
 filter_option_buttons.forEach((btn) => {
   btn.addEventListener("click", (e) => {
     const type = btn.dataset.sort;
+
+    // REMOVE ALL ACTIVE CLASS FROM ALL BUTTON
+    filter_option_buttons.forEach((btn) => {
+      btn.classList.remove("active");
+    });
+
+    // ADD ACTIVE CLASS TO THE ACTIVE BUTTON
+    btn.classList.add("active");
+
+    // FILTERED DATA BASED ON FILTER OPTIONS CLICKED
     const filteredData = dataSortFunctions[type](latestBackendData);
 
-    // PASS UPDATED DATA INTO SIDEBAR UI FUNCTIONS
+    // PASS FILTER-UPDATED DATA INTO SIDEBAR UI FUNCTIONS
     updateSidebarUI(filteredData);
+
+    // OPTIONALLY CLOSE THE FILTER-OPTIONS AFTER SELECTION
+    closeFilterOptions();
   });
 });
+
+// CLOSE FILTER OPTIONS FUNCTIONS
+function closeFilterOptions() {
+  // remove the show-options classes to hide the filter options container
+  filter_option_container.classList.remove("show-options");
+}
 
 // FILTER DATA BY TIME
 function sortDataByTime(data) {
@@ -686,6 +782,7 @@ function renderItems(fragment, item, targetTabContainer) {
   if (!currentItems.has(key)) {
     try {
       el.innerHTML = getItemHtml(dataToRender);
+      loadIcons();
     } catch (error) {
       console.error("Error in getItemHtml:", error);
     }
@@ -735,6 +832,20 @@ function getItemHtml({
       return `<div class="sidebar-content-wrapper">
       <div class="first-line">
         <div class="keyword-n-description">
+         <div
+        class="done mark-disable-btn"
+        data-keyword="${keyword.toLowerCase()}"
+        data-comment="${description}"
+        data-filename="${file}"
+        data-fullpath="${fullPath}"
+        data-line="${line}"
+        >
+        <span
+                class="icon-container"
+                data-icon="close-icon"
+              ></span>
+        Disable
+        </div>
           <div class="keyword" style=${
             "background-color:" + bgColor + ";"
           }>${keyword}:</div>
@@ -748,13 +859,17 @@ function getItemHtml({
         data-fullpath="${fullPath}"
         data-line="${line}"
         >
-        DONE
+        <span
+                class="icon-container"
+                data-icon="done3-icon"
+              ></span>
+        Done
         </div>
       </div>
       <div class="second-line">
         <div class="file-name-wrapper second-line-item">
           <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
-          <span class="fileName"> ${file} </span>
+          <span class="fileName"> /${file} </span>
         </div>
         <div class="devider-line"></div>
         <div class="code-line-number-wrapper second-line-item">
@@ -763,7 +878,7 @@ function getItemHtml({
         </div>
         <div class="devider-line"></div>
         <div class="edited-time-wrapper second-line-item">
-          <span class="icon-container time-icon--container" data-icon="time-icon"></span>
+          <span class="icon-container time-icon--container" data-icon="clock-icon"></span>
           <span class="timeStamp"> ${timeAgo(timeStamp)} </span>
         </div>
       </div>
@@ -787,13 +902,30 @@ function getItemHtml({
               data-fullpath="${fullPath}"
               data-line="${line}"
               >
-              UNDO
+              <span
+                class="icon-container"
+                data-icon="undo-icon"
+              ></span>
+              Undo
+              </div>
+              <div class="undo mark-delete-btn"
+              data-keyword="${taskKeyword}"
+              data-comment="${detailDescription}"
+              data-filename="${file}"
+              data-fullpath="${fullPath}"
+              data-line="${line}"
+              >
+              <span
+                class="icon-container"
+                data-icon="delete-icon"
+              ></span>
+              Delete
               </div>
             </div>
             <div class="second-line">
               <div class="file-name-wrapper second-line-item">
                 <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
-                <span class="fileName"> ${file} </span>
+                <span class="fileName"> /${file} </span>
               </div>
               <div class="devider-line"></div>
               <div class="code-line-number-wrapper second-line-item">
@@ -802,7 +934,7 @@ function getItemHtml({
               </div>
               <div class="devider-line"></div>
               <div class="edited-time-wrapper second-line-item">
-                <span class="icon-container time-icon--container" data-icon="time-icon"></span>
+                <span class="icon-container time-icon--container" data-icon="clock-icon"></span>
                 <span class="timeStamp"> ${timeAgo(createdTimeStamp)} </span>
               </div>
             </div>
@@ -810,9 +942,16 @@ function getItemHtml({
 
     // COLLECTION UI -> HTML
     case "Collection":
-      return `<div class="sidebar-content-wrapper">
-      Hey
-    </div>`;
+      return `
+      <div class="imp-message-wrapper">
+                  <h1>
+                    Something Awesome is Coming!
+                  </h1>
+                  <p>
+                    "We're building something special. Your collection will be worth the wait."
+                  </p>
+                </div>
+      `;
 
     // DEFAULT UI -> HTML
     default:
@@ -862,11 +1001,13 @@ function jumpToFileAndLine(fullPath, line) {
   });
 }
 
-// MARK DONE and UNDO BUTTON ELEMENTS
+// MARK DONE and UNDO and DISABLE button ELEMENTS
 document.addEventListener("click", (e) => {
   // TARGET BUTTONS
   const markDoneBtn = e.target.closest(".mark-done-btn");
   const markUndoBtn = e.target.closest(".mark-undo-btn");
+  const markDisableBtn = e.target.closest(".mark-disable-btn");
+  const markDeleteBtn = e.target.closest(".mark-delete-btn");
 
   // MARK DONE BUTTON
   if (markDoneBtn) {
@@ -903,27 +1044,88 @@ document.addEventListener("click", (e) => {
 
     // MARK UNDO FUNCTION
     markUndo(keyword, comment, filename, fullpath, line);
+  } else if (markDisableBtn) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // EXTRACT DATA
+    const {
+      keyword,
+      comment,
+      filename,
+      fullpath,
+      line: rawLine,
+    } = markDisableBtn.dataset;
+    const line = parseInt(rawLine, 10);
+
+    // MARK UNDO FUNCTION
+    markDisable(keyword, comment, filename, fullpath, line);
+  } else if (markDeleteBtn) {
+    e.stopPropagation();
+    e.preventDefault();
+
+    // EXTRACT DATA
+    const {
+      keyword,
+      comment,
+      filename,
+      fullpath,
+      line: rawLine,
+    } = markDeleteBtn.dataset;
+    const line = parseInt(rawLine, 10);
+
+    // MARK UNDO FUNCTION
+    markDelete(keyword, comment, filename, fullpath, line);
   }
 });
 
-// FRONTEND ONLY CODE --->
-// STATIC UI PART --->
+// <--------- LOAD ICONS :START --------->
+
+const loadIcon = (iconElement) => {
+  const iconName = iconElement.getAttribute("data-icon");
+  const iconPath = `${iconsBaseUri}/${iconName}.svg`;
+
+  fetch(iconPath)
+    .then((response) => response.text())
+    .then((svg) => {
+      iconElement.innerHTML = svg;
+    })
+    .catch((error) => console.error(`Error loading icon: ${iconName}`, error));
+};
 
 const loadIcons = () => {
-  document.querySelectorAll(".icon-container").forEach((iconElement) => {
-    const iconName = iconElement.getAttribute("data-icon");
-    const iconPath = `${iconsBaseUri}/${iconName}.svg`;
+  console.log("loadIcons() is called!");
 
-    fetch(iconPath)
-      .then((response) => response.text())
-      .then((svg) => {
-        iconElement.innerHTML = svg;
-      })
-      .catch((error) =>
-        console.error(`Error loading icon: ${iconName}`, error)
-      );
+  document.querySelectorAll(".icon-container").forEach((iconElement) => {
+    loadIcon(iconElement);
   });
 };
 
-// LOAD...
+// Initial call for already existing elements
 loadIcons();
+
+// Watch for dynamically added elements
+const observer = new MutationObserver((mutations) => {
+  mutations.forEach((mutation) => {
+    mutation.addedNodes.forEach((node) => {
+      if (node.nodeType === 1) {
+        // Check if it's an element node
+        if (node.matches(".icon-container")) {
+          loadIcon(node);
+        }
+        // Also check inside if multiple elements added
+        node.querySelectorAll?.(".icon-container").forEach((innerNode) => {
+          loadIcon(innerNode);
+        });
+      }
+    });
+  });
+});
+
+// Start observing the whole body
+observer.observe(document.body, {
+  childList: true,
+  subtree: true,
+});
+
+// <--------- LOAD ICONS :END --------->
