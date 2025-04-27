@@ -263,6 +263,16 @@ function renderKeywordList() {
   const keywordList = document.getElementById("keyword-list");
   keywordList.innerHTML = ""; // CLEAR EXISTING KEYWORD
 
+  if (preDefinedKeywords.length === 0) {
+    // If no keywords, show a message
+    const noKeywordMessage = document.createElement("p");
+    noKeywordMessage.textContent = "No Keyword Present!";
+    noKeywordMessage.className = "no-keyword-message";
+
+    keywordList.appendChild(noKeywordMessage);
+    return; // stop furthure execution
+  }
+
   preDefinedKeywords.forEach(({ keyword, color }) => {
     const keywordItem = document.createElement("div");
     keywordItem.className = "keyword-item";
@@ -270,12 +280,14 @@ function renderKeywordList() {
 
     // KEYWORD TEXT
     const keywordText = document.createElement("span");
+    keywordText.className = "custom-keyword";
     keywordText.textContent = keyword;
     keywordText.style.backgroundColor = color; // - Changes Made here!
 
     // DELETE BUTTON
-    const deleteButton = document.createElement("button");
-    deleteButton.className = "delete-button";
+    //const deleteButton = document.createElement("button");
+    const deleteButton = document.createElement("div");
+    deleteButton.className = "delete-button mark-delete-btn";
 
     // CREATE A SPAN ELEMENT FOR THE ICON
     const iconSpan = document.createElement("span");
@@ -833,7 +845,7 @@ function getItemHtml({
       <div class="first-line">
         <div class="keyword-n-description">
          <div
-        class="done mark-disable-btn"
+        class="mark-disable-btn"
         data-keyword="${keyword.toLowerCase()}"
         data-comment="${description}"
         data-filename="${file}"
@@ -843,8 +855,8 @@ function getItemHtml({
         <span
                 class="icon-container"
                 data-icon="close-icon"
+                title="Disable Keyword"
               ></span>
-        Disable
         </div>
           <div class="keyword" style=${
             "background-color:" + bgColor + ";"
@@ -860,7 +872,7 @@ function getItemHtml({
         data-line="${line}"
         >
         <span
-                class="icon-container"
+                class="icon-container done-icon"
                 data-icon="done3-icon"
               ></span>
         Done
@@ -895,7 +907,8 @@ function getItemHtml({
                 }>${taskKeyword}:</div>
                 <div class="keyword-description">${detailDescription} - (FIXED!)</div>
               </div>
-              <div class="undo mark-undo-btn"
+              <div class="button-wrapper-delete-undo">
+              <div class="mark-undo-btn"
               data-keyword="${taskKeyword}"
               data-comment="${detailDescription}"
               data-filename="${file}"
@@ -908,7 +921,7 @@ function getItemHtml({
               ></span>
               Undo
               </div>
-              <div class="undo mark-delete-btn"
+              <div class="mark-delete-btn"
               data-keyword="${taskKeyword}"
               data-comment="${detailDescription}"
               data-filename="${file}"
@@ -920,6 +933,7 @@ function getItemHtml({
                 data-icon="delete-icon"
               ></span>
               Delete
+              </div>
               </div>
             </div>
             <div class="second-line">

@@ -22,6 +22,11 @@ function isFileUnchanged(filePath, prevMtime) {
   return prevMtime === currentMtime;
 }
 
+// Helper
+function normalizePath(path) {
+  return path.replace(/\\/g, "/").toLowerCase();
+}
+
 class CustomSidebarProvider {
   constructor(context) {
     this.context = context;
@@ -107,161 +112,85 @@ class CustomSidebarProvider {
 
           try {
             const uri = vscode.Uri.file(message.fullPath);
-            const openDoc = vscode.workspace.textDocuments.find(
-              (doc) => doc.uri.fsPath === message.fullPath
-            );
 
-            let updatedLine = "";
+            let updatedLineText = "";
             const timestamp = new Date();
             const options = { day: "2-digit", month: "short", year: "numeric" };
             const formattedTimestamp = timestamp.toLocaleDateString(
               "en-GB",
               options
             );
+            const milliseconds = timestamp.getTime();
 
-            const milliseconds = timestamp.getTime(); // <-- getTime() gives milliseconds
-
-            let isDeleteAction = false; // 👈 Track delete separately
+            let isDeleteAction = false;
 
             if (message.action === "done") {
-              updatedLine = `// DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
+              updatedLineText = `// DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
             } else if (message.action === "undo") {
-              updatedLine = `// ${message.keyword}: ${message.comment}`;
+              updatedLineText = `// ${message.keyword}: ${message.comment}`;
             } else if (message.action === "disable") {
-              updatedLine = `// ${message.keyword} : ${message.comment}`;
+              updatedLineText = `// ${message.keyword} : ${message.comment}`;
             } else if (message.action === "delete") {
-              isDeleteAction = true; // Mark delete action
+              isDeleteAction = true;
             } else {
               console.warn("❌ Unknown toggleMark action:", message.action);
               break;
             }
 
-            if (openDoc) {
-              // ✅ If file is open, edit using VS Code API
-              const editor = vscode.window.visibleTextEditors.find(
-                (ed) => ed.document.uri.fsPath === message.fullPath
-              );
+            // Always re-read the file freshly
+            const fileBytes = await vscode.workspace.fs.readFile(uri);
+            const decoder = new TextDecoder("utf-8");
+            const textContent = decoder.decode(fileBytes);
 
-              if (editor) {
-                await editor.edit((editBuilder) => {
-                  const line = openDoc.lineAt(message.line - 1);
-                  if (isDeleteAction) {
-                    editBuilder.delete(line.rangeIncludingLineBreak); // 💥 Remove entire line
-                  } else {
-                    editBuilder.replace(line.range, updatedLine);
-                  }
-                });
-              } else {
-                console.warn("⚠️ Document is open but editor is not visible.");
-              }
-            } else {
-              // ✅ If file is not open, edit directly via fs
-              const fileBuffer = await vscode.workspace.fs.readFile(uri);
-              const lines = fileBuffer.toString("utf-8").split("\n");
+            const normalizedText = textContent
+              .replace(/\r\n/g, "\n")
+              .replace(/\r/g, "\n");
+            const lines = normalizedText.split("\n");
 
-              if (message.line <= 0 || message.line > lines.length) {
-                console.warn("❌ Invalid line number:", message.line);
+            // 🔥 Find the correct line dynamically
+            let targetLineIndex = -1;
+            for (let i = 0; i < lines.length; i++) {
+              const line = lines[i];
+              if (
+                line.includes(message.keyword) &&
+                line.includes(message.comment)
+              ) {
+                targetLineIndex = i;
                 break;
               }
-
-              if (isDeleteAction) {
-                lines.splice(message.line - 1, 1); // 💥 Remove the line entirely
-              } else {
-                lines[message.line - 1] = updatedLine;
-              }
-
-              const updatedBuffer = Buffer.from(lines.join("\n"), "utf-8");
-              await vscode.workspace.fs.writeFile(uri, updatedBuffer);
             }
 
-            // 🔄 Update sidebar UI
+            if (targetLineIndex === -1) {
+              console.warn(
+                "❌ Could not find matching line for:",
+                message.keyword,
+                message.comment
+              );
+              break;
+            }
+
+            if (isDeleteAction) {
+              lines.splice(targetLineIndex, 1); // delete the line
+            } else {
+              lines[targetLineIndex] = updatedLineText; // replace the line
+            }
+
+            const originalNewline = textContent.includes("\r\n")
+              ? "\r\n"
+              : "\n";
+            const encoder = new TextEncoder();
+            const updatedContent = lines.join(originalNewline);
+            const updatedBytes = encoder.encode(updatedContent);
+
+            await vscode.workspace.fs.writeFile(uri, updatedBytes);
+
+            // 🔄 Refresh sidebar
             this.sendSidebarUpdate(await scanAllFilesContainKeywords());
           } catch (err) {
             console.error("🚨 toggleMark error:", err);
           }
 
           break;
-
-        // case "toggleMark":
-        //   console.log("Debug: toggleMark: Case called!");
-
-        //   try {
-        //     const uri = vscode.Uri.file(message.fullPath);
-        //     const openDoc = vscode.workspace.textDocuments.find(
-        //       (doc) => doc.uri.fsPath === message.fullPath
-        //     );
-
-        //     let updatedLine = "";
-        //     const timestamp = new Date();
-        //     const options = { day: "2-digit", month: "short", year: "numeric" };
-        //     const formattedTimestamp = timestamp.toLocaleDateString(
-        //       "en-GB",
-        //       options
-        //     );
-
-        //     // BY DEFAULT SET FALSE
-        //     let deleteAction = false;
-        //     let deleteAllAction = false;
-
-        //     if (message.action === "done") {
-        //       updatedLine = `// DONE: "${message.keyword}" - ${message.comment} "${formattedTimestamp}"`;
-        //     } else if (message.action === "undo") {
-        //       updatedLine = `// ${message.keyword}: ${message.comment}`;
-        //     } else if (message.action === "disable") {
-        //       updatedLine = `// ${message.keyword} : ${message.comment}`;
-        //     } else if (message.action === "delete") {
-        //       // SET TRUE
-        //       deleteAction = true;
-        //     } else if (message.action === "deleteAll") {
-        //       // SET TRUE
-        //       deleteAllAction = true;
-        //     } else {
-        //       console.warn("❌ Unknown toggleMark action:", message.action);
-        //       break;
-        //     }
-
-        //     if (openDoc) {
-        //       // ✅ If file is open, edit using VS Code API
-        //       const editor = vscode.window.visibleTextEditors.find(
-        //         (ed) => ed.document.uri.fsPath === message.fullPath
-        //       );
-
-        //       if (editor) {
-        //         await editor.edit((editBuilder) => {
-        //           const line = openDoc.lineAt(message.line - 1);
-        //           editBuilder.replace(line.range, updatedLine);
-        //         });
-        //       } else {
-        //         console.warn("⚠️ Document is open but editor is not visible.");
-        //       }
-        //     } else {
-        //       // ✅ If file is not open, edit directly via fs
-        //       const fileBuffer = await vscode.workspace.fs.readFile(uri);
-        //       const lines = fileBuffer.toString("utf-8").split("\n");
-
-        //       if (message.line <= 0 || message.line > lines.length) {
-        //         console.warn("❌ Invalid line number:", message.line);
-        //         break;
-        //       }
-
-        //       // check for delete action
-        //       if (deleteAction) {
-        //         lines.splice(message.line - 1, 1); // 💥 Remove the line entirely
-        //       } else {
-        //         lines[message.line - 1] = updatedLine;
-        //       }
-
-        //       const updatedBuffer = Buffer.from(lines.join("\n"), "utf-8");
-        //       await vscode.workspace.fs.writeFile(uri, updatedBuffer);
-        //     }
-
-        //     // 🔄 Update sidebar UI
-        //     this.sendSidebarUpdate(await scanAllFilesContainKeywords());
-        //   } catch (err) {
-        //     console.error("🚨 toggleMark error:", err);
-        //   }
-
-        //   break;
 
         case "vscode.open":
           const { fullPath, line } = message;

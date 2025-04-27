@@ -219,6 +219,7 @@ input.input-filter:focus {
 
 /*Sidebar Item*/
 .sidebar-item {
+  position: relative;
   border-bottom: 0.9px solid rgba(var(--dynamic-border-color), var(--dynamic-opacity));
   padding: 27.5px 20px;
   cursor: pointer;
@@ -237,9 +238,9 @@ input.input-filter:focus {
 }
 
 .sidebar-item:hover .done {
-  background-color: rgb(34 127 84);
-  color: #afffaf;
-  border: 2px solid #48a26b;
+  background-color: #319b44;
+  color: #b6ffb6;
+  border: 2px solid #319b44;
 
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
@@ -247,6 +248,10 @@ input.input-filter:focus {
 
 .sidebar-item:hover .keyword {
   transform: rotate(-6.5deg);
+}
+
+.sidebar-item:hover .mark-disable-btn {
+  opacity: 50%;
 }
 
 .sidebar-content-wrapper {
@@ -298,21 +303,24 @@ input.input-filter:focus {
   /* position: absolute;
   z-index: 10; */
   margin-left: 10px;
-  padding: 2px 7px;
-  border: 2px solid var(--vscode-button-background);
+  padding: 2px 4px 2px 3.6px;
   border-radius: 8px;
   font-size: 12.2px;
   font-weight: 600;
+  border: 2px solid #61e378;
+  background-color: #61e378;
+  color: #48544a;
+  /* border: 2px solid var(--vscode-button-background);
   color: var(--vscode-button-foreground);
-  background-color: var(--vscode-button-background);
+  background-color: var(--vscode-button-background); */
   /* transition: all 0.35s cubic-bezier(0.33, 1, 0.68, 1); */
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.done:hover{
-  background-color: rgb(34 127 84);
-  color: #afffaf;
-  border: 2px solid #48a26b;
+.sidebar-item:hover .done:hover{
+  background-color: #47e763;
+  color: #343434;
+  border: 2px solid #47e763;
 }
 
 .undo:hover{
@@ -404,11 +412,20 @@ input.input-filter:focus {
 }
 
 .back-to-main-button {
+  gap: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   background: transparent;
     border: 0;
     font-size: 18px;
     /* color: var(--vscode-sideBar-foreground, var(--vscode-foreground, #777)); */
     cursor: pointer;
+}
+
+
+.back-to-main-button span {
+  margin-top: 4.2px;
 }
 
 .input-keyword-wrapper, .input-color-picker-wrapper {
@@ -601,7 +618,7 @@ input.input-filter:focus {
 .back-to-main-button {
   color: var(--vscode-sideBar-foreground, var(--vscode-foreground, #777));
   border: none;
-  padding: 0.5rem 0.15rem;
+  padding: 0.5rem 0.15rem 6px;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -711,13 +728,12 @@ label {
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.keyword-item span {
+.keyword-item .custom-keyword {
   font-weight: 600;
-    border-radius: 8.1px;
+    border-radius: 8.5px;
     color: white;
-    font-size: 13px;
-    padding: 5px 10.5px;
-    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    font-size: 11.5px;
+    padding: 4px 8px;
 }
 
 
@@ -727,4 +743,111 @@ label {
   height: 1px;
   margin: auto;
 }
+
+
+.done-icon svg{
+  height: 13px;
+  width: 13px;
+}
+
+.done-icon {
+  height: 14.8px;
+}
+
+.done {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+
+.mark-delete-btn, .mark-undo-btn {
+  font-size: 12.2px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2.1px; /* space between icon and text */
+  padding: 2px 4px 2px 4px;
+  background-color: #ffc4c0; /* red button (optional) */
+  color: #774646;
+  border: 2px solid #ffc4c0;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mark-undo-btn {
+  font-size: 11.8px;
+  gap: 1.75px;
+  background-color: #a9e8ff;
+  border-color: #a9e8ff;
+  color: #4e6067;
+}
+
+.mark-delete-btn:hover {
+  border-color: #ff7a7a;
+    color: #f7f7f7;
+    background-color: #ff7a7a;
+}
+
+.mark-undo-btn:hover {
+  border-color: #41c8ff;
+  background-color: #41c8ff;
+  color: #f7f7f7;
+}
+
+.mark-delete-btn svg {
+  display: block;
+  height: 12.9px;
+  width: 12.9px;
+}
+.mark-delete-btn span{
+  height: 14px;
+}
+
+.mark-undo-btn svg {
+  height: 12px;
+}
+
+.mark-undo-btn span {
+  height: 15px;
+}
+
+.button-text {
+  display: block;
+}
+
+.button-wrapper-delete-undo{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+
+.mark-disable-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 20px;
+  opacity: 26%;
+  padding: 2px 5px;
+}
+
+.sidebar-item:hover .mark-disable-btn:hover {
+  opacity: 100%;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.time-icon--container svg {
+  height: 16.8px;
+    width: 16.8px;
+}
+
+.no-keyword-message {
+  font-weight: 400;
+  margin-left: 1.5px;
+}
+
  
