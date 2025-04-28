@@ -1,6 +1,1 @@
-module.exports = [
-  {
-    "keyword": "BOOLEAN:",
-    "color": "#5ad737"
-  }
-];
+module.exports = [];
