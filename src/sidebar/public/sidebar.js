@@ -78,6 +78,7 @@ function showToast(message) {
 // FETCH ALL KEYWORDS WHEN THE SIDEBAR LOAD..
 window.onload = () => {
   fetchAllKeywords();
+  sendMessageToBackend("requestUpdateData"); // <-- send trigger to backend
 };
 
 // ON PAGE LOAD ACTIVATE THE CURRENT TAB
@@ -93,6 +94,7 @@ window.addEventListener("message", (event) => {
 
     // Prevent updating with empty data
     if (data.length === 0) {
+      console.log("data.length===0", data);
       console.warn("⚠️ Skipped updateSidebarUI: Empty data received.");
       return;
     }
@@ -518,10 +520,16 @@ setupSearchListener(doneSearchInput); // DONE SEARCH
 // FILTER BUTTON
 
 filter_button.addEventListener("click", (e) => {
-  e.stopPropagation; // Prevent click from bubbling to document
-
-  // toggle
+  e.stopPropagation(); // ✅ Properly stop event
+  console.log("Filter button get click");
   filter_option_container.classList.toggle("show-options");
+});
+
+// testing
+const filter_button_done = document.getElementById("filter-button-done");
+
+filter_button_done.addEventListener("click", () => {
+  console.log("Done Button get Click!");
 });
 
 // HIDE OPTIONS WHEN CLICKING OUTSIDE DOCUMENT
