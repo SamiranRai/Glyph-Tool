@@ -136,8 +136,6 @@ class CustomSidebarProvider {
               updatedLineText = `// ${message.keyword} : ${message.comment}`;
             } else if (message.action === "delete") {
               isDeleteAction = true;
-            } else if (message.action === "deleteAll") {
-              // code
             } else {
               console.warn("❌ Unknown toggleMark action:", message.action);
               break;
@@ -224,6 +222,90 @@ class CustomSidebarProvider {
             }
           } catch (err) {
             console.error("🚨 toggleMark general error:", err.stack || err);
+          }
+          break;
+
+        case "deleteAll":
+          try {
+            const confirmation = await vscode.window.showWarningMessage(
+              "This will delete all DONE items from all your files. Are you sure you want to continue?",
+              { modal: true },
+              "Yes",
+              "Cancel"
+            );
+
+            if (confirmation !== "Yes") {
+              console.log("❌ User canceled the deleteAll action.");
+              break;
+            }
+
+            // SCAN ALL KEYWORDS
+            const allKeywordItems = await scanAllFilesContainKeywords();
+
+            // FILTER ONLY DONE KEYWORD
+            const doneItems = allKeywordItems.filter(
+              (item) =>
+                item.keyword === "DONE" &&
+                item.fullPath &&
+                typeof item.line === "number"
+            );
+
+            // CHECKING FOR DONE KEYWORD
+            if (doneItems.length === 0) {
+              vscode.window.showInformationMessage(
+                "No DONE items found to delete."
+              );
+              break;
+            }
+
+            // Group items by file
+            const groupedByFile = {};
+            for (const item of doneItems) {
+              if (!groupedByFile[item.fullPath])
+                groupedByFile[item.fullPath] = [];
+              groupedByFile[item.fullPath].push(item.line - 1); // Adjust to 0-based index
+            }
+
+            for (const [fullPath, lineIndices] of Object.entries(
+              groupedByFile
+            )) {
+              try {
+                const uri = vscode.Uri.file(fullPath);
+                const document = await vscode.workspace.openTextDocument(uri);
+                const editor = await vscode.window.showTextDocument(document, {
+                  preview: false,
+                  preserveFocus: true,
+                });
+
+                const sortedLines = lineIndices.sort((a, b) => b - a); // Delete bottom-up
+
+                await editor.edit((editBuilder) => {
+                  for (const lineIndex of sortedLines) {
+                    if (lineIndex >= 0 && lineIndex < document.lineCount) {
+                      const line = document.lineAt(lineIndex);
+                      editBuilder.delete(line.rangeIncludingLineBreak);
+                      console.log(`🗑️ Deleted from ${fullPath}:`, line.text);
+                    }
+                  }
+                });
+              } catch (err) {
+                console.error(`❌ Failed to process file: ${fullPath}`, err);
+              }
+            }
+
+            vscode.window.showInformationMessage(
+              `✅ Successfully deleted ${doneItems.length} DONE items across all files.`
+            );
+
+            // Refresh the sidebar UI
+            try {
+              const updatedSidebarData = await scanAllFilesContainKeywords();
+              this.sendSidebarUpdate(updatedSidebarData); // Replace with your actual webview update method
+            } catch (sidebarErr) {
+              console.error("🚨 Sidebar update error:", sidebarErr);
+            }
+          } catch (err) {
+            console.error("🚨 deleteAll general error:", err.stack || err);
           }
           break;
 

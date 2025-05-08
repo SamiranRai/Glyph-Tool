@@ -44,18 +44,6 @@ doneSearchInput = document.getElementById("input-filter-done");
 // COLLECTION SEARCH INPUT
 collectionSearchInput = document.getElementById("input-filter-collection");
 
-// FILTER BUTTON
-const filter_button = document.getElementById("filter-button");
-const option_parent = document.querySelector(".filter-button");
-
-// FILTER OPTION BUTTONS
-const filter_option_buttons = document.querySelectorAll(".option-li");
-
-// FILTER BUTTON OPTIONS CONTAINER
-const filter_option_container = document.querySelector(
-  ".filter-option-container"
-);
-
 // DELETE ALL DONE ITEM BUTTON
 const deleteAllDoneItemBtn = document.getElementById("deleteAllDoneitemBtn");
 
@@ -80,6 +68,11 @@ window.onload = () => {
   fetchAllKeywords();
   sendMessageToBackend("requestUpdateData"); // <-- send trigger to backend
 };
+
+// Close if focus moves away from browser (e.g., click on VSCode)
+window.addEventListener("blur", () => {
+  closeFilterOptions();
+});
 
 // ON PAGE LOAD ACTIVATE THE CURRENT TAB
 document.addEventListener("DOMContentLoaded", () => {
@@ -184,18 +177,15 @@ function markDelete(keyword, comment, fileName, fullPath, line) {
 }
 
 // FUNCTION TO MARK DELETE ALL IN SINGLE CLICK (TESTING!)
-function markDeleteAll() {
-  const message = {
-    action: "deleteAll",
-  };
-
-  // SEND MESSAGE TO THE BACKEND
-  sendMessageToBackend("toggleMark", message);
+// Delete All DONE items with confirmation
+function deleteAllDoneItems() {
+  sendMessageToBackend("deleteAll");
 }
 
+// Hook it up to the Delete All button
 deleteAllDoneItemBtn.addEventListener("click", () => {
-  console.log("Mark DeleteAll function get Called!");
-  markDeleteAll();
+  console.log("🧹 Delete All DONE items clicked!");
+  deleteAllDoneItems();
 });
 
 // <--------- MARK-DONE-FEATURES :END --------->
@@ -222,8 +212,13 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
+// SANITIZATION FOR INPUT
+function sanitizeInput(input_data) {
+  return input_data.trim().replace(/\s+/g, "_"); // join "_" in place of "space" btw keywords
+}
+
 function handleAddKeyword() {
-  let keyword = inputKeyword.value.trim();
+  let keyword = sanitizeInput(inputKeyword.value);
   const color = inputColor.value;
 
   if (!keyword) {
@@ -519,108 +514,207 @@ setupSearchListener(doneSearchInput); // DONE SEARCH
 
 // FILTER BUTTON
 
-filter_button.addEventListener("click", (e) => {
-  e.stopPropagation(); // ✅ Properly stop event
-  console.log("Filter button get click");
-  filter_option_container.classList.toggle("show-options");
-});
-
-// testing
-const filter_button_done = document.getElementById("filter-button-done");
-
-filter_button_done.addEventListener("click", () => {
-  console.log("Done Button get Click!");
-});
-
-// HIDE OPTIONS WHEN CLICKING OUTSIDE DOCUMENT
 document.addEventListener("click", (e) => {
-  // check if click is outside the event
-  if (!option_parent.contains(e.target)) {
-    // remove the show-options classes
-    filter_option_container.classList.remove("show-options");
+  const filterButtonTask = e.target.closest("#filter-button-task");
+  const filterButtonDone = e.target.closest("#filter-button-done");
+  const optionItem = e.target.closest(".option-li");
+
+  // Handle Filter Button Task
+  if (filterButtonTask) {
+    e.stopPropagation();
+    document
+      .querySelector(".filter-option-container")
+      ?.classList.toggle("show-options");
+    return;
+  }
+
+  // Handle Filter Button Done
+  if (filterButtonDone) {
+    e.stopPropagation();
+    document
+      .querySelector(".filter-option-container-done")
+      ?.classList.toggle("show-options");
+    return;
+  }
+
+  // Handle Filter Option Button Click
+  if (optionItem) {
+    e.stopPropagation();
+    const type = optionItem.dataset.sort;
+
+    // Remove active class from all
+    document
+      .querySelectorAll(".option-li")
+      .forEach((btn) => btn.classList.remove("active"));
+    optionItem.classList.add("active");
+
+    function extractOriginalKeyword(description) {
+      if (typeof description !== "string") return "UNKNOWN";
+      const match = description.match(/"(\w+?)"/);
+      return match ? match[1].toUpperCase() : "UNKNOWN";
+    }
+
+    function extractTimeFromDescription(description) {
+      if (typeof description !== "string") return 0;
+      const match = description.match(/\|\s*(\d{13})\]/); // matches: "| 1746648158289]"
+      return match ? parseInt(match[1]) : 0;
+    }
+
+    let filteredData;
+
+    if (Tab === "Task") {
+      filteredData = dataSortFunctions[type]?.(
+        latestBackendData.filter((item) => item.keyword !== "DONE") // filter the !done item only
+      );
+    } else if (Tab === "Done") {
+      // Step 1: Map with a TEMPORARY keyword override
+      const enriched = latestBackendData
+        .filter((item) => item.keyword === "DONE") // filter the done item only
+        .map((item) => ({
+          ...item,
+          keyword: extractOriginalKeyword(item.description), // TEMP keyword
+          timeStamp: extractTimeFromDescription(item.description), // TEMP timeStamp
+          _originalKeyword: item.keyword,
+          _originalTimeStamp: item.timeStamp,
+        }));
+
+      // Step 2: Sort/filter as usual
+      const sorted = dataSortFunctions[type]?.(enriched) || [];
+
+      // Step 3: Restore keyword back to "DONE"
+      filteredData = sorted.map((item) => ({
+        ...item,
+        keyword: item._originalKeyword,
+        timeStamp: item._originalTimeStamp,
+      }));
+    } else {
+      filteredData = dataSortFunctions[type]?.(latestBackendData);
+    }
+    // REBDER UI
+    if (filteredData) updateSidebarUI(filteredData);
+
+    // Close filter
+    closeFilterOptions();
+    return;
+  }
+
+  // If clicked outside any dropdowns
+  if (!e.target.closest(".filter-button")) {
+    closeFilterOptions();
+    return;
   }
 });
 
-// Detect when the webview loses focus
-// window.addEventListener("blur", () => {
-//   setTimeout(() => {
-//     if (document.activeElement.tagName === "IFRAME") {
-//       optionContainer.classList.remove("show-options");
-//     }
-//   }, 50);
-// });
+function closeFilterOptions() {
+  document
+    .querySelector(".filter-option-container")
+    ?.classList.remove("show-options");
+  document
+    .querySelector(".filter-option-container-done")
+    ?.classList.remove("show-options");
+}
 
-// filter_button.addEventListener("click", () => {
-//   // FILTER DATA BASED ON CONDITIONS
-//   const filterData = sortDataByAlphabetically(latestBackendData);
+// Sorting Functions
+function sortDataByTime(data) {
+  return data.sort((a, b) => {
+    console.log(a.keyword, a.timeStamp, b.keyword, b.timeStamp);
+    return b.timeStamp - a.timeStamp;
+  });
+}
 
-//   // PASS THE FILTERED DATA
-//   updateSidebarUI(filterData);
-// });
+function sortDataByKeywordLength(data) {
+  return data.sort(
+    (a, b) => (a.keyword || "").length - (b.keyword || "").length
+  );
+}
 
-// ALL SORTING FUNCTION OBJ
+function sortDataByAlphabetically(data) {
+  return data.slice().sort((a, b) => {
+    const keywordA = a.keyword?.toLowerCase() || "";
+    const keywordB = b.keyword?.toLowerCase() || "";
+    return keywordA.localeCompare(keywordB);
+  });
+}
+
 const dataSortFunctions = {
   alphabetical: sortDataByAlphabetically,
   aesthetic: sortDataByKeywordLength,
   time: sortDataByTime,
 };
 
-// FILTER BUTTON
-filter_option_buttons.forEach((btn) => {
-  btn.addEventListener("click", (e) => {
-    const type = btn.dataset.sort;
+// <--------- TASK FILTER :END --------->
+//
+//
+//
+//
+//
+// <--------- RENDER-FALLBACK-MESSAGE :START --------->
+function renderFallbackIfnoData(data, Tab) {
+  // CHECK IF THE TAB HAVE DATA!
+  const isEmpty =
+    !data ||
+    data.length === 0 ||
+    data.every((obj) => {
+      // Clone object without 'preDefinedKeywords'
+      const { preDefinedKeywords, ...rest } = obj;
 
-    // REMOVE ALL ACTIVE CLASS FROM ALL BUTTON
-    filter_option_buttons.forEach((btn) => {
-      btn.classList.remove("active");
+      // Check if rest is effectively empty
+      return (
+        Object.keys(rest).length === 0 ||
+        Object.values(rest).every(
+          (val) =>
+            val === null ||
+            val === undefined ||
+            (Array.isArray(val) && val.length === 0) ||
+            val === ""
+        )
+      );
     });
 
-    // ADD ACTIVE CLASS TO THE ACTIVE BUTTON
-    btn.classList.add("active");
-
-    // FILTERED DATA BASED ON FILTER OPTIONS CLICKED
-    const filteredData = dataSortFunctions[type](latestBackendData);
-
-    // PASS FILTER-UPDATED DATA INTO SIDEBAR UI FUNCTIONS
-    updateSidebarUI(filteredData);
-
-    // OPTIONALLY CLOSE THE FILTER-OPTIONS AFTER SELECTION
-    closeFilterOptions();
-  });
-});
-
-// CLOSE FILTER OPTIONS FUNCTIONS
-function closeFilterOptions() {
-  // remove the show-options classes to hide the filter options container
-  filter_option_container.classList.remove("show-options");
+  if (isEmpty) {
+    // check for Tab
+    switch (Tab) {
+      case "Task":
+        // render fallback message here
+        document.querySelector(`#${Tab}-content`).innerHTML = `
+        <div class="empty-message">
+        <div class="top-level">
+      <h2>No ${Tab} Keywords Found!</h2>
+      <p>No custom keywords added yet or no match for your search.</p>
+      </div>
+      <div class="how-to-create-keyword">
+        <strong>🚀 How to create your first keyword:</strong>
+        <ol>
+          <li>Open any code file you’re working on.</li>
+          <li>Add a comment like this anywhere in your code:</li>
+          <pre><code>// TODO: Refactor login validation</code></pre>
+          <li>Or use your own keyword, like:</li>
+          <pre><code>// IMPROVE: Optimize image loading speed</code></pre>
+          <li>The extension will detect it automatically — no need to save.</li>
+        </ol>
+        <p>✨ You can write <strong>any custom keyword</strong> you like — there's no limit!</p>
+        <p class="bottom-p-tag">🎨 Want to highlight it with a custom color? Just click the <strong>“Add New Keyword”</strong> button to create one.</p>
+      </div>
+    </div>
+    
+        `;
+        break;
+      case "Done":
+        // render fallback message here
+        document.querySelector(`#${Tab}-content`).innerHTML = `
+        <div class="empty-message">
+        <div class="top-level">
+      <h2>No Matching Keywords Found</h2>
+      <p>You haven’t marked any custom keywords as done yet — or your search didn’t match any completed ones. Once you do, they’ll appear here, and you’ll be able to undo or delete them anytime.</p>
+      </div>
+      </div>`;
+        break;
+    }
+    // exit from current code
+    return;
+  }
 }
-
-// FILTER DATA BY TIME
-function sortDataByTime(data) {
-  return data.sort((a, b) => {
-    return b.timeStamp - a.timeStamp;
-  });
-}
-
-// FILTER DATA BY KEYWORD LENGTH (FOR GOOD ASESTHETIC UI)
-function sortDataByKeywordLength(data) {
-  return data.sort((a, b) => {
-    const lenA = (a.keyword || "").length;
-    const lenB = (b.keyword || "").length;
-    return lenA - lenB;
-  });
-}
-
-function sortDataByAlphabetically(data) {
-  return data.slice().sort((a, b) => {
-    const keyword_A = a.keyword?.toLowerCase() || "";
-    const keyword_B = b.keyword?.toLowerCase() || "";
-
-    return keyword_A.localeCompare(keyword_B);
-  });
-}
-
-// <--------- TASK FILTER :END --------->
+// <--------- RENDER-FALLBACK-MESSAGE :END --------->
 //
 //
 //
@@ -684,10 +778,7 @@ async function updateSidebarUI(newData) {
     }[Tab] || [];
 
   // CHECK IF THE TAB HAVE DATA!
-  if (!filteredData || filteredData.length === 0) {
-    console.log("NO-DATA-AVIALBLE");
-    return;
-  }
+  if (renderFallbackIfnoData(filteredData, Tab)) return;
 
   // RENDER THE ITEM BASED ON TAB
   filteredData.forEach((item) =>
@@ -757,6 +848,7 @@ function renderItems(fragment, item, targetTabContainer) {
         line,
         timeStamp,
         Tab,
+        item,
       };
       break;
 
@@ -774,6 +866,7 @@ function renderItems(fragment, item, targetTabContainer) {
         taskKeyword,
         detailDescription,
         Tab,
+        item,
       };
       break;
 
@@ -849,26 +942,13 @@ function getItemHtml({
   switch (Tab) {
     // TASK UI -> HTML
     case "Task":
+      console.log("getItemHtml:", item);
       return `<div class="sidebar-content-wrapper">
       <div class="first-line">
         <div class="keyword-n-description">
-         <div
-        class="mark-disable-btn"
-        data-keyword="${keyword.toLowerCase()}"
-        data-comment="${description}"
-        data-filename="${file}"
-        data-fullpath="${fullPath}"
-        data-line="${line}"
-        >
-        <span
-                class="icon-container"
-                data-icon="close-icon"
-                title="Disable Keyword"
-              ></span>
-        </div>
           <div class="keyword" style=${
             "background-color:" + bgColor + ";"
-          }>${keyword}:</div>
+          }>${keyword}</div>
           <div class="keyword-description">${description}</div>
         </div>
         <div
@@ -883,13 +963,14 @@ function getItemHtml({
                 class="icon-container done-icon"
                 data-icon="done3-icon"
               ></span>
-        Done
+              Done
         </div>
       </div>
       <div class="second-line">
+      <div class="second-line-left">
         <div class="file-name-wrapper second-line-item">
           <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
-          <span class="fileName"> /${file} </span>
+          <span class="fileName">${file} </span>
         </div>
         <div class="devider-line"></div>
         <div class="code-line-number-wrapper second-line-item">
@@ -900,6 +981,21 @@ function getItemHtml({
         <div class="edited-time-wrapper second-line-item">
           <span class="icon-container time-icon--container" data-icon="clock-icon"></span>
           <span class="timeStamp"> ${timeAgo(timeStamp)} </span>
+        </div>
+        </div>
+        <div
+        class="mark-disable-btn second-line-right"
+        data-keyword="${keyword.toLowerCase()}"
+        data-comment="${description}"
+        data-filename="${file}"
+        data-fullpath="${fullPath}"
+        data-line="${line}"
+        >
+        <span
+                class="icon-container"
+                data-icon="close-icon"
+                title="Disable Keyword"
+              ></span>
         </div>
       </div>
     </div>`;
@@ -912,7 +1008,7 @@ function getItemHtml({
               <div class="keyword-n-description">
                 <div class="keyword" style=${
                   "background-color:" + bgColor + ";"
-                }>${taskKeyword}:</div>
+                }>${taskKeyword}</div>
                 <div class="keyword-description">${detailDescription} - (FIXED!)</div>
               </div>
               <div class="button-wrapper-delete-undo">
@@ -947,7 +1043,7 @@ function getItemHtml({
             <div class="second-line">
               <div class="file-name-wrapper second-line-item">
                 <span class="icon-container fileName-icon--container" data-icon="fileName-icon"></span>
-                <span class="fileName"> /${file} </span>
+                <span class="fileName">${file} </span>
               </div>
               <div class="devider-line"></div>
               <div class="code-line-number-wrapper second-line-item">
@@ -1006,11 +1102,17 @@ function parseDescription(item) {
     ? timestampMatch[2]
     : "Unknown Timestamp";
 
+  // NEED_FIX: extraction is not working rendering the whole data [simple format | ms]
   // Extract pure description (middle part after - and before [)
-  const descMatch = description.match(/^"[^"]+"\s*-\s*(.*?)\s*\[/);
-  const detailDescription = descMatch
-    ? descMatch[1].trim()
-    : "No description available";
+  let detailDescription;
+  const descMatch = description.match(
+    /^"[^"]+"\s*-\s*((?:.|\n)*?)\s*\[[^\]]*\]\s*$/
+  );
+  if (descMatch && descMatch[1]) {
+    detailDescription = descMatch[1].trim();
+  } else {
+    detailDescription = "No description available";
+  }
 
   return {
     taskKeyword,

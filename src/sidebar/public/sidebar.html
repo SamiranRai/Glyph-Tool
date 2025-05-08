@@ -65,20 +65,28 @@
           <li class="tab whole-tab-content active" id="Task-tab-content">
             <!--Filter Section-->
             <div class="filter-section">
-              <input
-                placeholder="filter tasks"
-                class="input-filter"
-                id="input-filter-task"
-                type="text"
-              />
+              <div class="top-input-wrapper">
+                <!--Search Icon-->
+                <span
+                    class="icon-container"
+                    data-icon="search-icon"
+                  ></span>
+                <!--Search Input-->
+                <input
+                  placeholder="Search files, keywords, or descriptions..."
+                  class="input-filter"
+                  id="input-filter-task"
+                  type="text"
+                />
+              </div>
               <div class="filter-button">
-                <button class="filter-button" id="filter-button">
+                <button class="filter-button" id="filter-button-task">
                   <span
                     class="icon-container icon-container-style-filter-button"
                     data-icon="filter-icon"
                   ></span>
                 </button>
-                <div class="filter-button-option filter-option-container">
+                <div class="filter-button-option filter-option-container" data-tab="Task">
                   <div class="option-container">
                     <ul class="option-ul">
                       <li class="option-li" data-sort="time">By Time</li>
@@ -90,7 +98,7 @@
               </div>
             </div>
             <!--Task Wrapper-->
-            <div class="task-wrapper">
+            <div class="task-wrapper sidebar-item-wrapper">
               <div class="tab-content" id="Task-content">
                 <!--Sidebar Items-->
                 </div>
@@ -101,21 +109,29 @@
           <!--Collections Tab-->
           <li class="tab whole-tab-content" id="Collection-tab-content">
             <!--Filter Section-->
-            <div class="filter-section">
+            <div class="filter-section filter-section-collection">
+              <div class="top-input-wrapper">
+                <!--Search Icon-->
+                <span
+                    class="icon-container"
+                    data-icon="search-icon"
+                  ></span>
+                <!--Search Input-->
               <input
-                placeholder="filter collections"
+                placeholder="Search files, keywords, or descriptions..."
                 class="input-filter"
                 id="input-filter-collection"
                 type="text"
               />
+              </div>
               <div class="filter-button">
-                <button class="filter-button" id="filter-button">
+                <button class="filter-button" id="filter-button-collection">
                   <span
                     class="icon-container icon-container-style-filter-button"
                     data-icon="filter-icon"
                   ></span>
                 </button>
-                <div class="filter-button-option filter-option-container">
+                <div class="filter-button-option filter-option-container" data-tab="Collection">
                   <div class="option-container">
                     <ul class="option-ul">
                       <li class="option-li" data-sort="time">By Time</li>
@@ -147,13 +163,21 @@
 
           <li class="tab whole-tab-content" id="Done-tab-content">
             <!--Filter Section-->
-            <div class="filter-section">
+            <div class="filter-section filter-section-done">
+              <div class="top-input-wrapper">
+                <!--Search Icon-->
+                <span
+                    class="icon-container"
+                    data-icon="search-icon"
+                  ></span>
+                <!--Search Input-->
               <input
-                placeholder="filter dones"
+                placeholder="Search files, keywords, or descriptions..."
                 class="input-filter"
                 id="input-filter-done"
                 type="text"
               />
+              </div>
               <div class="filter-button">
                 <button class="filter-button" id="filter-button-done">
                   <span
@@ -161,7 +185,7 @@
                     data-icon="filter-icon"
                   ></span>
                 </button>
-                <div class="filter-button-option filter-option-container">
+                <div class="filter-button-option filter-option-container-done" data-tab="Done">
                   <div class="option-container">
                     <ul class="option-ul">
                       <li class="option-li" data-sort="time">By Time</li>
@@ -171,10 +195,16 @@
                   </div>
                 </div>
               </div>
-              <button id="deleteAllDoneitemBtn">DeleteAll</button>
+              <button id="deleteAllDoneitemBtn" class="mark-delete-btn mark-delete-btn-all">
+                <span
+                class="icon-container"
+                data-icon="delete-icon"
+              ></span>
+              Delete All
+            </button>
             </div>
             <!--Done Wrapper-->
-            <div class="done-wrapper">
+            <div class="done-wrapper sidebar-item-wrapper">
               <div class="tab-content" id="Done-content">
                 <!--Done Items-->
               </div>

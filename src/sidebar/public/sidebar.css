@@ -4,17 +4,17 @@
    /* Default (Light Theme) */
    --dynamic-border-color: 100, 100, 100;  /* Equivalent to rgba(100, 100, 100, .1) */
    --dynamic-opacity: .1;
-   --custom-dropdown-shadow-color: rgba(0, 0, 0, 0.7);
+   --custom-dropdown-shadow-color: rgba(0, 0, 0, 0.2);
    --tc-border-color: rgba(128, 128, 128, .40);
    --custom-input-border-color: var(--tc-border-color);
 
 
-   --sidebar-item-border-color: rgba(100, 100, 100, .1);
+   --sidebar-item-border-color: rgb(100 100 100 / 9%);
    --sidebar-item-box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 
-   --done-button-text-color: #077419;
-   --done-button-bg-color:#87f89c;
-   --done-button-border-color:#87f89c;
+   --done-button-text-color: #fafafa;
+   --done-button-bg-color:#79bb89;
+   --done-button-border-color:#79bb89;
    --delete-button-text-color: #774646;
   --delete-button-bg-color: #ffc4c0;
   --delete-button-border-color: #ffc4c0;
@@ -34,11 +34,14 @@
   --dynamic-border-color: 128, 128, 128;  /* Equivalent to rgba(128, 128, 128, .15) */
   --dynamic-opacity: 0.15;
 
+  --custom-ouline-color: rgba(230, 230, 230, .6);
+  --custom-dropdown-shadow-color: rgba(0, 0, 0, 0.7);
 
-  --sidebar-item-border-color: rgb(14 11 11 / 15%);
+
+  --sidebar-item-border-color: rgb(128 128 128 / 9%);
   --sidebar-item-box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
 
-  --done-button-text-color: #3e423e;
+  --done-button-text-color: #fafafa;
   --delete-button-text-color: #502f2f;
   --delete-button-bg-color: #ffb8b3;
   --delete-button-border-color: #ffb8b3;
@@ -178,24 +181,21 @@ ul {
    padding: 0 20px 5px;
 }
 
-input.input-filter {
+.filter-section input[type="text"] {
   width: 100%;
   font-size: 13.5px;
-  padding: 3.5px 12px;
+  padding: 3.5px 12px 3.5px 22.99px;
   border-radius: 16.5px;
-  background-color: transparent;
-  color: var(--vscode-input-foreground);
   border: 1px solid var(--input-border-color);
+  background-color: transparent;
+    color: var(--vscode-input-foreground);
   letter-spacing: 0.05px;
   outline: none !important;
 
 }
 
-input.input-filter::placeholder {
-  color: var(--vscode-input-foreground);
-}
 
-input.input-filter:focus {
+.filter-section input[type="text"]:focus {
   border: 1px solid var(--custom-ouline-color);
 }
 
@@ -208,31 +208,32 @@ input.input-filter:focus {
 /*Sidebar Item*/
 .sidebar-item {
   position: relative;
-  border-bottom: 0.9px solid var(--sidebar-item-border-color);
-  padding: 27.5px 20px;
+  border-bottom: 1px solid var(--sidebar-item-border-color);
+  padding: 22.5px 20px;
   cursor: pointer;
   /* transition: all 0.35s cubic-bezier(0.33, 1, 0.68, 1); */
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   transform: scale(1);
-  box-shadow: 0 2px 6px var(--sidebar-item-border-color);
+  /* box-shadow: 0 2px 6px var(--sidebar-item-border-color); */
 }
 
 
 .sidebar-item:hover {
+  border-bottom: 1px solid var(--vscode-list-hoverBackground);
   background-color: var(--vscode-list-hoverBackground);
   /* transform: scale(1.025); */
   transform: scale(1.015);
   box-shadow: var(--sidebar-item-box-shadow);
 }
 
-.sidebar-item:hover .done {
+/* .sidebar-item:hover .done {
   background-color: #319b44;
   color: #b6ffb6;
-  border: 2px solid #319b44;
+  border: 1.5px solid #319b44;
 
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
+} */
 
 .sidebar-item:hover .keyword {
   transform: rotate(-6.5deg);
@@ -259,20 +260,20 @@ input.input-filter:focus {
   display: flex;
   align-items: center;
   flex-shrink: 1;
-  gap: 7.2px;
+  gap: 6.4px;
   min-width: 0;
   cursor: pointer;
 }
 
 .first-line .keyword {
-  font-size: 12.5px;
+  font-size: 11.9px;
   font-weight: 700;
   text-transform: capitalize;
-  padding: 1.25px 5px;
+  padding: 1.8px 6px;
   background-color: #c56767;
   color: white;
-  border-radius: 7.1px;
-  letter-spacing: 0.1px;
+  border-radius: 14px;
+  letter-spacing: -0.05px;
   /* transition: all 0.35s cubic-bezier(0.33, 1, 0.68, 1); */
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -280,7 +281,7 @@ input.input-filter:focus {
 .first-line .keyword-description {
   color: var(--vscode-sideBar-foreground, var(--vscode-foreground, #777));
   font-weight: 500;
-  font-size: 14.1px;
+  font-size: 14px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -291,11 +292,11 @@ input.input-filter:focus {
   /* position: absolute;
   z-index: 10; */
   margin-left: 10px;
-  padding: 2px 4px 2px 3.6px;
-  border-radius: 8px;
-  font-size: 12.2px;
+  padding: 1.3px 4px 1.3px 3px;
+  border-radius: 20px;
+  font-size: 11.5px;
   font-weight: 600;
-  border: 2px solid var(--done-button-border-color);
+  border: 1.5px solid var(--done-button-border-color);
   background-color: var(--done-button-bg-color);
   color: var(--done-button-text-color);
   /* border: 2px solid var(--vscode-button-background);
@@ -308,7 +309,7 @@ input.input-filter:focus {
 .sidebar-item:hover .done:hover{
   background-color: #47e763;
   color: #343434;
-  border: 2px solid #47e763;
+  border: 1.5px solid #47e763;
 }
 
 .undo:hover{
@@ -319,17 +320,25 @@ input.input-filter:focus {
 
 .second-line {
   color: var(--vscode-descriptionForeground, var(--vscode-titleBar-inactiveForeground));
-  margin-top: 20.5px;
+  margin-top: 11px;
+  margin-left: 2.7px;
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  font-weight: 400;
+  cursor: pointer;
+}
+
+.second-line-left, .done-wrapper .second-line {
+  display: flex;
   justify-content: flex-start;
-  gap: 15px;
+  align-items: center;
+  gap: 12px;
+  flex-direction: row;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: 400;
-  cursor: pointer;
 }
 
 .second-line .second-line-item {
@@ -345,23 +354,25 @@ input.input-filter:focus {
 }
 
 .fileName, .codeLineNumber, .timeStamp {
-  font-size: 13.4px;
+  font-size: 13.2px;
 }
 
 .devider-line {
-  min-width: 0.5px;
-  height: 12px;
+  border-radius: 100px;
+  opacity: 72%;
+  min-width: 4px;
+  height: 4px;
   background-color: currentColor;
 }
 
 .file-name-wrapper {
-  gap: 5.24px;
+  gap: 4.3999px;
 }
 .code-line-number-wrapper {
-  gap: 3.99px;
+  gap: 4px;
 }
 .edited-time-wrapper {
-  gap: 3.98px;
+  gap: 4.3px;
 }
 
 .tab-content {
@@ -473,7 +484,7 @@ input.input-filter:focus {
 
 
 .filter-button {
-  margin-top: .5px;
+  margin-top: 1.5px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -486,7 +497,7 @@ input.input-filter:focus {
 .filter-button-option {
   position: absolute;
   right: 12px;
-  top: 120px;
+  top: 32px;
   display: none;
   opacity: 0;
   transform: scale(0.95);
@@ -513,6 +524,7 @@ input.input-filter:focus {
 
 
 .option-container .option-ul {
+  margin: 0;
   padding: 3.5px 1px;
 }
 
@@ -718,11 +730,14 @@ label {
 }
 
 .keyword-item .custom-keyword {
-  font-weight: 600;
-    border-radius: 8.5px;
+    font-size: 11.9px;
+    font-weight: 700;
+    text-transform: capitalize;
+    padding: 1.8px 6px;
+    background-color: #c56767;
     color: white;
-    font-size: 11.5px;
-    padding: 4px 8px;
+    border-radius: 14px;
+    letter-spacing: -0.05px;
 }
 
 
@@ -740,35 +755,35 @@ label {
 }
 
 .done-icon {
-  height: 14.8px;
+  height: 13px;
 }
 
 .done {
   display: flex;
   align-items: center;
-  gap: 3.1px;
+  gap: 3px;
 }
 
 
 .mark-delete-btn, .mark-undo-btn {
-  font-size: 12.2px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 2.1px; /* space between icon and text */
-  padding: 2px 4px 2px 4px;
-  background-color: var(--delete-button-bg-color); /* red button (optional) */
-  color: var(--delete-button-text-color);
-  border: 2px solid var(--delete-button-border-color);
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  font-size: 11.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2.1px;
+    padding: 1.3px 4px 1.3px 4px;
+    background-color: var(--delete-button-bg-color);
+    color: var(--delete-button-text-color);
+    border: 1.5px solid var(--delete-button-border-color);
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .mark-undo-btn {
-  font-size: 11.8px;
+  font-size: 11.5px;
   gap: 1.75px;
   background-color: #a9e8ff;
   border-color: #a9e8ff;
@@ -776,28 +791,28 @@ label {
 }
 
 .mark-delete-btn:hover {
-  border-color: #ff7a7a;
-    color: #f7f7f7;
-    background-color: #ff7a7a;
+  border-color: #ec7272;
+    color: #fafafa;
+    background-color: #ec7272;
 }
 
 .mark-undo-btn:hover {
-  border-color: #41c8ff;
-  background-color: #41c8ff;
-  color: #f7f7f7;
+  border-color: #57acda;
+  background-color: #57acda;
+  color: #fafafa;
 }
 
 .mark-delete-btn svg {
   display: block;
-  height: 12.9px;
-  width: 12.9px;
+  height: 12.5px;
+  width: 12.5px;
 }
 .mark-delete-btn span{
-  height: 14px;
+  height: 13.49px;
 }
 
 .mark-undo-btn svg {
-  height: 12px;
+  height: 11.99px;
 }
 
 .mark-undo-btn span {
@@ -813,15 +828,18 @@ label {
   justify-content: center;
   align-items: center;
   gap: 4px;
+  margin-left: 10px;
 }
 
 
 .mark-disable-btn {
-  position: absolute;
+  /* position: absolute;
   bottom: 8px;
-  right: 20px;
+  right: 20px; */
+  margin-top: 2.5px;
+  margin-left: 6px;
   opacity: 26%;
-  padding: 2px 5px;
+  padding: 2px 5px 2px 6px;
 }
 
 .mark-disable-btn span svg path {
@@ -834,8 +852,18 @@ label {
 }
 
 .time-icon--container svg {
-  height: 16.8px;
-    width: 16.8px;
+  height: 15px;
+    width: 15px;
+}
+
+.codeLineNumber-icon--container svg {
+  height: 13.899px;
+  width: 13.899px;
+}
+
+.fileName-icon--container svg {
+  height: 15.7555px;
+  width: 15.7555px;
 }
 
 .no-keyword-message {
@@ -843,4 +871,168 @@ label {
   margin-left: 1.5px;
 }
 
- 
+
+
+.empty-message {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 0 28px;
+  gap: 13px;
+  margin-top: 8px;
+}
+
+.empty-message h2 {
+  font-size: 17.5px;
+  margin-bottom: 5px;
+}
+
+.empty-message p {
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.empty-message ol {
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+
+.empty-message ol li {
+  padding: 5px;
+}
+
+
+.empty-message .bottom-p-tag {
+  padding: 9px 0;
+}
+
+.empty-message pre code {
+  padding: 6px;
+}
+
+
+/* .empty-message {
+  max-width: 600px;
+  margin: 4rem auto;
+  padding: 1rem 1.5rem;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  color: #333;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.empty-message h2 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: #000;
+}
+
+.empty-message p {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+.how-to-create-keyword {
+  margin-top: 1.5rem;
+}
+
+.how-to-create-keyword strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  color: #1d4ed8;
+}
+
+.how-to-create-keyword ol {
+  padding-left: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.how-to-create-keyword li {
+  margin-bottom: 0.5rem;
+}
+
+pre {
+  background: #f7f7f7;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+  white-space: pre-wrap;
+}
+
+code {
+  font-family: 'Courier New', monospace;
+  color: #d9534f;
+}
+
+/* Mobile responsiveness */
+/*@media (max-width: 480px) {
+  .empty-message {
+    margin: 2rem 1rem;
+    padding: 1rem;
+  }
+
+  .how-to-create-keyword strong {
+    font-size: 1rem;
+  }
+
+  pre {
+    font-size: 1rem;
+  }
+} */
+
+
+.filter-section {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.sidebar-item-wrapper {
+  height: calc(100vh - 134.5px); /* Adjust based on actual header height */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-content {
+  flex-grow: 1;
+  overflow-y: auto;
+  /* padding-right: 4px; For scrollbar space if needed */
+}
+
+.filter-section-done, .filter-section-collection {
+  margin-top: -4px;
+}
+
+.mark-delete-btn-all {
+  min-width: 81px;
+    padding: 4px 4px;
+    border-radius: 20px;
+
+}
+
+#new-keyword-form input[type="text"]:focus, #new-keyword-form input[type="color"]:focus {
+  outline: 1px solid var(--custom-ouline-color);
+}
+
+.top-input-wrapper {
+  width: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.top-input-wrapper span {
+  position: absolute;
+  top: 4.3px;
+  left: 5.3px;
+}
+
+.top-input-wrapper span svg {
+  height: 13.99px;
+  width: 13.99px;
+}
+
+

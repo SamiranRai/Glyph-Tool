@@ -46,10 +46,7 @@ async function highlightWords(context) {
   }
 
   const text = editor.document.getText();
-  //const regex = /\/\/[^\n]*\b(\w+):/gm; -- imporatant!
-  //const regex = /^\/\/\s*([a-zA-Z_][a-zA-Z0-9_]{1,}):/gm; // --working-except-1-bug
-  //const regex = /^\/\/[ \t]*([a-zA-Z_][a-zA-Z0-9_]{1,}):/gm; // --99%
-  const regex = /^\/\/[ \t]*([a-zA-Z_][a-zA-Z0-9_]*):/gm;
+  const regex = /^[ \t]*\/\/[ \t]*([a-zA-Z_][a-zA-Z0-9_]*):[^\n]*$/gm;
   let keywordRanges = new Map();
   let existingKeywords = new Set(); // For Keyword Tracking purpose
 
