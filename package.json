@@ -1,12 +1,17 @@
 {
   "name": "glyph-tool",
   "displayName": "Glyph Tool",
-  "publisher": "Samiran Ray",
-  "description": "A custom Code highlighter tool.",
-  "version": "0.0.1",
-  "icon": "resources/glyph.png",
+  "publisher": "SamiranRay",
+  "description": "Instantly highlight and track TODOs, FIXMEs, and Custom Keywords as you code.",
+  "version": "1.0.2",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SamiranRai/Custom-Keyword-Highilighting-VsCode-Extension"
+  },
+  "icon": "resources/glyph-icon.png",
   "engines": {
-    "vscode": "^1.92.2"
+    "vscode": "^1.60.0"
   },
   "categories": [
     "Other"
@@ -56,7 +61,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.96.0",
+    "@types/vscode": "^1.60.0",
     "@vscode/test-cli": "^0.0.10",
     "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.16.0"

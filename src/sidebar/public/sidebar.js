@@ -706,7 +706,7 @@ function renderFallbackIfnoData(data, Tab) {
         <ol>
           <li>Open any code file you’re working on.</li>
           <li>Add a comment like this anywhere in your code:</li>
-          <pre><code>// TODO: Refactor login validation</code></pre>
+// DONE: "TODO" - Refactor login validation</code></pre> [09 May 2025 | 1746805088258]
           <li>Or use your own keyword, like:</li>
           <pre><code>// IMPROVE: Optimize image loading speed</code></pre>
           <li>The extension will detect it automatically — no need to save.</li>

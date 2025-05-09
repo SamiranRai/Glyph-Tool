@@ -107,7 +107,7 @@ class CustomSidebarProvider {
           this.sendSidebarUpdate(await removeKeyword());
           break;
 
-        // toggle_mark_fix: fix the toggle mark not working for done and undo.
+        // TOGGLE_MARK_FIX: fix the toggle mark not working for done and undo.
         case "toggleMark":
           console.log("Debug: toggleMark: Case called!");
 
@@ -180,7 +180,7 @@ class CustomSidebarProvider {
 
               console.log("✅ Document edited successfully via editor.");
             } else {
-              // Fallback: file is closed and cannot open in editor
+              // FALLBACK: file is closed and cannot open in editor
               const fileBuffer = await vscode.workspace.fs.readFile(uri);
               const fileContent = Buffer.from(fileBuffer).toString("utf-8");
               console.log("File content before editing: ", fileContent);

@@ -1,69 +1,54 @@
-<<<<<<< HEAD
-# Custom-Keyword-Highilighting-VsCode-Extension
-=======
-# custom-code-highlight-tool README
+Glyph — Highlight TODOs, FIXMEs, Any Keyword, and More
 
-This is the README for your extension "custom-code-highlight-tool". After writing up a brief description, we recommend including the following sections.
+Glyph is a simple yet powerful VS Code extension that helps you highlight, track, and manage task comments in your code. Whether you're using TODO, FIXME, or your own custom keywords, Glyph makes sure nothing slips through the cracks.
 
-## Features
+🚀 Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Instant Detection
+Automatically highlights keywords like TODO, FIXME, or any custom tag — no need to save.
+Custom Keywords
+Create your own keywords like IMPROVE, BUG, or anything else. Assign a unique color to each.
+Organized Task View
+View all active task comments under the Task Tab.
+Done Tab
+Mark tasks as done. Undo or delete them anytime.
+Keyword Manager
+Add, edit, delete, and assign colors to custom keywords easily from the Manage Keywords tab.
+Coming Soon: Collections
+We’re building something special in the Collections Tab — stay tuned.
+✨ How to Use
 
-For example if there is an image subfolder under your extension project workspace:
+Open any code file.
+Add a comment with a keyword, like:
+// TODO: Refactor login validation
+// FIX: Resolve memory leak in fetchData
+// IMPROVE: Optimize image loading speed
+Glyph will detect and display it automatically under the Task Tab.
+You can also create your own keywords and choose a highlight color from the Manage Keywords section.
 
-\!\[feature X\]\(images/feature-x.png\)
+📁 Tabs Overview
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+✅ Task Tab
+Displays all detected keywords in your current project.
+If no tasks are found, you’ll see:
 
-## Requirements
+No Task Keywords Found!
+No custom keywords added yet or no match for your search.
+✅ Done Tab
+View all tasks you've marked as done. Undo or delete anytime.
+If empty, you’ll see:
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+No Matching Keywords Found
+You haven’t marked any custom keywords as done yet — or your search didn’t match any completed ones.
+🎨 Manage Keywords Tab
+Create and customize your own keywords. Assign each a unique color to make them stand out.
 
-## Extension Settings
+📦 Collections Tab
+"We’re building something special. Your collection will be worth the wait."
+Stay tuned for upcoming features!
+🔧 Extension in Action
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Start by adding a comment like // TODO: in your code, and Glyph will pick it up automatically.
+🧠 Why Glyph?
 
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
->>>>>>> 8e3bbe6 (Initial Commit)
+Because your ideas and improvements deserve to be seen — not buried in the code.

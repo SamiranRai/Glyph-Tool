@@ -1,7 +1,27 @@
 const vscode = require("vscode");
 const path = require("path");
 
-// TODO: Fix the work
+const EXCLUDED_DIRS = [
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  "out",
+  ".next",
+  ".nuxt",
+  ".vercel",
+  ".cache",
+  "coverage",
+  "tmp",
+  "temp",
+];
+
+// Check if a file is inside any excluded directory
+function isExcluded(fileUri) {
+  return EXCLUDED_DIRS.some((dir) =>
+    fileUri.fsPath.split(/[\\/]/).includes(dir)
+  );
+}
 
 // Importing "preDefinedKeywords"
 const preDefinedKeywords = require("./../utility/highlight_word_required/preDefinedKeywords");
@@ -55,6 +75,7 @@ const scanAllFilesContainKeywords = async () => {
 
   for (const file of files) {
     try {
+      if (isExcluded(file)) continue; // ⛔ Skip excluded folders
       let content;
 
       // 📝 First, check if the file is open in an editor
@@ -67,9 +88,13 @@ const scanAllFilesContainKeywords = async () => {
         content = openEditor.document.getText(); // Get real-time content
       } else {
         // 📂 If not open, read from disk
+        // content = Buffer.from(
+        //   await vscode.workspace.fs.readFile(file)
+        // ).toString("utf8");
+
         content = Buffer.from(
           await vscode.workspace.fs.readFile(file)
-        ).toString("utf8");
+        ).toString("utf8"); // 🟢 Read from disk
       }
       //resultData.push({ preDefinedKeywords });
 
@@ -181,7 +206,7 @@ const watchFiles = async () => {
     const text = event.document.getText();
     const matches = new Map();
 
-    // Regex to match `// KEYWORD: Description`
+    // DONE: "KEYWORD" - Description` [09 May 2025 | 1746804001880]
     const regex = /^\/\/\s*([A-Z_]+):\s*(.*)$/gm;
     for (const match of text.matchAll(regex)) {
       const keyword = match[1].trim();
