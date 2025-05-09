@@ -2,7 +2,7 @@
   "name": "glyph-tool",
   "displayName": "Glyph Tool",
   "publisher": "Samiran Ray",
-  "description": "",
+  "description": "A custom Code highlighter tool.",
   "version": "0.0.1",
   "icon": "resources/glyph.png",
   "engines": {
