@@ -8,6 +8,7 @@
    --tc-border-color: rgba(128, 128, 128, .40);
    --custom-input-border-color: var(--tc-border-color);
 
+   --keyword-item-border-color: rgb(37 33 33 / 10%);
 
    --sidebar-item-border-color: rgb(100 100 100 / 9%);
    --sidebar-item-box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
@@ -37,6 +38,7 @@
   --custom-ouline-color: rgba(230, 230, 230, .6);
   --custom-dropdown-shadow-color: rgba(0, 0, 0, 0.7);
 
+  --keyword-item-border-color: rgb(128 128 128 / 16%);
 
   --sidebar-item-border-color: rgb(128 128 128 / 9%);
   --sidebar-item-box-shadow: 0 4px 12px rgb(0 0 0 / 15%);
@@ -638,7 +640,7 @@ ul {
 
 /* Form Styles */
 #new-keyword-form {
-  padding: 8px 20px 42px;
+  padding: 8px 20px 40px;
   display: grid;
   gap: 13.5px;
 }
@@ -724,7 +726,7 @@ label {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid;
+  border-bottom: 1px solid var(--keyword-item-border-color);
   padding: 12.5px 6px 12.5px 4px;
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -744,8 +746,9 @@ label {
 .devider-line-for-keyManUI {
   width: 82%;
   opacity: 15%;
-  height: 1px;
+  height: .9px;
   margin: auto;
+  background-color: currentColor;
 }
 
 

@@ -55,6 +55,14 @@ function showToast(message) {
   setTimeout(() => toast.classList.add("hidden"), 3000);
 }
 
+// Start periodic REfreshUI after every 60sec.
+setInterval(() => {
+  if (latestBackendData.length > 0) {
+    console.log("Updating the Sidebar UI 60sec...");
+    updateSidebarUI(latestBackendData); // Just re-render time labels
+  }
+}, 60 * 1000); // every 1 minute
+
 // <--------- TOP LEVEL CODES :END --------->
 //
 //
@@ -223,6 +231,17 @@ function handleAddKeyword() {
 
   if (!keyword) {
     showToast("Please enter a keyword.");
+    inputKeyword.focus();
+    return;
+  }
+
+  const existingKeyword = preDefinedKeywords.some(
+    (item) =>
+      item.keyword.trim().toLowerCase() === keyword.trim().toLowerCase() + ":"
+  );
+
+  if (existingKeyword) {
+    showToast("Keyword already exists!");
     inputKeyword.focus();
     return;
   }
@@ -855,7 +874,7 @@ function renderItems(fragment, item, targetTabContainer) {
     // PASS DONE DATA
     case "Done":
       // EXTRACTING DATA FROM "parseDescription" FUNCTION
-      const { taskKeyword, createdTimeStamp, detailDescription } =
+      const { taskKeyword, createdDate, createdTimeStamp, detailDescription } =
         parseDescription(item);
       dataToRender = {
         bgColor,
@@ -863,6 +882,7 @@ function renderItems(fragment, item, targetTabContainer) {
         fullPath,
         line,
         createdTimeStamp,
+        createdDate,
         taskKeyword,
         detailDescription,
         Tab,
@@ -926,7 +946,6 @@ function renderItems(fragment, item, targetTabContainer) {
 
 // FUNCTION TO HANDLE ONLY HTML PART
 function getItemHtml({
-  item = {},
   keyword,
   description,
   bgColor,
@@ -942,7 +961,6 @@ function getItemHtml({
   switch (Tab) {
     // TASK UI -> HTML
     case "Task":
-      console.log("getItemHtml:", item);
       return `<div class="sidebar-content-wrapper">
       <div class="first-line">
         <div class="keyword-n-description">
@@ -1113,6 +1131,13 @@ function parseDescription(item) {
   } else {
     detailDescription = "No description available";
   }
+
+  // console.log("FuckU", { --OKAY
+  //   taskKeyword,
+  //   createdDate,
+  //   createdTimeStamp,
+  //   detailDescription,
+  // });
 
   return {
     taskKeyword,
