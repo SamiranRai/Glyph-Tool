@@ -64,12 +64,8 @@ async function highlightWords(context) {
 
     // Safe DB call
     if (!highlightTimeStamps.has(uppercaseKeyword)) {
-      const newTimestamp = new Date().toISOString(); // Generate new timestamp
+      const newTimestamp = new Date().getTime(); // Generate new timestamp
       highlightTimeStamps.set(uppercaseKeyword, newTimestamp);
-      console.log(
-        "Debug::highlightTimeStamps::highlightWord",
-        highlightTimeStamps
-      );
       await saveTimestamp(uppercaseKeyword, highlightTimeStamps);
     }
 
@@ -84,7 +80,7 @@ async function highlightWords(context) {
     }
 
     // Checking & applying predefined custom Keyword style, if present
-    console.log("predefinedKeywordColors:InsideHW.js", predefinedKeywordColors);
+    // console.log("predefinedKeywordColors:InsideHW.js", predefinedKeywordColors);
 
     let foundKeyword;
     for (const item of predefinedKeywordColors) {

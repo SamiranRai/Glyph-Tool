@@ -42,7 +42,7 @@ async function getTimestamp(keyword, highlightTimeStamps) {
     // Check if the keyword already has a timestamp
     if (!highlightTimeStamps.has(keyword + ":")) {
       // Calculate past timestamp correctly
-      const timeStamp = new Date(Date.now() - PAST_OFFSET).toISOString();
+      const timeStamp = new Date(Date.now() - PAST_OFFSET).getTime();
 
       // Add the timestamp to the highlightTimestamp
       highlightTimeStamps.set(keyword + ":", timeStamp);
@@ -164,8 +164,6 @@ let recentlyUpdated = false;
 
 // watchFile-> for real-time file monitoring
 const watchFiles = async () => {
-  console.log("Intial Scan Running!");
-
   // Run an initial scan and store existing keywords in previousKeywords
   const initialResults = await scanAllFilesContainKeywords();
   previousKeywords = new Set(initialResults.map((item) => item.keyword));
@@ -177,21 +175,21 @@ const watchFiles = async () => {
 
   watcher.onDidChange(() => {
     if (recentlyUpdated) {
-      console.log("Skipping redundant scan (already updated by text edit)");
+      // console.log("Skipping redundant scan (already updated by text edit)");
       recentlyUpdated = false;
       return;
     }
-    console.log("File Changed - Rescanning...");
+    // console.log("File Changed - Rescanning...");
     scanAllFilesContainKeywords();
   });
 
   watcher.onDidCreate(() => {
-    console.log("File Created - Rescanning...");
+    // console.log("File Created - Rescanning...");
     scanAllFilesContainKeywords();
   });
 
   watcher.onDidDelete(() => {
-    console.log("File Deleted - Rescanning...");
+    // console.log("File Deleted - Rescanning...");
     scanAllFilesContainKeywords();
   });
 
@@ -217,9 +215,6 @@ const watchFiles = async () => {
     // Populate `previousComments` only once after the initial scan
     if (!previousComments.size) {
       matches.forEach((_, comment) => previousComments.set(comment, true));
-      console.log("📝 Initial comments recorded:", [
-        ...previousComments.keys(),
-      ]);
       return;
     }
 
@@ -234,17 +229,10 @@ const watchFiles = async () => {
       (comment) => !previousComments.has(comment)
     );
 
-    console.log({
-      "Debug::removedComments": removedComments,
-      "Debug::addedComments": addedComments,
-    });
-
     if (removedComments.length > 0 || addedComments.length > 0) {
-      console.log("🔄 Changes detected in comments. Rescanning...");
-
       for (const comment of addedComments) {
         const keyword = comment.split(":")[0];
-        const newTimestamp = new Date().toISOString();
+        const newTimestamp = new Date().getTime();
         highlightTimeStamps.set(keyword + ":", newTimestamp);
         await saveTimestamp(keyword + ":", highlightTimeStamps);
       }

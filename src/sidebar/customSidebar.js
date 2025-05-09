@@ -102,18 +102,13 @@ class CustomSidebarProvider {
           break;
 
         case "removeKeyword":
-          console.log("Message received:", message.keyword);
           await removeKeyword(message.keyword); // Await here
           this.sendSidebarUpdate(await removeKeyword());
           break;
 
         case "toggleMark":
-          console.log("Debug: toggleMark: Case called!");
-
           try {
             const uri = vscode.Uri.file(message.fullPath);
-
-            console.log("Message content: ", message);
 
             let updatedLineText = "";
             const timestamp = new Date();
@@ -139,8 +134,6 @@ class CustomSidebarProvider {
               console.warn("❌ Unknown toggleMark action:", message.action);
               break;
             }
-
-            console.log("Updated line content: ", updatedLineText);
 
             let document;
             try {
@@ -170,20 +163,14 @@ class CustomSidebarProvider {
               await editor.edit((editBuilder) => {
                 if (isDeleteAction) {
                   editBuilder.delete(line.rangeIncludingLineBreak);
-                  console.log("Deleted line: ", line.text);
                 } else {
                   editBuilder.replace(line.range, updatedLineText);
-                  console.log("Replaced line: ", line.text);
                 }
               });
-
-              console.log("✅ Document edited successfully via editor.");
             } else {
-// fallback : file is closed and cannot open in editor
+              // fallback : file is closed and cannot open in editor
               const fileBuffer = await vscode.workspace.fs.readFile(uri);
               const fileContent = Buffer.from(fileBuffer).toString("utf-8");
-              console.log("File content before editing: ", fileContent);
-
               const lines = fileContent.split(/\r?\n/); // handle both LF and CRLF endings
               const lineIndex = message.line - 1;
               if (lineIndex < 0 || lineIndex >= lines.length) {
@@ -199,17 +186,14 @@ class CustomSidebarProvider {
                 : "\n";
 
               if (isDeleteAction) {
-                console.log("Deleting line: ", lines[lineIndex]);
                 lines.splice(lineIndex, 1);
               } else {
-                console.log("Replacing line: ", lines[lineIndex]);
                 lines[lineIndex] = updatedLineText;
               }
 
               const updatedContent = lines.join(originalLineEnding);
               const updatedBuffer = Buffer.from(updatedContent, "utf-8");
               await vscode.workspace.fs.writeFile(uri, updatedBuffer);
-              console.log("✅ File system fallback write successful.");
             }
 
             // Update the sidebar UI
@@ -234,7 +218,6 @@ class CustomSidebarProvider {
             );
 
             if (confirmation !== "Yes") {
-              console.log("❌ User canceled the deleteAll action.");
               break;
             }
 
@@ -283,7 +266,6 @@ class CustomSidebarProvider {
                     if (lineIndex >= 0 && lineIndex < document.lineCount) {
                       const line = document.lineAt(lineIndex);
                       editBuilder.delete(line.rangeIncludingLineBreak);
-                      console.log(`🗑️ Deleted from ${fullPath}:`, line.text);
                     }
                   }
                 });
@@ -323,7 +305,6 @@ class CustomSidebarProvider {
           try {
             const updatedSidebarData = await scanAllFilesContainKeywords();
             this.sendSidebarUpdate(updatedSidebarData);
-            console.log("✅ updateData sent on request");
           } catch (err) {
             console.error("❌ Failed to send updateData:", err);
           }

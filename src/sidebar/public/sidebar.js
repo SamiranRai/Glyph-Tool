@@ -58,7 +58,6 @@ function showToast(message) {
 // Start periodic REfreshUI after every 60sec.
 setInterval(() => {
   if (latestBackendData.length > 0) {
-    console.log("Updating the Sidebar UI 60sec...");
     updateSidebarUI(latestBackendData); // Just re-render time labels
   }
 }, 60 * 1000); // every 1 minute
@@ -95,7 +94,6 @@ window.addEventListener("message", (event) => {
 
     // Prevent updating with empty data
     if (data.length === 0) {
-      console.log("data.length===0", data);
       console.warn("⚠️ Skipped updateSidebarUI: Empty data received.");
       return;
     }
@@ -192,7 +190,6 @@ function deleteAllDoneItems() {
 
 // Hook it up to the Delete All button
 deleteAllDoneItemBtn.addEventListener("click", () => {
-  console.log("🧹 Delete All DONE items clicked!");
   deleteAllDoneItems();
 });
 
@@ -636,7 +633,6 @@ function closeFilterOptions() {
 // Sorting Functions
 function sortDataByTime(data) {
   return data.sort((a, b) => {
-    console.log(a.keyword, a.timeStamp, b.keyword, b.timeStamp);
     return b.timeStamp - a.timeStamp;
   });
 }
@@ -1097,8 +1093,6 @@ function getItemHtml({
 
 // PARSE INFORMATION FOR DONE
 function parseDescription(item) {
-  // debug
-  console.log("parseDescription func() is called!");
   const {
     keyword,
     fullPath,
@@ -1131,13 +1125,6 @@ function parseDescription(item) {
   } else {
     detailDescription = "No description available";
   }
-
-  // console.log("FuckU", { --OKAY
-  //   taskKeyword,
-  //   createdDate,
-  //   createdTimeStamp,
-  //   detailDescription,
-  // });
 
   return {
     taskKeyword,
@@ -1249,8 +1236,6 @@ const loadIcon = (iconElement) => {
 };
 
 const loadIcons = () => {
-  console.log("loadIcons() is called!");
-
   document.querySelectorAll(".icon-container").forEach((iconElement) => {
     loadIcon(iconElement);
   });

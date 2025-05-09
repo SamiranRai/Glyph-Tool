@@ -29,8 +29,8 @@ async function saveTimestamp(keyword, highlightTimeStamps) {
     // }
 
     // console.log("Debug::levelDb", {
-    //   type: typeof highlightTimeStamps,
-    //   highlightTimeStamps: highlightTimeStamps,
+    //   TYPE: typeof highlightTimeStamps,
+    //   HIGHLIGHTTIMESTAMPS: highlightTimeStamps,
     // });
 
     const existingTime = highlightTimeStamps.get(keyword);
