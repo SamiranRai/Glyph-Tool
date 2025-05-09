@@ -20,9 +20,9 @@ We’re building something special in the Collections Tab — stay tuned.
 
 Open any code file.
 Add a comment with a keyword, like:
-// TODO: Refactor login validation
-// FIX: Resolve memory leak in fetchData
-// IMPROVE: Optimize image loading speed
+// todo : Refactor login validation
+// fix : Resolve memory leak in fetchData
+// improve : Optimize image loading speed
 Glyph will detect and display it automatically under the Task Tab.
 You can also create your own keywords and choose a highlight color from the Manage Keywords section.
 
@@ -48,7 +48,7 @@ Create and customize your own keywords. Assign each a unique color to make them 
 Stay tuned for upcoming features!
 🔧 Extension in Action
 
-Start by adding a comment like // TODO: in your code, and Glyph will pick it up automatically.
+// todo : in your code, and Glyph will pick it up automatically.
 🧠 Why Glyph?
 
 Because your ideas and improvements deserve to be seen — not buried in the code.

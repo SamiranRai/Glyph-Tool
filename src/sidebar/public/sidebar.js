@@ -697,24 +697,24 @@ function renderFallbackIfnoData(data, Tab) {
         // render fallback message here
         document.querySelector(`#${Tab}-content`).innerHTML = `
         <div class="empty-message">
-        <div class="top-level">
-      <h2>No ${Tab} Keywords Found!</h2>
-      <p>No custom keywords added yet or no match for your search.</p>
-      </div>
-      <div class="how-to-create-keyword">
-        <strong>🚀 How to create your first keyword:</strong>
-        <ol>
-          <li>Open any code file you’re working on.</li>
-          <li>Add a comment like this anywhere in your code:</li>
-// DONE: "TODO" - Refactor login validation</code></pre> [09 May 2025 | 1746805088258]
-          <li>Or use your own keyword, like:</li>
-          <pre><code>// IMPROVE: Optimize image loading speed</code></pre>
-          <li>The extension will detect it automatically — no need to save.</li>
-        </ol>
-        <p>✨ You can write <strong>any custom keyword</strong> you like — there's no limit!</p>
-        <p class="bottom-p-tag">🎨 Want to highlight it with a custom color? Just click the <strong>“Add New Keyword”</strong> button to create one.</p>
-      </div>
-    </div>
+  <div class="top-level">
+    <h2>No ${Tab} Keywords Found!</h2>
+    <p>No custom keywords added yet or no match for your search.</p>
+  </div>
+  <div class="how-to-create-keyword">
+    <strong>🚀 How to create your first keyword:</strong>
+    <ol>
+      <li>Open any code file you’re working on.</li>
+      <li>Add a comment like this anywhere in your code:</li>
+      <pre><code>// Todo: Refactor login validation</code></pre>
+      <li>Or use your own keyword, like:</li>
+      <pre><code>// Improve: Optimize image loading speed</code></pre>
+      <li>The extension will detect it automatically — no need to save.</li>
+    </ol>
+    <p>✨ You can write <strong>any custom keyword</strong> you like — there's no limit!</p>
+    <p class="bottom-p-tag">🎨 Want to highlight it with a custom color? Just click the <strong>“Add New Keyword”</strong> button to create one.</p>
+  </div>
+</div>
     
         `;
         break;
@@ -1120,7 +1120,7 @@ function parseDescription(item) {
     ? timestampMatch[2]
     : "Unknown Timestamp";
 
-  // NEED_FIX: extraction is not working rendering the whole data [simple format | ms]
+  // need_fix : extraction is not working rendering the whole data [simple format | ms]
   // Extract pure description (middle part after - and before [)
   let detailDescription;
   const descMatch = description.match(

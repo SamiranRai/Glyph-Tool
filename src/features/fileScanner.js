@@ -131,7 +131,7 @@ const scanAllFilesContainKeywords = async () => {
             line: i + 1,
             timeStamp,
             snippet: lines[i].trim(),
-            //preDefinedKeywords: preDefinedKeywords,
+            // predefinedkeywords : preDefinedKeywords,
           });
         }
       }
@@ -206,7 +206,7 @@ const watchFiles = async () => {
     const text = event.document.getText();
     const matches = new Map();
 
-    // DONE: "KEYWORD" - Description` [09 May 2025 | 1746804001880]
+    // keyword : Description`
     const regex = /^\/\/\s*([A-Z_]+):\s*(.*)$/gm;
     for (const match of text.matchAll(regex)) {
       const keyword = match[1].trim();
