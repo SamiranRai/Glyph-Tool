@@ -222,7 +222,10 @@ document.addEventListener("keydown", (e) => {
 
 // SANITIZATION FOR INPUT
 function sanitizeInput(input_data) {
-  return input_data.trim().replace(/\s+/g, "_"); // join "_" in place of "space" btw keywords
+  return input_data
+    .trim()
+    .replace(/[:\-]+$/, "") // Remove trailing ':', '-', or ':-'
+    .replace(/\s+/g, "_"); // Replace inner spaces with '_'
 }
 
 function handleAddKeyword() {
