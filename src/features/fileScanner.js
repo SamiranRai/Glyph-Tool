@@ -24,7 +24,16 @@ function isExcluded(fileUri) {
 }
 
 // Importing "preDefinedKeywords"
-const preDefinedKeywords = require("./../utility/highlight_word_required/preDefinedKeywords");
+// const preDefinedKeywords = require("./../utility/highlight_word_required/preDefinedKeywords");
+
+const preDefinedKeywords = () => {
+  const filePath = require.resolve(
+    "./../utility/highlight_word_required/preDefinedKeywords"
+  );
+  delete require.cache[filePath]; // Clear cache
+  return require(filePath); // Re-require updated file
+};
+
 // Importing "fileExtensions"
 const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
 // Importing "highlightTimeStamps"
@@ -71,7 +80,7 @@ const scanAllFilesContainKeywords = async () => {
   const regex = /\/\/\s*\b([A-Z_]+):/gm;
 
   // Push the preDefinedKeywords once outside the loop
-  resultData.push({ preDefinedKeywords });
+  resultData.push({ preDefinedKeywords: preDefinedKeywords() });
 
   for (const file of files) {
     try {
@@ -121,6 +130,8 @@ const scanAllFilesContainKeywords = async () => {
             await getTimestamp(match[1], highlightTimeStamps);
             timeStamp = highlightTimeStamps.get(match[1] + ":");
           }
+
+          console.log("fileScanner:predefinedkeywords", preDefinedKeywords());
 
           // Push the date to "resultData" array
           resultData.push({

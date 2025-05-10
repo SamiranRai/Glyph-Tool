@@ -90,7 +90,10 @@ document.addEventListener("DOMContentLoaded", () => {
 window.addEventListener("message", (event) => {
   if (event.data.command === "updateData") {
     const data = event.data.data || [];
-    const keyword = event.data.keyword || [];
+    const keyword = event.data.data[0]?.preDefinedKeywords || [];
+
+    console.log("Debug:latestBackendData", data);
+    console.log("Debug:latestKeywordData", keyword);
 
     // Prevent updating with empty data
     if (data.length === 0) {
@@ -330,20 +333,24 @@ function fetchAllKeywords() {
 
 // ADD A KEYWORD(CREATE)
 function addAKeyword(keyword, color) {
-  sendMessageToBackend("addKeyword", { keyword, color });
   preDefinedKeywords.push({ keyword, color }); // OPTIMISTIC UPDATE
+  console.log("preDefinedKeywords:adding:frontend", preDefinedKeywords);
+  sendMessageToBackend("addKeyword", { keyword, color });
+
+  // RENDER THE LIST
   renderKeywordList();
 }
 
 // REMOVE A EXITING KEYWORD
 function removeExistingKeyword(keywordToDelete) {
-  // SEND MESSAGE TO BACKEND
-  sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
-
   // UPDATE THE ARRAY
   preDefinedKeywords = preDefinedKeywords.filter(
     (item) => item.keyword.toLowerCase() !== keywordToDelete.toLowerCase()
   );
+  console.log("preDefinedKeywords:deleting:frontend", preDefinedKeywords);
+
+  // SEND MESSAGE TO BACKEND
+  sendMessageToBackend("removeKeyword", { keyword: keywordToDelete });
 
   // RENDER THE LIST
   renderKeywordList();
@@ -366,6 +373,8 @@ function updatepreDefinedKeywords(newKeywords) {
   newKeywords.forEach((newKeyword) => {
     if (!preDefinedKeywords.some((pre) => pre.keyword === newKeyword.keyword)) {
       preDefinedKeywords.push(newKeyword);
+
+      console.log("preDefinedKeywords");
     }
   });
 }

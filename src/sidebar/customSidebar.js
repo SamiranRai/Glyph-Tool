@@ -98,12 +98,14 @@ class CustomSidebarProvider {
 
         case "addKeyword":
           await addKeyword(message.keyword, message.color);
+          console.log("Keyword Added Successfully");
           this.sendSidebarUpdate(await scanAllFilesContainKeywords());
           break;
 
         case "removeKeyword":
           await removeKeyword(message.keyword); // Await here
-          this.sendSidebarUpdate(await removeKeyword());
+          console.log("Keyword removed Successfully");
+          this.sendSidebarUpdate(await scanAllFilesContainKeywords()); // changed from removeKeyword()
           break;
 
         case "toggleMark":

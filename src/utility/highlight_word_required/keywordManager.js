@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const keywordsFile = path.join(__dirname, "predefinedKeywords.js");
+const keywordsFile = path.join(__dirname, "preDefinedKeywords.js");
 
 // Load current keywords
 const loadKeywords = () => require(keywordsFile);
@@ -16,8 +16,8 @@ const saveKeywords = (keywords) => {
 };
 
 // Add a new keyword
-const addKeyword = (keyword, color) => {
-  const keywords = loadKeywords();
+const addKeyword = async (keyword, color) => {
+  const keywords = await loadKeywords();
   if (!keywords.some((k) => k.keyword === keyword)) {
     keywords.push({ keyword, color });
     saveKeywords(keywords);
@@ -30,7 +30,7 @@ const removeKeyword = async (keyword) => {
   const index = keywords.findIndex((k) => k.keyword === keyword);
   if (index !== -1) {
     keywords.splice(index, 1); // Remove the keyword directly
-    await saveKeywords(keywords); // Update the storage
+    saveKeywords(keywords); // Update the storage
   }
 };
 
