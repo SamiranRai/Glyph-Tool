@@ -1001,7 +1001,7 @@ code {
 
 .tab-content {
   flex-grow: 1;
-  overflow-y: auto;
+  /* overflow-y: auto; */
   /* padding-right: 4px; For scrollbar space if needed */
 }
 
