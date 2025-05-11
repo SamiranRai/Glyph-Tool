@@ -3,6 +3,16 @@ const fs = require("fs");
 const path = require("path");
 const getKeywordHighlightColor = require("../utility/highlight_word_required/getKeywordHighlightColor");
 let predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+const commentStyles = require("../utility/file_scanner_required/commentStyles");
+
+function getCommentSymbol(document) {
+  const ext = path.extname(document.fileName).slice(1).toLowerCase();
+  return commentStyles[ext] || null;
+}
+
+//------- WHOLE FILE BASED DYNAMIC REGULAR-EXPRESSION--------//
+
+//------- WHOLE FILE BASED DYNAMIC REGULAR-EXPRESSION--------//
 
 // Database related
 const {
@@ -46,7 +56,17 @@ async function highlightWords(context) {
   }
 
   const text = editor.document.getText();
-  const regex = /^[ \t]*\/\/[ \t]*([a-zA-Z_][a-zA-Z0-9_]*):[^\n]*$/gm;
+  // const regex = /^[ \t]*\/\/[ \t]*([a-zA-Z_][a-zA-Z0-9_]*):[^\n]*$/gm; -- 100% working
+  //const regex = getHighlightRegex(); // testing -- 100% working
+  const commentPrefix = getCommentSymbol(editor.document);
+  if (!commentPrefix) return;
+
+  const escapedPrefix = commentPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  const regex = new RegExp(
+    `^[ \\t]*${escapedPrefix}[ \\t]*([a-zA-Z_][a-zA-Z0-9_]*)[:][^\\n]*$`,
+    "gm"
+  );
   let keywordRanges = new Map();
   let existingKeywords = new Set(); // For Keyword Tracking purpose
 

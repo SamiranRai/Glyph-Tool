@@ -17,6 +17,128 @@ const {
   removeKeyword,
 } = require("./../utility/highlight_word_required/keywordManager");
 
+// <---------------------------------------------------------->
+
+// Map of comment styles for different file extensions
+const commentStyles = {
+  js: "//", // JavaScript
+  jsx: "//", // JavaScript (React)
+  ts: "//", // TypeScript
+  tsx: "//", // TypeScript (React)
+  java: "//", // Java
+  c: "//", // C
+  cpp: "//", // C++
+  cs: "//", // C#
+  go: "//", // Go
+  php: "//", // PHP (also supports '#')
+  py: "#", // Python
+  rb: "#", // Ruby
+  rs: "//", // Rust
+  swift: "//", // Swift
+  kt: "//", // Kotlin
+  dart: "//", // Dart
+  scala: "//", // Scala
+  scss: "//", // Sass (SCSS)
+  less: "//", // Less
+  ahk: ";", // AutoHotkey
+  sh: "#", // Shell
+  bash: "#", // Bash
+  zsh: "#", // ZSH
+  yaml: "#", // YAML
+  yml: "#", // YAML
+  toml: "#", // TOML
+  ini: ";", // INI
+  cfg: "#", // Config
+  jsonc: "//", // JSON with comments
+  css: "/*", // CSS (block comments)
+  vue: "//", // Vue (inside <script>)
+  svelte: "//", // Svelte (inside <script>)
+  md: "<!--", // Markdown (HTML-style comments)
+  html: "<!--", // HTML
+  xml: "<!--", // XML
+  sql: "--", // SQL
+  pl: "#", // Perl
+  pm: "#", // Perl Module
+  r: "#", // R
+  m: "%", // MATLAB
+  jl: "#", // Julia
+  lisp: ";", // Lisp
+  clj: ";", // Clojure
+  cljs: ";", // ClojureScript
+  fs: "//", // F#
+  fsi: "//", // F# Interactive
+  ml: "(*", // OCaml
+  mli: "(*", // OCaml Interface
+  vb: "'", // Visual Basic
+  vbs: "'", // VBScript
+  ps1: "#", // PowerShell
+  tex: "%", // LaTeX
+  asm: ";", // Assembly
+  bat: "REM", // Batch file
+  dockerfile: "#", // Dockerfile
+  makefile: "#", // Makefile
+  groovy: "//", // Groovy
+  gradle: "//", // Gradle
+  h: "//", // C Header
+  hpp: "//", // C++ Header
+  objc: "//", // Objective-C
+  objcpp: "//", // Objective-C++
+  coffee: "#", // CoffeeScript
+  styl: "//", // Stylus
+  elm: "--", // Elm
+  hs: "--", // Haskell
+  erl: "%", // Erlang
+  ex: "#", // Elixir
+  exs: "#", // Elixir Script
+  nim: "#", // Nim
+  cr: "#", // Crystal
+  v: "//", // Verilog
+  sv: "//", // SystemVerilog
+  vhdl: "--", // VHDL
+  ada: "--", // Ada
+  d: "//", // D
+  pas: "//", // Pascal
+  asm: ";", // Assembly
+  s: ";", // Assembly
+  rkt: ";", // Racket
+  sc: "//", // Scala
+  kt: "//", // Kotlin
+  kts: "//", // Kotlin Script
+  tsx: "//", // TypeScript JSX
+  jsx: "//", // JavaScript JSX
+  json5: "//", // JSON5
+  toml: "#", // TOML
+  cfg: "#", // Config
+  conf: "#", // Config
+  ini: ";", // INI
+  properties: "#", // Java Properties
+  dotenv: "#", // .env files
+  env: "#", // Environment files
+  tf: "#", // Terraform
+  tfvars: "#", // Terraform variables
+  hcl: "#", // HashiCorp Configuration Language
+  puppet: "#", // Puppet
+  chef: "#", // Chef
+  ansible: "#", // Ansible
+  salt: "#", // SaltStack
+  jinja: "{#", // Jinja2
+  twig: "{#", // Twig
+  erb: "<%", // Embedded Ruby
+  ejs: "<%", // Embedded JavaScript
+  mustache: "{{!", // Mustache
+  handlebars: "{{!", // Handlebars
+  liquid: "{%", // Liquid
+  njk: "{#", // Nunjucks
+};
+
+// Function to dynamically generate the correct comment
+function getCommentStyleForFile(fileName) {
+  const fileExtension = fileName.split(".").pop();
+  return commentStyles[fileExtension] || "//"; // Default to "//" if no matching extension is found
+}
+
+// <---------------------------------------------------------->
+
 function isFileUnchanged(filePath, prevMtime) {
   const currentMtime = fs.statSync(filePath).mtimeMs;
   return prevMtime === currentMtime;
@@ -121,15 +243,17 @@ class CustomSidebarProvider {
             );
             const milliseconds = timestamp.getTime();
 
+            const commentSymbol = getCommentStyleForFile(message.fileName);
+
             let isDeleteAction = false;
 
             // Determine action
             if (message.action === "done") {
-              updatedLineText = `// DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
+              updatedLineText = `${commentSymbol} DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
             } else if (message.action === "undo") {
-              updatedLineText = `// ${message.keyword}: ${message.comment}`;
+              updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment}`;
             } else if (message.action === "disable") {
-              updatedLineText = `// ${message.keyword} : ${message.comment}`;
+              updatedLineText = `${commentSymbol} ${message.keyword} : ${message.comment}`;
             } else if (message.action === "delete") {
               isDeleteAction = true;
             } else {

@@ -24,8 +24,6 @@ function isExcluded(fileUri) {
 }
 
 // Importing "preDefinedKeywords"
-// const preDefinedKeywords = require("./../utility/highlight_word_required/preDefinedKeywords");
-
 const preDefinedKeywords = () => {
   const filePath = require.resolve(
     "./../utility/highlight_word_required/preDefinedKeywords"
@@ -36,6 +34,7 @@ const preDefinedKeywords = () => {
 
 // Importing "fileExtensions"
 const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
+const commentStyles = require("../utility/file_scanner_required/commentStyles");
 // Importing "highlightTimeStamps"
 const { highlightTimeStamps } = require("./highlightWord"); // store all keyword timeStamp
 const { saveTimestamp, loadTimestampsFromDB } = require("./../db/levelDb");
@@ -77,7 +76,7 @@ const scanAllFilesContainKeywords = async () => {
   );
 
   // Regular expression to match the "keyword present" files
-  const regex = /\/\/\s*\b([A-Z_]+):/gm;
+  //const regex = /\/\/\s*\b([A-Z_]+):/gm;
 
   // Push the preDefinedKeywords once outside the loop
   resultData.push({ preDefinedKeywords: preDefinedKeywords() });
@@ -85,8 +84,57 @@ const scanAllFilesContainKeywords = async () => {
   for (const file of files) {
     try {
       if (isExcluded(file)) continue; // ⛔ Skip excluded folders
-      let content;
 
+      const ext = path.extname(file.fsPath).replace(".", "").toLowerCase();
+      const commentSymbol = commentStyles[ext] || "//";
+
+      let regex;
+
+      const escapeRegex = (symbol) =>
+        symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+      if (commentSymbol === ";") {
+        // Match ; KEY: description (for AHK, INI)
+        regex = new RegExp(
+          `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+          "gm"
+        );
+      } else if (commentSymbol === "#") {
+        // Match # KEY: description (for Python, Bash, etc.)
+        regex = new RegExp(`^\\s*#\\s*([A-Z_]+):\\s*(.*)`, "gm");
+      } else {
+        // default : line comments like //, --
+        regex = new RegExp(
+          `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+          "gm"
+        );
+      }
+
+      // Escape special characters for the comment symbol (if needed)
+      // const escapeRegex = (symbol) =>
+      //   symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+      // if (commentSymbol === "/*") {
+      //   // Match /* KEY: description */
+      //   regex = /\/\*\s*([A-Z_]+):\s*(.*?)\s*\*\//gm;
+      // } else if (commentSymbol === ";") {
+      //   // Match ; KEY: description (for AHK, INI)
+      //   regex = new RegExp(
+      //     `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+      //     "gm"
+      //   );
+      // } else if (commentSymbol === "#") {
+      //   // Match # KEY: description (for Python, Bash, etc.)
+      //   regex = new RegExp(`^\\s*#\\s*([A-Z_]+):\\s*(.*)`, "gm");
+      // } else {
+      //   // default : line comments (//, etc.)
+      //   regex = new RegExp(
+      //     `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+      //     "gm"
+      //   );
+      // }
+
+      let content;
       // 📝 First, check if the file is open in an editor
       const openEditor = vscode.window.visibleTextEditors.find(
         (editor) => editor.document.uri.fsPath === file.fsPath
@@ -95,6 +143,7 @@ const scanAllFilesContainKeywords = async () => {
       // if it's open
       if (openEditor) {
         content = openEditor.document.getText(); // Get real-time content
+        //console.log("RealTimeContent:", content);
       } else {
         // 📂 If not open, read from disk
         // content = Buffer.from(
@@ -104,10 +153,13 @@ const scanAllFilesContainKeywords = async () => {
         content = Buffer.from(
           await vscode.workspace.fs.readFile(file)
         ).toString("utf8"); // 🟢 Read from disk
+        //console.log("WholeDisk Content:", content)
       }
       //resultData.push({ preDefinedKeywords });
 
       const lines = content.split("\n");
+
+      console.log("Lines", lines);
       for (let i = 0; i < lines.length; i++) {
         let match;
         while ((match = regex.exec(lines[i]))) {
@@ -212,11 +264,58 @@ const watchFiles = async () => {
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor || event.document !== activeEditor.document) return;
 
+    const ext = path
+      .extname(event.document.fileName)
+      .replace(".", "")
+      .toLowerCase();
+    const commentSymbol = commentStyles[ext] || "//";
+
+    const escapeRegex = (symbol) =>
+      symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+    if (commentSymbol === ";") {
+      // Match ; KEY: description (for AHK, INI)
+      regex = new RegExp(
+        `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+        "gm"
+      );
+    } else if (commentSymbol === "#") {
+      // Match # KEY: description (for Python, Bash, etc.)
+      regex = new RegExp(`^\\s*#\\s*([A-Z_]+):\\s*(.*)`, "gm");
+    } else {
+      // default : line comments like //, --
+      regex = new RegExp(
+        `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+        "gm"
+      );
+    }
+
+    // const escapeRegex = (symbol) =>
+    //   symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+    // let regex;
+    // if (commentSymbol === "/*") {
+    //   // This won't realistically appear during live editing
+    //   regex = /\/\*\s*([A-Z_]+):\s*(.*?)\s*\*\//gm;
+    // } else if (commentSymbol === ";") {
+    //   regex = new RegExp(
+    //     `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+    //     "gm"
+    //   );
+    // } else if (commentSymbol === "#") {
+    //   regex = new RegExp(`^\\s*#\\s*([A-Z_]+):\\s*(.*)`, "gm");
+    // } else {
+    //   regex = new RegExp(
+    //     `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+    //     "gm"
+    //   );
+    // }
+
     const text = event.document.getText();
     const matches = new Map();
 
     // keyword : Description`
-    const regex = /^\/\/\s*([A-Z_]+):\s*(.*)$/gm;
+    //const regex = /^\/\/\s*([A-Z_]+):\s*(.*)$/gm;
     for (const match of text.matchAll(regex)) {
       const keyword = match[1].trim();
       const description = match[2]?.trim() || "No Description";
