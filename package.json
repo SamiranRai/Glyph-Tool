@@ -17,10 +17,11 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:scanAllfiles.containDefaultKeyword",
-    "onCommand:highlightWord.afterColon",
-    "onView:customSidebar"
-  ],
+  "onStartupFinished",
+  "onCommand:highlightWord.afterColon",
+  "onCommand:scanAllfiles.containDefaultKeyword",
+  "onView:customSidebar"
+],
   "main": "./extension.js",
   "contributes": {
     "commands": [

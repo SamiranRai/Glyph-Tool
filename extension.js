@@ -21,6 +21,9 @@ const CustomSidebarProvider = require("./src/sidebar/customSidebar");
 async function activate(context) {
   await initDB(context, highlightTimeStamps); // Init initDB() ->first
 
+  // Highlight words when the extension is activated
+  highlightWords(context);
+
   // Registering Highlight Word Command
   let highlightWordCommand = vscode.commands.registerCommand(
     "highlightWord.afterColon",
@@ -47,9 +50,32 @@ async function activate(context) {
   watchFiles(); // 🚀 This ensures real-time updates
 
   // Apply highlight automatically
-  vscode.window.onDidChangeActiveTextEditor(highlightWords);
-  vscode.workspace.onDidChangeTextDocument(highlightWords);
-  await highlightWords(context);
+  vscode.window.onDidChangeActiveTextEditor((editor) => {
+    if (editor) {
+      highlightWords(context);
+    }
+  });
+
+  vscode.workspace.onDidChangeTextDocument((event) => {
+    highlightWords(context);
+  });
+
+  // Wait for the first file to open if there’s no active editor yet
+  if (vscode.window.activeTextEditor) {
+    await highlightWords(context);
+  } else {
+    const disposable = vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        console.log("First file detected: Applying highlight.");
+        highlightWords(context);
+        disposable.dispose();
+      }
+    });
+  }
+
+  // vscode.window.onDidChangeActiveTextEditor(highlightWords);
+  // vscode.workspace.onDidChangeTextDocument(highlightWords);
+  // await highlightWords(context);
 }
 
 function deactivate() {}
