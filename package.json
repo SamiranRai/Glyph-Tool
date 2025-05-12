@@ -3,7 +3,7 @@
   "displayName": "Glyph Tool",
   "publisher": "SamiranRay",
   "description": "Instantly highlight and track TODOs, FIXMEs, and Custom Keywords as you code.",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "license": "MIT",
   "repository": {
     "type": "git",
