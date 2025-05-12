@@ -243,15 +243,50 @@ class CustomSidebarProvider {
             );
             const milliseconds = timestamp.getTime();
 
+            // CURRENT FILE COMMENT SYMBOL
             const commentSymbol = getCommentStyleForFile(message.fileName);
+
+            // Determine action
+            const isMultiline = [
+              "<!--",
+              "/*",
+              "(*",
+              "{#",
+              "<%",
+              "{{!",
+              "{%",
+            ].includes(commentSymbol);
+
+            // Multiline edning comment
+            const commentEndMap = {
+              "<!--": "-->",
+              "/*": "*/",
+              "(*": "*)",
+              "{#": "#}",
+              "<%": "%>",
+              "{{!": "}}",
+              "{%": "%}",
+            };
 
             let isDeleteAction = false;
 
             // Determine action
             if (message.action === "done") {
-              updatedLineText = `${commentSymbol} DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
+              if (isMultiline) {
+                const commentEnd = commentEndMap[commentSymbol];
+                updatedLineText = `${commentSymbol} DONE: "${message.keyword}" [${formattedTimestamp} | ${milliseconds}] ${commentEnd}`;
+              } else {
+                updatedLineText = `${commentSymbol} DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
+              }
+              //updatedLineText = `${commentSymbol} DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
             } else if (message.action === "undo") {
-              updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment}`;
+              if (isMultiline) {
+                const commentEnd = commentEndMap[commentSymbol];
+                updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment} ${commentEnd}`;
+              } else {
+                updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment}`;
+              }
+              //updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment}`;
             } else if (message.action === "disable") {
               updatedLineText = `${commentSymbol} ${message.keyword} : ${message.comment}`;
             } else if (message.action === "delete") {
