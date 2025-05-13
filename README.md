@@ -41,57 +41,65 @@
 
 Below are video demonstrations of Glyph in action, so you can get a quick visual overview of each feature:
 
-### 1. Creating Custom Keywords  
-Create and customize your own task keywords with unique colors.  
+### 1. Creating Custom Keywords
+
+Create and customize your own task keywords with unique colors.
 
 https://github.com/user-attachments/assets/d2fd9fb6-ba52-47a0-8d94-d9efecea178b
 
 ---
 
-### 2. Opening Glyph Sidebar & Navigating Tasks  
-Click the Glyph icon in the sidebar to open your task dashboard. Navigate instantly to any task.  
+### 2. Opening Glyph Sidebar & Navigating Tasks
+
+Click the Glyph icon in the sidebar to open your task dashboard. Navigate instantly to any task.
 
 https://github.com/user-attachments/assets/215fbf3f-961a-4fe7-bc30-862559d023d5
 
 ---
 
-### 3. Mark as Done, Undo, Delete, Disable  
-Manage your tasks' lifecycle — mark them complete, undo, disable temporarily, or delete.  
+### 3. Mark as Done, Undo, Delete, Disable
+
+Manage your tasks' lifecycle — mark them complete, undo, disable temporarily, or delete.
 
 https://github.com/user-attachments/assets/1561d80f-39a8-4944-9fa3-26e5c256e7cf
 
 ---
 
-### 4. Delete All Tasks  
-Quickly clear all tasks from the view with a single click.  
+### 4. Delete All Tasks
+
+Quickly clear all tasks from the view with a single click.
 
 https://github.com/user-attachments/assets/d643b030-6f1e-4837-aed0-0dceebb2fcbf
 
 ---
 
-### 5. Assign Colors to Keywords  
-Visually distinguish between task types by assigning different highlight colors.  
+### 5. Assign Colors to Keywords
+
+Visually distinguish between task types by assigning different highlight colors.
 
 https://github.com/user-attachments/assets/dd30ee40-11a8-40cf-aa89-58f9f1827acc
 
 ---
 
-### 6. Search by File, Keyword, or Description  
-Use the powerful search to locate tasks in large codebases.  
+### 6. Search by File, Keyword, or Description
+
+Use the powerful search to locate tasks in large codebases.
 
 https://github.com/user-attachments/assets/6be00868-4eda-4727-931c-d124df7d889c
 
 ---
 
-### 7. Filter Options  
-Filter tasks using different criteria like status, keyword, or file.  
+### 7. Filter Options
+
+Filter tasks using different criteria like status, keyword, or file.
 
 https://github.com/user-attachments/assets/303127b1-e377-46ae-aef9-d996dd6473bb
 
 ---
 
-### 8. Perfectly Themed  
-Glyph fits beautifully into your editor whether you’re in light mode or dark.  
+### 8. Perfectly Themed
+
+Glyph fits beautifully into your editor whether you’re in light mode or dark.
 
 https://github.com/user-attachments/assets/2a999939-0068-46bb-ab7f-ffdfc9c95d23
 
@@ -132,8 +140,9 @@ https://github.com/user-attachments/assets/2a999939-0068-46bb-ab7f-ffdfc9c95d23
 ---
 
 Future updates will include:
-- Collections tab  
-- AI-powered task grouping (planned)  
+
+- Collections tab
+- AI-powered task grouping (planned)
 - Task syncing (planned)
 
 ---
@@ -145,7 +154,7 @@ We welcome contributions! Here's how to get started:
 1. Fork the repo
 2. Create a new branch: `git checkout -b feature/my-feature`
 3. Make your changes
-4. Commit and push: `git commit -m 'Add new feature'`  
+4. Commit and push: `git commit -m 'Add new feature'`
 5. Submit a pull request
 
 For bugs and suggestions, [open an issue](https://github.com/SamiranRai/Glyph-Tool/issues).
