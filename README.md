@@ -46,25 +46,25 @@ Below are image and video demonstrations of Glyph in action, providing a quick v
   
 ![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/Screenshot%202025-05-13%20at%2012.44.50.png)
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/5f338798608922d552132121caf90bcc74876f18/media/Screenshot%202025-05-13%20at%2012.45.35.png)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/Screenshot%202025-05-13%20at%2012.45.35.png)
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/5f338798608922d552132121caf90bcc74876f18/media/Screenshot%202025-05-13%20at%2012.46.25.png)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/Screenshot%202025-05-13%20at%2012.46.25.png)
 
 
 
 - with `Dark` color theme:
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/5f338798608922d552132121caf90bcc74876f18/media/Screenshot%202025-05-13%20at%2012.48.06.png)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/Screenshot%202025-05-13%20at%2012.48.06.png)
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/5f338798608922d552132121caf90bcc74876f18/media/Screenshot%202025-05-13%20at%2012.48.41.png)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/Screenshot%202025-05-13%20at%2012.48.41.png)
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/5f338798608922d552132121caf90bcc74876f18/media/Screenshot%202025-05-13%20at%2012.49.18.png)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/Screenshot%202025-05-13%20at%2012.49.18.png)
 
 ### 1. Creating Custom Keywords
 
 Create and customize your own task keywords with unique colors.
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/b5c5f8f6dde49e4346d2aea91f826deb2df3b7a4/media/keyword-creation.gif)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/keyword-creation.gif)
 
 ---
 
@@ -72,7 +72,7 @@ Create and customize your own task keywords with unique colors.
 
 Click the Glyph icon in the sidebar to open your task dashboard. Navigate instantly to any task.
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/b5c5f8f6dde49e4346d2aea91f826deb2df3b7a4/media/jumptofileline.gif)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/jumptofileline.gif)
 
 ---
 
@@ -80,7 +80,7 @@ Click the Glyph icon in the sidebar to open your task dashboard. Navigate instan
 
 Manage your tasks' lifecycle — mark them complete, undo, disable temporarily, or delete.
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/b5c5f8f6dde49e4346d2aea91f826deb2df3b7a4/media/done-undo.gif)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/done-undo.gif)
 
 ---
 
@@ -88,7 +88,7 @@ Manage your tasks' lifecycle — mark them complete, undo, disable temporarily, 
 
 Quickly clear all tasks from the view with a single click.
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/7a3b01ee4fd0324f5ae1bd1b954739e13f68c0fd/media/delete%20all.gif)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/delete%20all.gif)
 
 ---
 
@@ -96,7 +96,7 @@ Quickly clear all tasks from the view with a single click.
 
 Visually distinguish between task types by assigning different highlight colors.
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/b5c5f8f6dde49e4346d2aea91f826deb2df3b7a4/media/manage%20keyword.gif)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/manage%20keyword.gif)
 
 ---
 
@@ -104,7 +104,7 @@ Visually distinguish between task types by assigning different highlight colors.
 
 Use the powerful search to locate tasks in large codebases.
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/b5c5f8f6dde49e4346d2aea91f826deb2df3b7a4/media/search.gif)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/search.gif)
 
 ---
 
@@ -112,7 +112,7 @@ Use the powerful search to locate tasks in large codebases.
 
 Filter tasks using different criteria like status, keyword, or file.
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/b5c5f8f6dde49e4346d2aea91f826deb2df3b7a4/media/filter.gif)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/filter.gif)
 
 ---
 
@@ -120,7 +120,7 @@ Filter tasks using different criteria like status, keyword, or file.
 
 Glyph fits beautifully into your editor whether you’re in light mode or dark.
 
-![](https://github.com/SamiranRai/Glyph-Tool/blob/b5c5f8f6dde49e4346d2aea91f826deb2df3b7a4/media/suit-all-theme.gif)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/suit-all-theme.gif)
 
 ---
 
