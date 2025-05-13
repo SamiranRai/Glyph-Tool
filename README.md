@@ -44,7 +44,7 @@ Below are image and video demonstrations of Glyph in action, providing a quick v
 ### Preview
 - with `Light` color theme:
   
-![](https://github.com/SamiranRai/Glyph-Tool/blob/5f338798608922d552132121caf90bcc74876f18/media/Screenshot%202025-05-13%20at%2012.44.50.png)
+![](https://raw.githubusercontent.com/SamiranRai/Glyph-Tool/refs/heads/main/media/Screenshot%202025-05-13%20at%2012.44.50.png)
 
 ![](https://github.com/SamiranRai/Glyph-Tool/blob/5f338798608922d552132121caf90bcc74876f18/media/Screenshot%202025-05-13%20at%2012.45.35.png)
 
