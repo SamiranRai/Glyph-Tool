@@ -18,6 +18,8 @@ Coming Soon: Collections
 We’re building something special in the Collections Tab — stay tuned.
 ✨ How to Use
 
+https://github.com/user-attachments/assets/303127b1-e377-46ae-aef9-d996dd6473bb
+
 Open any code file.
 Add a comment with a keyword, like:
 // todo : Refactor login validation
