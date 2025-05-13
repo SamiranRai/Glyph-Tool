@@ -1,98 +1,168 @@
 # 🌟 Glyph — Highlight TODOs, FIXMEs, Custom Keywords & More in VS Code
 
-**Glyph** is a simple yet powerful Visual Studio Code extension that helps developers highlight, track, and manage task comments directly within their codebase. Whether it’s `TODO`, `FIXME`, or your own custom keyword like `BUG`, `IMPROVE`, or `OPTIMIZE`, Glyph ensures that nothing slips through the cracks.
+**Glyph** is a simple yet powerful Visual Studio Code extension that helps developers highlight, track, and manage task-related comments directly within their codebase. Whether it’s `TODO`, `FIXME`, or your own custom keywords like `BUG`, `IMPROVE`, or `REFACTOR`, Glyph ensures that nothing slips through the cracks.
 
-Stay organized. Stay productive. Stay focused.
-
----
-
-## 🚀 Features
-
-- **🔍 Instant Detection**  
-  Automatically highlights keywords like `TODO`, `FIXME`, or any custom tag — no need to save.
-
-- **🎨 Custom Keywords**  
-  Create your own keywords like `IMPROVE`, `BUG`, or `REFACTOR`, and assign unique colors to each.
-
-- **📂 Organized Task View**  
-  View all active keyword-based task comments under the dedicated Task Tab.
-
-- **✅ Done Tab**  
-  Mark tasks as done, undo them anytime, or delete them permanently.
-
-- **🛠️ Keyword Manager**  
-  Add, edit, delete, and assign colors to custom keywords easily.
-
-- **📦 Collections (Coming Soon)**  
-  We're working on something special in the Collections tab — stay tuned!
+> Stay organized. Stay productive. Stay focused.
 
 ---
 
-## 📽️ Live Previews & Key Functionalities
+## Features
 
-Below are short video demonstrations of Glyph in action, helping you understand each feature instantly.
+- **Instant Detection**  
+  Highlights keywords like `TODO`, `FIXME`, or any custom tag as you type — no save required.
 
-### 1. 🏷️ **Creating Custom Keywords**
-Create and customize your own task keywords and assign a distinct highlight color for each.
+- **Custom Keywords**  
+  Define your own task labels like `OPTIMIZE`, `DEBUG`, or `REFACTOR`, and assign unique colors to each.
+
+- **Central Task View**  
+  All keyword-based comments are listed in a dedicated Glyph sidebar panel.
+
+- **Done Tab**  
+  Mark tasks as done, undo them, or delete permanently to declutter your workspace.
+
+- **Keyword Manager**  
+  Easily add, edit, remove, and assign colors to your custom keywords.
+
+- **Search and Filter**  
+  Search tasks by file, keyword, or description. Apply filters to narrow down exactly what you need.
+
+- **Bulk Delete**  
+  Clean up all tasks with one click.
+
+- **Theme Compatible**  
+  Beautifully designed to adapt with both dark and light VS Code themes.
+
+- **Collections (Coming Soon)**  
+  Something exciting is brewing — the Collections tab is under development!
+
+---
+
+## Live Previews & Key Functionalities
+
+Below are video demonstrations of Glyph in action, so you can get a quick visual overview of each feature:
+
+### 1. Creating Custom Keywords  
+Create and customize your own task keywords with unique colors.  
 
 https://github.com/user-attachments/assets/d2fd9fb6-ba52-47a0-8d94-d9efecea178b
 
 ---
 
-### 2. 📌 **Opening Glyph Sidebar & Navigating Tasks**
-Click on the Glyph icon in the VS Code sidebar to open your task dashboard. Click on any task to jump directly to its file and exact line.
+### 2. Opening Glyph Sidebar & Navigating Tasks  
+Click the Glyph icon in the sidebar to open your task dashboard. Navigate instantly to any task.  
 
 https://github.com/user-attachments/assets/215fbf3f-961a-4fe7-bc30-862559d023d5
 
 ---
 
-### 3. ✅ **Mark as Done, Undo, Delete, Disable**
-Easily manage the status of your tasks. Mark them as done, undo completed ones, delete, or temporarily disable them.
+### 3. Mark as Done, Undo, Delete, Disable  
+Manage your tasks' lifecycle — mark them complete, undo, disable temporarily, or delete.  
 
 https://github.com/user-attachments/assets/1561d80f-39a8-4944-9fa3-26e5c256e7cf
 
 ---
 
-### 4. 🧹 **Delete All Tasks**
-Bulk delete all keyword-based tasks in a single click to keep your project clean and focused.
+### 4. Delete All Tasks  
+Quickly clear all tasks from the view with a single click.  
 
 https://github.com/user-attachments/assets/d643b030-6f1e-4837-aed0-0dceebb2fcbf
 
 ---
 
-### 5. 🎨 **Assign Colors to Keywords**
-Visually differentiate your task types with unique colors assigned to each keyword for better context and readability.
+### 5. Assign Colors to Keywords  
+Visually distinguish between task types by assigning different highlight colors.  
 
 https://github.com/user-attachments/assets/dd30ee40-11a8-40cf-aa89-58f9f1827acc
 
 ---
 
-### 6. 🔍 **Search by File, Keyword, or Description**
-Find what you need in seconds — search tasks across files using keywords or even within the task descriptions.
+### 6. Search by File, Keyword, or Description  
+Use the powerful search to locate tasks in large codebases.  
 
 https://github.com/user-attachments/assets/6be00868-4eda-4727-931c-d124df7d889c
 
 ---
 
-### 6. 🔍 **Filter Options**
-Filter option content
+### 7. Filter Options  
+Filter tasks using different criteria like status, keyword, or file.  
 
 https://github.com/user-attachments/assets/303127b1-e377-46ae-aef9-d996dd6473bb
 
 ---
 
-### 7. 🌗 **Perfectly Themed**
-Whether you're using a light or dark theme, Glyph fits right in with beautiful, adaptive design.
+### 8. Perfectly Themed  
+Glyph fits beautifully into your editor whether you’re in light mode or dark.  
 
 https://github.com/user-attachments/assets/2a999939-0068-46bb-ab7f-ffdfc9c95d23
 
 ---
 
-## ✨ How to Use Glyph
+## How to Use Glyph
 
-1. Open any source code file in VS Code.
+1. Open any source code file in Visual Studio Code.
 2. Add a comment using a supported or custom keyword:
    ```js
-   // todo : Refactor login validation
-   // fix : Resolve memory leak in fetchData
-   // improve : Optimize image loading speed
+   // todo : Refactor the login logic
+   // fix : Prevent memory leak in data fetch
+   // improve : Reduce initial load time
+   ```
+3. Open the Glyph sidebar by clicking its icon.
+4. View, mark as done, undo, delete, or filter tasks with ease.
+5. You can define any keyword in any file type — Glyph automatically detects the correct comment style.
+
+---
+
+## Installation
+
+1. Open VS Code.
+2. Go to **Extensions** (`Ctrl+Shift+X` or `Cmd+Shift+X`).
+3. Search for **Glyph Tool**.
+4. Click **Install**.
+5. Start managing your inline tasks instantly!
+
+---
+
+## Pro Tips
+
+- Use consistent formatting for your task comments.
+- Assign unique colors for better visual grouping of similar tasks.
+- Use filters and search when working with large projects.
+- Regularly mark completed tasks to reduce clutter and stay focused.
+
+---
+
+Future updates will include:
+- Collections tab  
+- AI-powered task grouping (planned)  
+- Task syncing (planned)
+
+---
+
+## Contributing
+
+We welcome contributions! Here's how to get started:
+
+1. Fork the repo
+2. Create a new branch: `git checkout -b feature/my-feature`
+3. Make your changes
+4. Commit and push: `git commit -m 'Add new feature'`  
+5. Submit a pull request
+
+For bugs and suggestions, [open an issue](https://github.com/SamiranRai/Glyph-Tool/issues).
+
+---
+
+## Feedback & Support
+
+We'd love to hear your thoughts!
+
+- Found a bug? Have a suggestion? [Open an issue](https://github.com/SamiranRai/Glyph-Tool/issues)
+- Need help? Reach out through discussions or contact the maintainer.
+
+---
+
+## Final Thoughts
+
+Glyph makes it easier to stay on top of your development tasks without leaving your code editor. Try it out and keep your code — and your mind — clean and focused.
+
+---
