@@ -713,11 +713,14 @@ function renderFallbackIfnoData(data, Tab) {
     <strong>🚀 How to create your first keyword:</strong>
     <ol>
       <li>Open any code file you’re working on.</li>
-      <li>Add a comment like this anywhere in your code:</li>
-      <pre><code>// Todo: Refactor login validation</code></pre>
-      <li>Or use your own keyword, like:</li>
-      <pre><code>// Improve: Optimize image loading speed</code></pre>
-      <li>The extension will detect it automatically — no need to save.</li>
+  <li>Add a comment like this anywhere in your code:</li>
+  <pre><code>// TODO: Refactor login validation</code></pre>
+  <li>Or use your own keyword, like:</li>
+  <pre><code>// IMPROVE: Optimize image loading speed</code></pre>
+  <li>The extension will detect it automatically — no need to save.</li>
+  <li>Works across all programming languages — like Python, Java, HTML, CSS, and more!</li>
+  <li>Example in Python:</li>
+  <pre><code># TODO: Clean up this function</code></pre>
     </ol>
     <p>✨ You can write <strong>any custom keyword</strong> you like — there's no limit!</p>
     <p class="bottom-p-tag">🎨 Want to highlight it with a custom color? Just click the <strong>“Add New Keyword”</strong> button to create one.</p>
