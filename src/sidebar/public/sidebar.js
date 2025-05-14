@@ -47,6 +47,10 @@ collectionSearchInput = document.getElementById("input-filter-collection");
 // DELETE ALL DONE ITEM BUTTON
 const deleteAllDoneItemBtn = document.getElementById("deleteAllDoneitemBtn");
 
+// TASK & DONE ITEM COUNT
+const taskItemCount = document.getElementById("task-item-count");
+const doneItemCount = document.getElementById("done-item-count");
+
 // CUSTOM ERROR MESSAGE (FRONTEND)
 function showToast(message) {
   const toast = document.getElementById("toast");
@@ -738,6 +742,7 @@ function renderFallbackIfnoData(data, Tab) {
       <p>You haven’t marked any custom keywords as done yet — or your search didn’t match any completed ones. Once you do, they’ll appear here, and you’ll be able to undo or delete them anytime.</p>
       </div>
       </div>`;
+
         break;
     }
     // exit from current code
@@ -745,6 +750,40 @@ function renderFallbackIfnoData(data, Tab) {
   }
 }
 // <--------- RENDER-FALLBACK-MESSAGE :END --------->
+//
+//
+//
+//
+//
+// <--------- UPDATE ITEM COUNT INDEPENDTLY :START --------->
+
+// Fix_item_count: fix item count showing wrong and implement a better method
+// function renderIndependentItemCount(originalData) {
+//   console.log("DEBUG: REndering INDEP:", originalData);
+
+//   const taskData = originalData.filter((item) => item.keyword !== "DONE");
+//   const doneData = originalData.filter((item) => item.keyword === "DONE");
+
+//   if (taskData.length === 0) {
+//     // Hide
+//     taskItemCount.style.display = "none";
+//   } else if (taskData.length >= 2) {
+//     // Block
+//     taskItemCount.style.display = "block";
+//     taskItemCount.innerHTML = taskData.length;
+//   }
+
+//   if (doneData.length === 0) {
+//     // Hide
+//     doneItemCount.style.display = "none";
+//   } else if (doneData.length >= 2) {
+//     // Block
+//     doneItemCount.style.display = "block";
+//     doneItemCount.innerHTML = doneData.length;
+//   }
+// }
+
+// <--------- UPDATE ITEM COUNT INDEPENDTLY :END --------->
 //
 //
 //
@@ -806,6 +845,10 @@ async function updateSidebarUI(newData) {
       Done: newData.filter((item) => item.keyword === "DONE"),
       Collection: groupData(newData.filter((item) => item.keyword !== "DONE")), // !for testing purpose
     }[Tab] || [];
+
+  // Uncomment: uncomment the renderIndependentItemCount()
+  // RENDER INDEPENDENT ITEM COUNT
+  //renderIndependentItemCount(newData);
 
   // CHECK IF THE TAB HAVE DATA!
   if (renderFallbackIfnoData(filteredData, Tab)) return;

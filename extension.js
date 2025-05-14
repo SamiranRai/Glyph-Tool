@@ -50,32 +50,32 @@ async function activate(context) {
   watchFiles(); // 🚀 This ensures real-time updates
 
   // Apply highlight automatically
-  vscode.window.onDidChangeActiveTextEditor((editor) => {
-    if (editor) {
-      highlightWords(context);
-    }
-  });
+  // vscode.window.onDidChangeActiveTextEditor((editor) => {
+  //   if (editor) {
+  //     highlightWords(context);
+  //   }
+  // });
 
-  vscode.workspace.onDidChangeTextDocument((event) => {
-    highlightWords(context);
-  });
+  // vscode.workspace.onDidChangeTextDocument((event) => {
+  //   highlightWords(context);
+  // });
 
-  // Wait for the first file to open if there’s no active editor yet
-  if (vscode.window.activeTextEditor) {
-    await highlightWords(context);
-  } else {
-    const disposable = vscode.window.onDidChangeActiveTextEditor((editor) => {
-      if (editor) {
-        console.log("First file detected: Applying highlight.");
-        highlightWords(context);
-        disposable.dispose();
-      }
-    });
-  }
+  // // Wait for the first file to open if there’s no active editor yet
+  // if (vscode.window.activeTextEditor) {
+  //   await highlightWords(context);
+  // } else {
+  //   const disposable = vscode.window.onDidChangeActiveTextEditor((editor) => {
+  //     if (editor) {
+  //       console.log("First file detected: Applying highlight.");
+  //       highlightWords(context);
+  //       disposable.dispose();
+  //     }
+  //   });
+  // }
 
-  // vscode.window.onDidChangeActiveTextEditor(highlightWords);
-  // vscode.workspace.onDidChangeTextDocument(highlightWords);
-  // await highlightWords(context);
+  vscode.window.onDidChangeActiveTextEditor(highlightWords);
+  vscode.workspace.onDidChangeTextDocument(highlightWords);
+  await highlightWords(context);
 }
 
 function deactivate() {}

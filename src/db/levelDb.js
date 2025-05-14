@@ -1,3 +1,5 @@
+// LevelDb_error: failed to delete DJDJ:: Error: Database is not open
+
 const { Level } = require("level");
 
 let db; // LevelDB instance

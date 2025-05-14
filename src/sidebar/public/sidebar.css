@@ -1038,4 +1038,15 @@ code {
   width: 13.99px;
 }
 
+.item_count {
+  background: #646464; 
+    padding: 0px 4.9999px;
+    font-size: 10.9px;
+    border-radius: 14px;
+    background-color: var(--vscode-button-background);
+    color: var(--vscode-button-foreground);
+    /*Remove: remove this display none property*/
+    display: none;
+}
+
 
