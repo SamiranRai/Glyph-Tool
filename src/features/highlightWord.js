@@ -64,7 +64,7 @@ async function highlightWords(context) {
   const escapedPrefix = commentPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
   const regex = new RegExp(
-    `^[ \\t]*${escapedPrefix}[ \\t]*([a-zA-Z_][a-zA-Z0-9_]*)[:][^\\n]*$`,
+    `^[ \\t]*${escapedPrefix}[ \\t]*@([a-zA-Z_][a-zA-Z0-9_]*)[:][^\\n]*$`,
     "gm"
   );
   let keywordRanges = new Map();

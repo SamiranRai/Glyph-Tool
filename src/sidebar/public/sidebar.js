@@ -757,31 +757,31 @@ function renderFallbackIfnoData(data, Tab) {
 //
 // <--------- UPDATE ITEM COUNT INDEPENDTLY :START --------->
 
-// Fix_item_count: fix item count showing wrong and implement a better method
-// function renderIndependentItemCount(originalData) {
-//   console.log("DEBUG: REndering INDEP:", originalData);
+// DONE: "FIX_ITEM_COUNT" - fix item count showing wrong and implement a better method [16 May 2025 | 1747381022823]
+function renderIndependentItemCount(originalData) {
+  console.log("DEBUG: REndering INDEP:", originalData);
 
-//   const taskData = originalData.filter((item) => item.keyword !== "DONE");
-//   const doneData = originalData.filter((item) => item.keyword === "DONE");
+  const taskData = originalData.filter((item) => item.keyword !== "DONE");
+  const doneData = originalData.filter((item) => item.keyword === "DONE");
 
-//   if (taskData.length === 0) {
-//     // Hide
-//     taskItemCount.style.display = "none";
-//   } else if (taskData.length >= 2) {
-//     // Block
-//     taskItemCount.style.display = "block";
-//     taskItemCount.innerHTML = taskData.length;
-//   }
+  if (taskData.length === 0) {
+    // Hide
+    taskItemCount.style.display = "none";
+  } else if (taskData.length >= 2) {
+    // Block
+    taskItemCount.style.display = "block";
+    taskItemCount.innerHTML = taskData.length - 1;
+  }
 
-//   if (doneData.length === 0) {
-//     // Hide
-//     doneItemCount.style.display = "none";
-//   } else if (doneData.length >= 2) {
-//     // Block
-//     doneItemCount.style.display = "block";
-//     doneItemCount.innerHTML = doneData.length;
-//   }
-// }
+  if (doneData.length === 0) {
+    // Hide
+    doneItemCount.style.display = "none";
+  } else if (doneData.length >= 2) {
+    // Block
+    doneItemCount.style.display = "block";
+    doneItemCount.innerHTML = doneData.length - 1;
+  }
+}
 
 // <--------- UPDATE ITEM COUNT INDEPENDTLY :END --------->
 //
@@ -846,9 +846,9 @@ async function updateSidebarUI(newData) {
       Collection: groupData(newData.filter((item) => item.keyword !== "DONE")), // !for testing purpose
     }[Tab] || [];
 
-  // Uncomment: uncomment the renderIndependentItemCount()
+  // DONE: "UNCOMMENT" - uncomment the renderIndependentItemCount() [16 May 2025 | 1747381018771]
   // RENDER INDEPENDENT ITEM COUNT
-  //renderIndependentItemCount(newData);
+  renderIndependentItemCount(newData);
 
   // CHECK IF THE TAB HAVE DATA!
   if (renderFallbackIfnoData(filteredData, Tab)) return;

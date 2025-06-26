@@ -96,16 +96,16 @@ const scanAllFilesContainKeywords = async () => {
       if (commentSymbol === ";") {
         // Match ; KEY: description (for AHK, INI)
         regex = new RegExp(
-          `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+          `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
           "gm"
         );
       } else if (commentSymbol === "#") {
         // Match # KEY: description (for Python, Bash, etc.)
-        regex = new RegExp(`^\\s*#\\s*([A-Z_]+):\\s*(.*)`, "gm");
+        regex = new RegExp(`^\\s*#\\s*@([A-Z_]+):\\s*(.*)`, "gm");
       } else {
         // default : line comments like //, --
         regex = new RegExp(
-          `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+          `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
           "gm"
         );
       }
@@ -159,7 +159,6 @@ const scanAllFilesContainKeywords = async () => {
 
       const lines = content.split("\n");
 
-      console.log("Lines", lines);
       for (let i = 0; i < lines.length; i++) {
         let match;
         while ((match = regex.exec(lines[i]))) {
@@ -182,8 +181,6 @@ const scanAllFilesContainKeywords = async () => {
             await getTimestamp(match[1], highlightTimeStamps);
             timeStamp = highlightTimeStamps.get(match[1] + ":");
           }
-
-          console.log("fileScanner:predefinedkeywords", preDefinedKeywords());
 
           // Push the date to "resultData" array
           resultData.push({
@@ -215,8 +212,6 @@ const scanAllFilesContainKeywords = async () => {
   // also returning "resultData" for watchFiles--> previous keyword init scanning
   return resultData;
 };
-
-console.log("Before scan:", highlightTimeStamps);
 
 //Store previously detected keywords to avoid unnecessary scans
 let previousComments = new Map(); // Stores keyword-description pairs
@@ -276,16 +271,16 @@ const watchFiles = async () => {
     if (commentSymbol === ";") {
       // Match ; KEY: description (for AHK, INI)
       regex = new RegExp(
-        `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+        `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
         "gm"
       );
     } else if (commentSymbol === "#") {
       // Match # KEY: description (for Python, Bash, etc.)
-      regex = new RegExp(`^\\s*#\\s*([A-Z_]+):\\s*(.*)`, "gm");
+      regex = new RegExp(`^\\s*#\\s*@([A-Z_]+):\\s*(.*)`, "gm");
     } else {
       // default : line comments like //, --
       regex = new RegExp(
-        `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
+        `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
         "gm"
       );
     }

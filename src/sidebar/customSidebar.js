@@ -274,17 +274,17 @@ class CustomSidebarProvider {
             if (message.action === "done") {
               if (isMultiline) {
                 const commentEnd = commentEndMap[commentSymbol];
-                updatedLineText = `${commentSymbol} DONE: "${message.keyword}" [${formattedTimestamp} | ${milliseconds}] ${commentEnd}`;
+                updatedLineText = `${commentSymbol} @DONE: "${message.keyword}" [${formattedTimestamp} | ${milliseconds}] ${commentEnd}`;
               } else {
-                updatedLineText = `${commentSymbol} DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
+                updatedLineText = `${commentSymbol} @DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
               }
               //updatedLineText = `${commentSymbol} DONE: "${message.keyword}" - ${message.comment} [${formattedTimestamp} | ${milliseconds}]`;
             } else if (message.action === "undo") {
               if (isMultiline) {
                 const commentEnd = commentEndMap[commentSymbol];
-                updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment} ${commentEnd}`;
+                updatedLineText = `${commentSymbol} @${message.keyword}: ${message.comment} ${commentEnd}`;
               } else {
-                updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment}`;
+                updatedLineText = `${commentSymbol} @${message.keyword}: ${message.comment}`;
               }
               //updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment}`;
             } else if (message.action === "disable") {

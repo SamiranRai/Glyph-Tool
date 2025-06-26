@@ -69,6 +69,7 @@
   },
   "dependencies": {
     "level": "^9.0.0",
+    "leveldown": "^6.1.1",
     "tinycolor2": "^1.6.0"
   }
 }
