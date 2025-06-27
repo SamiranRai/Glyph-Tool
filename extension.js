@@ -1,10 +1,7 @@
 const vscode = require("vscode");
 
 // Importing "highlightWords functions"
-const {
-  highlightWords,
-  highlightTimeStamps,
-} = require("./src/features/highlightWord");
+const { highlightWords } = require("./src/features/highlightWord");
 
 // Importing "scanAllFilesContainKeywords" && "watchFiles"
 const {
@@ -13,16 +10,27 @@ const {
 } = require("./src/features/fileScanner");
 
 // Importing initDB
-const { initDB } = require("./src/db/levelDb");
+const {
+  initDB,
+  loadAllTimestampsToMemory,
+  highlightTimeStamps,
+  saveTimestamp,
+} = require("./src/db/levelDb");
 
 // Importing "CustomSidebarProvider"
 const CustomSidebarProvider = require("./src/sidebar/customSidebar");
 
 async function activate(context) {
-  await initDB(context, highlightTimeStamps); // Init initDB() ->first
-
-  // Highlight words when the extension is activated
-  highlightWords(context);
+  await initDB(context); // ✅ Load existing timestamps from globalState
+  await loadAllTimestampsToMemory(context);
+  const results = await scanAllFilesContainKeywords(context);
+  for (const item of results) {
+    const upperCaseKeyword = (item.keyword + ":").toUpperCase();
+    if (!highlightTimeStamps.has(upperCaseKeyword)) {
+      await saveTimestamp(upperCaseKeyword, context);
+    }
+  }
+  await highlightWords(context); // ✅ Now use safely without resetting others
 
   // Registering Highlight Word Command
   let highlightWordCommand = vscode.commands.registerCommand(
@@ -33,7 +41,7 @@ async function activate(context) {
   // Register File Scanner Command
   let scanHighlightedKeywordFiles = vscode.commands.registerCommand(
     "scanAllfiles.containDefaultKeyword",
-    scanAllFilesContainKeywords
+    async () => await scanAllFilesContainKeywords(context)
   );
 
   // Registering Custom SideBar
@@ -47,34 +55,10 @@ async function activate(context) {
   context.subscriptions.push(customSidebar);
 
   // Start watching for file changes
-  watchFiles(); // 🚀 This ensures real-time updates
+  await watchFiles(context); // 🚀 This ensures real-time updates
 
-  // Apply highlight automatically
-  // vscode.window.onDidChangeActiveTextEditor((editor) => {
-  //   if (editor) {
-  //     highlightWords(context);
-  //   }
-  // });
-
-  // vscode.workspace.onDidChangeTextDocument((event) => {
-  //   highlightWords(context);
-  // });
-
-  // // Wait for the first file to open if there’s no active editor yet
-  // if (vscode.window.activeTextEditor) {
-  //   await highlightWords(context);
-  // } else {
-  //   const disposable = vscode.window.onDidChangeActiveTextEditor((editor) => {
-  //     if (editor) {
-  //       console.log("First file detected: Applying highlight.");
-  //       highlightWords(context);
-  //       disposable.dispose();
-  //     }
-  //   });
-  // }
-
-  vscode.window.onDidChangeActiveTextEditor(highlightWords);
-  vscode.workspace.onDidChangeTextDocument(highlightWords);
+  vscode.window.onDidChangeActiveTextEditor(() => highlightWords(context));
+  vscode.workspace.onDidChangeTextDocument(() => highlightWords(context));
   await highlightWords(context);
 }
 

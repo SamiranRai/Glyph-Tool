@@ -717,14 +717,15 @@ function renderFallbackIfnoData(data, Tab) {
     <strong>🚀 How to create your first keyword:</strong>
     <ol>
       <li>Open any code file you’re working on.</li>
+      <li>Make sure to start with @ before your keyword.</li>
   <li>Add a comment like this anywhere in your code:</li>
-  <pre><code>// TODO: Refactor login validation</code></pre>
+  <pre><code>// @TODO: Refactor login validation</code></pre>
   <li>Or use your own keyword, like:</li>
-  <pre><code>// IMPROVE: Optimize image loading speed</code></pre>
+  <pre><code>// @IMPROVE: Optimize image loading speed</code></pre>
   <li>The extension will detect it automatically — no need to save.</li>
   <li>Works across all programming languages — like Python, Java, HTML, CSS, and more!</li>
   <li>Example in Python:</li>
-  <pre><code># TODO: Clean up this function</code></pre>
+  <pre><code># @TODO: Clean up this function</code></pre>
     </ol>
     <p>✨ You can write <strong>any custom keyword</strong> you like — there's no limit!</p>
     <p class="bottom-p-tag">🎨 Want to highlight it with a custom color? Just click the <strong>“Add New Keyword”</strong> button to create one.</p>
@@ -757,30 +758,37 @@ function renderFallbackIfnoData(data, Tab) {
 //
 // <--------- UPDATE ITEM COUNT INDEPENDTLY :START --------->
 
-// DONE: "FIX_ITEM_COUNT" - fix item count showing wrong and implement a better method [16 May 2025 | 1747381022823]
-function renderIndependentItemCount(originalData) {
-  console.log("DEBUG: REndering INDEP:", originalData);
+// @DONE: "FIX_ITEM_COUNT" - fix item count showing wrong and implement a better method [16 May 2025 | 1747381022823]
+// SENDING FRESH RAW DATA TO "renderIndependentItemCount" function;
+function renderIndependentItemCount(freshRawData) {
+  const excludePreDefinedKeywordData = freshRawData.filter(item => !item.preDefinedKeywords);
 
-  const taskData = originalData.filter((item) => item.keyword !== "DONE");
-  const doneData = originalData.filter((item) => item.keyword === "DONE");
+  const taskKeywordData = excludePreDefinedKeywordData.filter((item) => item.keyword !== "DONE");
+  const doneKeywordData = excludePreDefinedKeywordData.filter((item) => item.keyword === "DONE");
 
-  if (taskData.length === 0) {
-    // Hide
-    taskItemCount.style.display = "none";
-  } else if (taskData.length >= 2) {
-    // Block
-    taskItemCount.style.display = "block";
-    taskItemCount.innerHTML = taskData.length - 1;
-  }
+  console.log({
+    taskKeywordData,
+    doneKeywordData
+  })
 
-  if (doneData.length === 0) {
-    // Hide
-    doneItemCount.style.display = "none";
-  } else if (doneData.length >= 2) {
-    // Block
-    doneItemCount.style.display = "block";
-    doneItemCount.innerHTML = doneData.length - 1;
-  }
+
+  // if (taskData.length === 0) {
+  //   // Hide
+  //   taskItemCount.style.display = "none";
+  // } else if (taskData.length >= 2) {
+  //   // Block
+  //   taskItemCount.style.display = "block";
+  //   taskItemCount.innerHTML = taskData.length - 1;
+  // }
+
+  // if (doneData.length === 0) {
+  //   // Hide
+  //   doneItemCount.style.display = "none";
+  // } else if (doneData.length >= 2) {
+  //   // Block
+  //   doneItemCount.style.display = "block";
+  //   doneItemCount.innerHTML = doneData.length - 1;
+  // }
 }
 
 // <--------- UPDATE ITEM COUNT INDEPENDTLY :END --------->
@@ -846,7 +854,6 @@ async function updateSidebarUI(newData) {
       Collection: groupData(newData.filter((item) => item.keyword !== "DONE")), // !for testing purpose
     }[Tab] || [];
 
-  // DONE: "UNCOMMENT" - uncomment the renderIndependentItemCount() [16 May 2025 | 1747381018771]
   // RENDER INDEPENDENT ITEM COUNT
   renderIndependentItemCount(newData);
 

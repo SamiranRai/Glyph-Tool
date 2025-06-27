@@ -9,7 +9,6 @@ function getCommentSymbol(document) {
   const ext = path.extname(document.fileName).slice(1).toLowerCase();
   return commentStyles[ext] || null;
 }
-
 //------- WHOLE FILE BASED DYNAMIC REGULAR-EXPRESSION--------//
 
 //------- WHOLE FILE BASED DYNAMIC REGULAR-EXPRESSION--------//
@@ -19,12 +18,11 @@ const {
   initDB,
   saveTimestamp,
   deleteTimestamp,
-  loadTimestampsFromDB,
+  highlightTimeStamps,
 } = require("./../db/levelDb");
 
 let isEditing = false;
 let decorationTypes = new Map();
-let highlightTimeStamps = new Map(); // Store timestamp for each keyword instance
 
 // Watch for changes in preDefinedKeywords.js
 const keywordsFilePath = path.join(
@@ -42,7 +40,7 @@ fs.watchFile(keywordsFilePath, (curr, prev) => {
     vscode.window.activeTextEditor?.setDecorations(decoration, []);
   });
   decorationTypes.clear(); // Clear all old decorations
-  highlightWords(); // Call to reassign color
+  highlightWords(context); // Call to reassign color
 });
 
 async function highlightWords(context) {
@@ -84,9 +82,7 @@ async function highlightWords(context) {
 
     // Safe DB call
     if (!highlightTimeStamps.has(uppercaseKeyword)) {
-      const newTimestamp = new Date().getTime(); // Generate new timestamp
-      highlightTimeStamps.set(uppercaseKeyword, newTimestamp);
-      await saveTimestamp(uppercaseKeyword, highlightTimeStamps);
+      await saveTimestamp(uppercaseKeyword, context);
     }
 
     // Ensure keyword is converted to uppercase in the document
@@ -136,12 +132,12 @@ async function highlightWords(context) {
       .push(new vscode.Range(startPos, endPos));
   }
 
-  // Remove timestamps for deleted keywords
-  for (const key of highlightTimeStamps.keys()) {
-    if (!existingKeywords.has(key)) {
-      await deleteTimestamp(key, highlightTimeStamps);
-    }
-  }
+  // // Remove timestamps for deleted keywords
+  // for (const key of highlightTimeStamps.keys()) {
+  //   if (!existingKeywords.has(key)) {
+  //     await deleteTimestamp(key, context);
+  //   }
+  // }
 
   // Apply decorations (RESET before applying new ones)
   decorationTypes.forEach((decoration) => {
@@ -160,7 +156,7 @@ async function highlightWords(context) {
 
 // **Activation Function**
 async function activate(context) {
-  await initDB(context, highlightTimeStamps);
+  await initDB(context);
 
   const disposableTextChange = vscode.workspace.onDidChangeTextDocument(
     async (event) => {

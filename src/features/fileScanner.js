@@ -36,34 +36,18 @@ const preDefinedKeywords = () => {
 const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
 const commentStyles = require("../utility/file_scanner_required/commentStyles");
 // Importing "highlightTimeStamps"
-const { highlightTimeStamps } = require("./highlightWord"); // store all keyword timeStamp
-const { saveTimestamp, loadTimestampsFromDB } = require("./../db/levelDb");
+//const { highlightTimeStamps } = require("./highlightWord"); // store all keyword timeStamp
+const {
+  saveTimestamp,
+  getTimestamp,
+  getAllTimestamps,
+} = require("./../db/levelDb");
 
 // Store the data
 const resultData = [];
 let updateSidebar = null; // Store the sidebar update function
-// Constant to set past timestamp (5 minutes ago)
-const PAST_OFFSET = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-async function getTimestamp(keyword, highlightTimeStamps) {
-  try {
-    // Check if the keyword already has a timestamp
-    if (!highlightTimeStamps.has(keyword + ":")) {
-      // Calculate past timestamp correctly
-      const timeStamp = new Date(Date.now() - PAST_OFFSET).getTime();
-
-      // Add the timestamp to the highlightTimestamp
-      highlightTimeStamps.set(keyword + ":", timeStamp);
-      await saveTimestamp(keyword + ":", highlightTimeStamps);
-    } else {
-      console.log("✅ Timestamp already exists for:", keyword);
-    }
-  } catch (error) {
-    console.error("Failed to save timestamp", { error });
-  }
-}
-
-const scanAllFilesContainKeywords = async () => {
+const scanAllFilesContainKeywords = async (context) => {
   resultData.length = 0; // Clear previous results
 
   const workspaceFolder = vscode.workspace.workspaceFolders;
@@ -74,9 +58,6 @@ const scanAllFilesContainKeywords = async () => {
   const files = await vscode.workspace.findFiles(
     `**/*.{${fileExtensions.join(",")}}`
   );
-
-  // Regular expression to match the "keyword present" files
-  //const regex = /\/\/\s*\b([A-Z_]+):/gm;
 
   // Push the preDefinedKeywords once outside the loop
   resultData.push({ preDefinedKeywords: preDefinedKeywords() });
@@ -109,30 +90,6 @@ const scanAllFilesContainKeywords = async () => {
           "gm"
         );
       }
-
-      // Escape special characters for the comment symbol (if needed)
-      // const escapeRegex = (symbol) =>
-      //   symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-
-      // if (commentSymbol === "/*") {
-      //   // Match /* KEY: description */
-      //   regex = /\/\*\s*([A-Z_]+):\s*(.*?)\s*\*\//gm;
-      // } else if (commentSymbol === ";") {
-      //   // Match ; KEY: description (for AHK, INI)
-      //   regex = new RegExp(
-      //     `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
-      //     "gm"
-      //   );
-      // } else if (commentSymbol === "#") {
-      //   // Match # KEY: description (for Python, Bash, etc.)
-      //   regex = new RegExp(`^\\s*#\\s*([A-Z_]+):\\s*(.*)`, "gm");
-      // } else {
-      //   // default : line comments (//, etc.)
-      //   regex = new RegExp(
-      //     `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
-      //     "gm"
-      //   );
-      // }
 
       let content;
       // 📝 First, check if the file is open in an editor
@@ -168,18 +125,12 @@ const scanAllFilesContainKeywords = async () => {
               ? descriptionMatch[1].trim()
               : "No Description.";
 
-          let timeStamp = highlightTimeStamps.get(match[1] + ":");
-          console.log({
-            "keyword: ": match[1],
-            "timeStamp: ": highlightTimeStamps.get(match[1] + ":"),
-            "highlightTimeStampsInside: ": JSON.stringify([
-              ...highlightTimeStamps,
-            ]),
-          });
+          let keyword = match[1] + ":";
+          let existingTimestamp = getTimestamp(keyword);
 
-          if (!timeStamp) {
-            await getTimestamp(match[1], highlightTimeStamps);
-            timeStamp = highlightTimeStamps.get(match[1] + ":");
+          if (!existingTimestamp) {
+            await saveTimestamp(keyword, context);
+            existingTimestamp = getTimestamp(keyword); // update reference
           }
 
           // Push the date to "resultData" array
@@ -189,7 +140,7 @@ const scanAllFilesContainKeywords = async () => {
             file: path.basename(file.fsPath),
             fullPath: file.fsPath,
             line: i + 1,
-            timeStamp,
+            timeStamp: existingTimestamp,
             snippet: lines[i].trim(),
             // predefinedkeywords : preDefinedKeywords,
           });
@@ -221,9 +172,9 @@ let debouncerTimer = null;
 let recentlyUpdated = false;
 
 // watchFile-> for real-time file monitoring
-const watchFiles = async () => {
+const watchFiles = async (context) => {
   // Run an initial scan and store existing keywords in previousKeywords
-  const initialResults = await scanAllFilesContainKeywords();
+  const initialResults = await scanAllFilesContainKeywords(context);
   previousKeywords = new Set(initialResults.map((item) => item.keyword));
   initialScanCompleted = true; // Intial Scan Completed!
 
@@ -238,17 +189,17 @@ const watchFiles = async () => {
       return;
     }
     // console.log("File Changed - Rescanning...");
-    scanAllFilesContainKeywords();
+    scanAllFilesContainKeywords(context);
   });
 
   watcher.onDidCreate(() => {
     // console.log("File Created - Rescanning...");
-    scanAllFilesContainKeywords();
+    scanAllFilesContainKeywords(context);
   });
 
   watcher.onDidDelete(() => {
     // console.log("File Deleted - Rescanning...");
-    scanAllFilesContainKeywords();
+    scanAllFilesContainKeywords(context);
   });
 
   // Detect real-time text changes (even before saving)
@@ -285,27 +236,6 @@ const watchFiles = async () => {
       );
     }
 
-    // const escapeRegex = (symbol) =>
-    //   symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-
-    // let regex;
-    // if (commentSymbol === "/*") {
-    //   // This won't realistically appear during live editing
-    //   regex = /\/\*\s*([A-Z_]+):\s*(.*?)\s*\*\//gm;
-    // } else if (commentSymbol === ";") {
-    //   regex = new RegExp(
-    //     `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
-    //     "gm"
-    //   );
-    // } else if (commentSymbol === "#") {
-    //   regex = new RegExp(`^\\s*#\\s*([A-Z_]+):\\s*(.*)`, "gm");
-    // } else {
-    //   regex = new RegExp(
-    //     `^\\s*${escapeRegex(commentSymbol)}\\s*([A-Z_]+):\\s*(.*)`,
-    //     "gm"
-    //   );
-    // }
-
     const text = event.document.getText();
     const matches = new Map();
 
@@ -337,9 +267,8 @@ const watchFiles = async () => {
     if (removedComments.length > 0 || addedComments.length > 0) {
       for (const comment of addedComments) {
         const keyword = comment.split(":")[0];
-        const newTimestamp = new Date().getTime();
-        highlightTimeStamps.set(keyword + ":", newTimestamp);
-        await saveTimestamp(keyword + ":", highlightTimeStamps);
+        // => save()
+        await saveTimestamp(keyword + ":", context);
       }
 
       previousComments.clear();
@@ -347,7 +276,7 @@ const watchFiles = async () => {
 
       if (debouncerTimer) clearTimeout(debouncerTimer);
       debouncerTimer = setTimeout(() => {
-        scanAllFilesContainKeywords();
+        scanAllFilesContainKeywords(context);
         recentlyUpdated = true;
       }, 500);
     } else {

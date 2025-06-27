@@ -1,7 +1,7 @@
 // Detect environment: Node.js (Backend) or Browser (Frontend)
 const isNode = typeof module !== "undefined" && module.exports;
 
-// Backend: Load tinycolor2
+// BACKEND: Load tinycolor2
 if (isNode) {
   var tinycolor = require("tinycolor2");
 } else if (typeof window !== "undefined" && !window.tinycolor) {
@@ -39,7 +39,7 @@ function generateColor(keyword) {
   return backgroundColor.toHexString();
 }
 
-// Backend: Export function
+// BACKEND: Export function
 if (isNode) {
   module.exports = generateColor;
 }

@@ -1,80 +1,187 @@
-// const { Level } = require("level");
+let highlightTimeStamps = new Map();
 
-// let db; // LevelDB instance
+function normalizeKey(keyword) {
+  return keyword.toUpperCase(); // already includes ':' in calling code
+}
 
-// // LEVELDB_ERROR: failed to delete DJDJ:: Error: Database is not open
+async function initDB(context) {
+  try {
+    const data = await context.globalState.get("highlightTimeStamps", {});
+    highlightTimeStamps.clear();
+
+    for (const [key, value] of Object.entries(data)) {
+      highlightTimeStamps.set(normalizeKey(key), value);
+    }
+
+    console.log("Timestamps successfully loaded from global-state.");
+  } catch (err) {
+    console.error({
+      errorMessage: "Failed to initialize the DB.",
+      err,
+    });
+  }
+}
+
+async function loadAllTimestampsToMemory(context) {
+  const stored = (await context.globalState.get("highlightTimeStamps")) || {};
+  highlightTimeStamps.clear(); // Ensure clean slate
+  for (const [key, value] of Object.entries(stored)) {
+    highlightTimeStamps.set(key, value);
+  }
+}
+
+async function persist(context) {
+  try {
+    if (!context?.globalState?.update) {
+      throw new Error("Invalid extension context: missing globalState.update()");
+    }
+    const data = Object.fromEntries(highlightTimeStamps);
+    console.log("Persisting Timestamps: ", data);
+    await context.globalState.update("highlightTimeStamps", data);
+  } catch (err) {
+    console.error({
+      errorMessage: "Failed to persist() timeStamp.",
+      err,
+    });
+  }
+}
+
+
+async function saveTimestamp(keyword, context) {
+  try {
+    const key = normalizeKey(keyword);
+    if (!highlightTimeStamps.has(key)) {
+      const currentTime = Date.now();
+      highlightTimeStamps.set(key, currentTime);
+      console.log("Saved timestamp for:", key);
+      await persist(context);
+    } else {
+      console.log("⏱️ Existing timestamp preserved for:", key);
+    }
+  } catch (err) {
+    console.error({
+      errorMessage: "Failed to save() timestamp.",
+      err,
+    });
+  }
+}
+
+async function deleteTimestamp(keyword, context) {
+  try {
+    const key = normalizeKey(keyword);
+    if (highlightTimeStamps.has(key)) {
+      highlightTimeStamps.delete(key);
+      console.log("Deleted timestamp for:", key);
+      await persist(context);
+    }
+  } catch (err) {
+    console.error({
+      errorMessage: "Failed to Delete() timestamp.",
+      err,
+    });
+  }
+}
+
+function getTimestamp(keyword) {
+  return highlightTimeStamps.get(normalizeKey(keyword));
+}
+
+function getAllTimestamps() {
+  return highlightTimeStamps;
+}
+
+
+
+module.exports = {
+  initDB,
+  saveTimestamp,
+  deleteTimestamp,
+  getTimestamp,
+  getAllTimestamps,
+  highlightTimeStamps,
+  loadAllTimestampsToMemory
+};
+
 // async function initDB(context, highlightTimeStamps) {
 //   try {
-//     const storagePath = context.globalStorageUri.fsPath;
-//     console.log("storagePath:", storagePath);
-//     db = new Level(`${storagePath}/timestamps-db`, { valueEncoding: "json" });
-
-//     console.log(db);
-
-//     console.log("DB Connect successfully..", db);
-//     await loadTimestampsFromDB(highlightTimeStamps);
-//   } catch (error) {
-//     console.error("Failed to initialize LevelDB:", error);
+//     const data = context.globalState.get("highlightTimeStamps", {});
+//     highlightTimeStamps.clear();
+//     Object.entries(data).forEach(([key, value]) =>
+//       highlightTimeStamps.set(key, value)
+//     );
+//     console.log({
+//       context,
+//       highlightTimeStamps
+//     })
+//     console.log("Timestamps successfully loaded from global-state.");
+//   } catch (err) {
+//     console.error({
+//       ERRORMESSAGE: "Failed to load timestamps from global-state!",
+//       err,
+//     });
 //   }
 // }
 
-// async function saveTimestamp(keyword, highlightTimeStamps) {
-//   if (!db || db.status !== "open") {
-//     console.error(`Cannot save ${keyword}: DB not open`);
-//     return;
-//   }
-
+// async function saveTimestamp(keyword, highlightTimeStamps, context) {
 //   const currentTime = Date.now();
-
 //   try {
-//     // Convert to Map if it's not already one
-//     // if (!(highlightTimeStamps instanceof Map)) {
-//     //   console.warn("highlightTimeStamps is not a Map. Converting...");
-//     //   highlightTimeStamps = new Map(Object.entries(highlightTimeStamps));
-//     // }
-
-//     // console.log("Debug::levelDb", {
-//     // type : typeof highlightTimeStamps,
-//     // highlighttimestamps : highlightTimeStamps,
-//     // });
-
 //     const existingTime = highlightTimeStamps.get(keyword);
 //     if (existingTime && existingTime === currentTime) return;
 
-//     await db.put(keyword, currentTime);
+//     console.log("Saved timestamp for:", keyword);
 //     highlightTimeStamps.set(keyword, currentTime);
-//   } catch (error) {
-//     console.error(`Error saving timestamp for ${keyword}:`, error);
+//     await persist(context, highlightTimeStamps);
+//   } catch (err) {
+//     console.error({
+//       ERRORMESSAGE: "Failed to save timestamp to global-state!",
+//       err,
+//     });
 //   }
 // }
 
-// async function deleteTimestamp(keyword, highlightTimeStamps) {
-//   if (!db || db.status !== "open") {
-//     console.error(`Cannot delete ${keyword}: DB not open`);
-//     return;
-//   }
+// async function deleteTimestamp(keyword, highlightTimeStamps, context) {
 //   try {
-//     await db.del(keyword);
+//     console.log(`Successfully deleted timestamp for ${keyword}.`);
 //     highlightTimeStamps.delete(keyword);
-//   } catch (error) {
-//     console.error(`Failed to delete ${keyword}:`, error);
+//     await persist(context, highlightTimeStamps);
+//   } catch (err) {
+//     console.error({
+//       ERRORMESSAGE: "Failed to delete timestamp from global-state!",
+//       err,
+//     });
 //   }
 // }
 
-// async function loadTimestampsFromDB(highlightTimeStamps) {
-//   try {
-//     highlightTimeStamps.clear();
+// async function loadTimestampsFromDB(context) {
+//   const globalState = context.globalState;
+//   const saved = globalState.get("highlightTimeStamps");
 
-//     for await (const [key, value] of db.iterator()) {
-//       highlightTimeStamps.set(key.toString(), value);
+//   if (saved) {
+//     for (const [key, value] of Object.entries(saved)) {
+//       highlightTimeStamps.set(key, value);
 //     }
+//   } else {
+//     console.log("No saved timestamps found in globalState.");
+//   }
+// }
 
-//     console.log(
-//       "highlightTimeStampsLoadedfromDB:::",
-//       JSON.stringify([...highlightTimeStamps])
-//     );
-//   } catch (error) {
-//     console.error("Error loading data from LevelDB:", error);
+// async function persist(context, highlighttimestamps) {
+//   try {
+//     // if (!context || !context.globalState || !context.globalState.update) {
+//     //   throw new Error("❌ Missing or invalid extension context or globalState!");
+//     // }
+//     console.log("🧪 Context during persist():", {
+//       CONTEXTEXISTS: !!context,
+//       GLOBALSTATEEXISTS: !!context?.globalState,
+//       UPDATEEXISTS: typeof context?.globalState?.update === "function",
+//     });
+//     const data = Object.fromEntries(highlighttimestamps);
+//     await context.globalState.update("highlightTimeStamps", data);
+//   } catch (err) {
+//     console.error({
+//       ERRORMESSAGE: "Failed to save to global-state!",
+//       err,
+//     });
 //   }
 // }
 
@@ -84,96 +191,3 @@
 //   deleteTimestamp,
 //   loadTimestampsFromDB,
 // };
-
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
-
-let dbPath;
-let highlightTimeStampsRef;
-
-function ensureDirectoryExists(dir) {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-function getSafeDBPath(context) {
-  let basePath = context?.globalStorageUri?.fsPath;
-
-  try {
-    if (!basePath || !fs.existsSync(basePath)) {
-      console.warn("globalStorageUri not usable, using fallback in home dir.");
-      basePath = path.join(os.homedir(), ".myapp-timestamps-json");
-    }
-  } catch (e) {
-    basePath = path.join(os.homedir(), ".myapp-timestamps-json");
-  }
-
-  ensureDirectoryExists(basePath);
-  return path.join(basePath, "timestamps.json");
-}
-
-async function initDB(context, highlightTimeStamps) {
-  dbPath = getSafeDBPath(context);
-  highlightTimeStampsRef = highlightTimeStamps;
-
-  try {
-    if (fs.existsSync(dbPath)) {
-      const raw = await fs.promises.readFile(dbPath, "utf-8");
-      const data = JSON.parse(raw);
-      highlightTimeStamps.clear();
-      Object.entries(data).forEach(([key, value]) =>
-        highlightTimeStamps.set(key, value)
-      );
-      console.log("Timestamps loaded from JSON:", data);
-    } else {
-      await persist(); // Create file if not exists
-    }
-  } catch (err) {
-    console.error("Failed to initialize JSON DB:", err.message);
-  }
-}
-
-async function saveTimestamp(keyword, highlightTimeStamps) {
-  const currentTime = Date.now();
-
-  const existingTime = highlightTimeStamps.get(keyword);
-  if (existingTime && existingTime === currentTime) return;
-
-  console.log("savedTimestamp:", keyword);
-  highlightTimeStamps.set(keyword, currentTime);
-  await persist();
-}
-
-async function deleteTimestamp(keyword, highlightTimeStamps) {
-  console.log("deletedTimestamp:", keyword);
-  highlightTimeStamps.delete(keyword);
-  await persist();
-}
-
-async function loadTimestampsFromDB(highlightTimeStamps) {
-  // This will just reload from the JSON file
-  console.log("LoadTimestamp:", keyword);
-  await initDB(null, highlightTimeStamps); // context not needed again
-}
-
-async function persist() {
-  try {
-    const dataObj = Object.fromEntries(highlightTimeStampsRef);
-    await fs.promises.writeFile(
-      dbPath,
-      JSON.stringify(dataObj, null, 2),
-      "utf-8"
-    );
-  } catch (err) {
-    console.error("Failed to persist timestamps to JSON:", err.message);
-  }
-}
-
-module.exports = {
-  initDB,
-  saveTimestamp,
-  deleteTimestamp,
-  loadTimestampsFromDB,
-};
