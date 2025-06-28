@@ -1,6 +1,6 @@
 # 🌟 Glyph — Highlight TODOs, FIXMEs, Custom Keywords & More in VS Code
 
-**Glyph** is a simple yet powerful Visual Studio Code extension that helps developers highlight, track, and manage task-related comments directly within their codebase. Whether it’s `TODO`, `FIXME`, or your own custom keywords like `BUG`, `IMPROVE`, or `REFACTOR`, Glyph ensures that nothing slips through the cracks.
+**Glyph** is a simple yet powerful Visual Studio Code extension that helps developers highlight, track, and manage task-related comments directly within their codebase. Whether it’s `@TODO`, `@FIXME`, or your own custom keywords like `@BUG`, `@IMPROVE`, or `@REFACTOR`, Glyph ensures that nothing slips through the cracks.
 
 > Stay organized. Stay productive. Stay focused.
 
@@ -9,10 +9,10 @@
 ## Features
 
 - **Instant Detection**  
-  Highlights keywords like `TODO`, `FIXME`, or any custom tag as you type — no save required.
+  Highlights keywords like `@TODO`, `@FIXME`, or any custom tag as you type — no save required.
 
 - **Custom Keywords**  
-  Define your own task labels like `OPTIMIZE`, `DEBUG`, or `REFACTOR`, and assign unique colors to each.
+  Define your own task labels like `@OPTIMIZE`, `@DEBUG`, or `@REFACTOR`, and assign unique colors to each.
 
 - **Central Task View**  
   All keyword-based comments are listed in a dedicated Glyph sidebar panel.
