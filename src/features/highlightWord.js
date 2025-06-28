@@ -17,9 +17,10 @@ function getCommentSymbol(document) {
 const {
   initDB,
   saveTimestamp,
-  deleteTimestamp,
   highlightTimeStamps,
 } = require("./../db/levelDb");
+
+const { generateKeywordKey } = require("./../utility/db_required/keyGenerator");
 
 let isEditing = false;
 let decorationTypes = new Map();
@@ -40,7 +41,7 @@ fs.watchFile(keywordsFilePath, (curr, prev) => {
     vscode.window.activeTextEditor?.setDecorations(decoration, []);
   });
   decorationTypes.clear(); // Clear all old decorations
-  highlightWords(context); // Call to reassign color
+  highlightWords(); // Call to reassign color
 });
 
 async function highlightWords(context) {
@@ -78,11 +79,15 @@ async function highlightWords(context) {
     const startPos = editor.document.positionAt(wordStartIndex);
     const endPos = editor.document.positionAt(wordEndIndex);
 
-    existingKeywords.add(uppercaseKeyword); // Track Seen Keyword
+    const fileName = editor.document.fileName;
+    const line = startPos.line;
+
+    const uniqueKey = generateKeywordKey(uppercaseKeyword, fileName, line);
+    existingKeywords.add(uniqueKey); // Track Seen Keyword
 
     // Safe DB call
-    if (!highlightTimeStamps.has(uppercaseKeyword)) {
-      await saveTimestamp(uppercaseKeyword, context);
+    if (!highlightTimeStamps.has(uniqueKey)) {
+      await saveTimestamp(uppercaseKeyword, fileName, line, context);
     }
 
     // Ensure keyword is converted to uppercase in the document

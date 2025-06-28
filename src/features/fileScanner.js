@@ -41,7 +41,10 @@ const {
   saveTimestamp,
   getTimestamp,
   getAllTimestamps,
+  highlightTimeStamps
 } = require("./../db/levelDb");
+
+const { generateKeywordKey } = require("./../utility/db_required/keyGenerator");
 
 // Store the data
 const resultData = [];
@@ -125,13 +128,16 @@ const scanAllFilesContainKeywords = async (context) => {
               ? descriptionMatch[1].trim()
               : "No Description.";
 
-          let keyword = match[1] + ":";
-          let existingTimestamp = getTimestamp(keyword);
+          let keyword = match[1] + ":"; // return  - keyword
+          let fileName = path.basename(file.fsPath);
+          let line = i + 1;
+          const uniqueKey = generateKeywordKey(keyword, fileName, line);
+          //let existingTimestamp = getTimestamp(uniqueKey);
 
-          if (!existingTimestamp) {
-            await saveTimestamp(keyword, context);
-            existingTimestamp = getTimestamp(keyword); // update reference
+          if (!highlightTimeStamps.has(uniqueKey)) {
+            await saveTimestamp(keyword, fileName, line, context);
           }
+          const existingTimestamp = highlightTimeStamps.get(uniqueKey); // update reference
 
           // Push the date to "resultData" array
           resultData.push({
@@ -209,6 +215,8 @@ const watchFiles = async (context) => {
 
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor || event.document !== activeEditor.document) return;
+    const fileName = activeEditor?.document.fileName || "unknown";
+    const lines = activeEditor?.document.getText()?.split("\n") || [];
 
     const ext = path
       .extname(event.document.fileName)
@@ -267,8 +275,12 @@ const watchFiles = async (context) => {
     if (removedComments.length > 0 || addedComments.length > 0) {
       for (const comment of addedComments) {
         const keyword = comment.split(":")[0];
+        const lineIndex = lines.findIndex(line =>
+          line.includes("@" + keyword.replace(":", ""))
+        );
+        const line = lineIndex !== -1 ? lineIndex : 0;
         // => save()
-        await saveTimestamp(keyword + ":", context);
+        await saveTimestamp(keyword + ":", fileName, line, context);
       }
 
       previousComments.clear();

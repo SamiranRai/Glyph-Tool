@@ -1,8 +1,7 @@
+const {generateKeywordKey} = require('./../utility/db_required/keyGenerator');
+
 let highlightTimeStamps = new Map();
 
-function normalizeKey(keyword) {
-  return keyword.toUpperCase(); // already includes ':' in calling code
-}
 
 async function initDB(context) {
   try {
@@ -10,7 +9,7 @@ async function initDB(context) {
     highlightTimeStamps.clear();
 
     for (const [key, value] of Object.entries(data)) {
-      highlightTimeStamps.set(normalizeKey(key), value);
+      highlightTimeStamps.set(key, value); // ✅ Already a fully qualified key
     }
 
     console.log("Timestamps successfully loaded from global-state.");
@@ -32,9 +31,6 @@ async function loadAllTimestampsToMemory(context) {
 
 async function persist(context) {
   try {
-    if (!context?.globalState?.update) {
-      throw new Error("Invalid extension context: missing globalState.update()");
-    }
     const data = Object.fromEntries(highlightTimeStamps);
     console.log("Persisting Timestamps: ", data);
     await context.globalState.update("highlightTimeStamps", data);
@@ -47,9 +43,9 @@ async function persist(context) {
 }
 
 
-async function saveTimestamp(keyword, context) {
+async function saveTimestamp(keyword, fileName=null, line=null, context) {
   try {
-    const key = normalizeKey(keyword);
+    const key = generateKeywordKey(keyword, fileName, line);
     if (!highlightTimeStamps.has(key)) {
       const currentTime = Date.now();
       highlightTimeStamps.set(key, currentTime);
@@ -66,9 +62,9 @@ async function saveTimestamp(keyword, context) {
   }
 }
 
-async function deleteTimestamp(keyword, context) {
+async function deleteTimestamp(keyword, filePath, line, context) {
   try {
-    const key = normalizeKey(keyword);
+    const key = key(keyword, filePath, line);
     if (highlightTimeStamps.has(key)) {
       highlightTimeStamps.delete(key);
       console.log("Deleted timestamp for:", key);
@@ -82,8 +78,8 @@ async function deleteTimestamp(keyword, context) {
   }
 }
 
-function getTimestamp(keyword) {
-  return highlightTimeStamps.get(normalizeKey(keyword));
+function getTimestamp(keyword, fileName, line) {
+  return highlightTimeStamps.get(generateKeywordKey(keyword, fileName, line));
 }
 
 function getAllTimestamps() {

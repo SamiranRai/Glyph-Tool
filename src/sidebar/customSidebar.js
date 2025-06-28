@@ -288,7 +288,7 @@ class CustomSidebarProvider {
               }
               //updatedLineText = `${commentSymbol} ${message.keyword}: ${message.comment}`;
             } else if (message.action === "disable") {
-              updatedLineText = `${commentSymbol} ${message.keyword} : ${message.comment}`;
+              updatedLineText = `${commentSymbol} @${message.keyword} : ${message.comment}`;
             } else if (message.action === "delete") {
               isDeleteAction = true;
             } else {

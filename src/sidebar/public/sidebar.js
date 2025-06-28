@@ -769,7 +769,25 @@ function renderIndependentItemCount(freshRawData) {
   console.log({
     taskKeywordData,
     doneKeywordData
-  })
+  });
+
+  if (taskKeywordData.length === 0) {
+    // Hide
+    taskItemCount.style.display = 'none';
+  } else {
+    // Block
+    taskItemCount.style.display = 'block';
+    taskItemCount.innerHTML = taskKeywordData.length;
+  }
+
+  if (doneKeywordData.length === 0) {
+    // hide
+    doneItemCount.style.display = 'none';
+  } else {
+    // block
+    doneItemCount.style.display = 'block';
+    doneItemCount.innerHTML = doneKeywordData.length;
+  }
 
 
   // if (taskData.length === 0) {

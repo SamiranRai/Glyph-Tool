@@ -17,6 +17,9 @@ const {
   saveTimestamp,
 } = require("./src/db/levelDb");
 
+const {generateKeywordKey}= require('./src/utility/db_required/keyGenerator')
+
+
 // Importing "CustomSidebarProvider"
 const CustomSidebarProvider = require("./src/sidebar/customSidebar");
 
@@ -26,8 +29,12 @@ async function activate(context) {
   const results = await scanAllFilesContainKeywords(context);
   for (const item of results) {
     const upperCaseKeyword = (item.keyword + ":").toUpperCase();
-    if (!highlightTimeStamps.has(upperCaseKeyword)) {
-      await saveTimestamp(upperCaseKeyword, context);
+    const fileName = item.file || 'unknown';
+    const line = item.line ?? 0;
+    const uniqueKey = generateKeywordKey(upperCaseKeyword, fileName, line);
+
+    if (!highlightTimeStamps.has(uniqueKey)) {
+      await saveTimestamp(upperCaseKeyword, fileName, line, context);
     }
   }
   await highlightWords(context); // ✅ Now use safely without resetting others
