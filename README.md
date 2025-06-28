@@ -127,20 +127,21 @@ Glyph fits beautifully into your editor whether you’re in light mode or dark.
 
 1. Open any source code file in Visual Studio Code.
 2. Add a comment using a supported or custom keyword:
+3. Make sure to start with @ before your keyword.
 
    ```js
-   // Todo: Refactor the login logic
+   // @Todo: Refactor the login logic
 
-   // Custom_Keyword: Use any Keyword you Want and the extension will automatically highlight the keyword
+   // @Custom_Keyword: Use any Keyword you Want and the extension will automatically highlight the keyword
 
-   // Improve: Use any Comment accoding to the Language
+   // @Improve: Use any Comment accoding to the Language
 
-   // Support: Support All languages - Python, java, js, php... (Just use their comment, like for python use #, Java //, js //, html <!---->, css /**/...).
+   // @Support: Support All languages - Python, java, js, php... (Just use their comment, like for python use #, Java //, js //, html <!---->, css /**/...).
    ```
 
-3. Open the Glyph sidebar by clicking its icon.
-4. View, mark as done, undo, delete, or filter tasks with ease.
-5. You can define any keyword in any file type — Glyph automatically detects the correct comment style.
+4. Open the Glyph sidebar by clicking its icon.
+5. View, mark as done, undo, delete, or filter tasks with ease.
+6. You can define any keyword in any file type — Glyph automatically detects the correct comment style.
 
 ---
 
