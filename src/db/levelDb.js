@@ -2,6 +2,8 @@ const {generateKeywordKey} = require('./../utility/db_required/keyGenerator');
 
 let highlightTimeStamps = new Map();
 
+// Debounce timer for batching rapid consecutive saves into a single globalState write.
+let persistDebounceTimer = null;
 
 async function initDB(context) {
   try {
@@ -21,13 +23,6 @@ async function initDB(context) {
   }
 }
 
-async function loadAllTimestampsToMemory(context) {
-  const stored = (await context.globalState.get("highlightTimeStamps")) || {};
-  highlightTimeStamps.clear(); // Ensure clean slate
-  for (const [key, value] of Object.entries(stored)) {
-    highlightTimeStamps.set(key, value);
-  }
-}
 
 async function persist(context) {
   try {
@@ -42,6 +37,15 @@ async function persist(context) {
   }
 }
 
+// Schedules a single persist after a short delay, coalescing multiple rapid
+// saveTimestamp calls (e.g. during a bulk file scan) into one globalState write.
+function schedulePersist(context) {
+  if (persistDebounceTimer) clearTimeout(persistDebounceTimer);
+  persistDebounceTimer = setTimeout(() => {
+    persistDebounceTimer = null;
+    persist(context);
+  }, 300);
+}
 
 async function saveTimestamp(keyword, fileName=null, line=null, context) {
   try {
@@ -50,7 +54,7 @@ async function saveTimestamp(keyword, fileName=null, line=null, context) {
       const currentTime = Date.now();
       highlightTimeStamps.set(key, currentTime);
       console.log("Saved timestamp for:", key);
-      await persist(context);
+      schedulePersist(context);
     } else {
       console.log("⏱️ Existing timestamp preserved for:", key);
     }
@@ -95,7 +99,6 @@ module.exports = {
   getTimestamp,
   getAllTimestamps,
   highlightTimeStamps,
-  loadAllTimestampsToMemory
 };
 
 // async function initDB(context, highlightTimeStamps) {

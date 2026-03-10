@@ -10,14 +10,7 @@ const {
 } = require("./src/features/fileScanner");
 
 // Importing initDB
-const {
-  initDB,
-  loadAllTimestampsToMemory,
-  highlightTimeStamps,
-  saveTimestamp,
-} = require("./src/db/levelDb");
-
-const {generateKeywordKey}= require('./src/utility/db_required/keyGenerator')
+const { initDB } = require("./src/db/levelDb");
 
 
 // Importing "CustomSidebarProvider"
@@ -25,18 +18,7 @@ const CustomSidebarProvider = require("./src/sidebar/customSidebar");
 
 async function activate(context) {
   await initDB(context); // ✅ Load existing timestamps from globalState
-  await loadAllTimestampsToMemory(context);
   const results = await scanAllFilesContainKeywords(context);
-  for (const item of results) {
-    const upperCaseKeyword = (item.keyword + ":").toUpperCase();
-    const fileName = item.file || 'unknown';
-    const line = item.line ?? 0;
-    const uniqueKey = generateKeywordKey(upperCaseKeyword, fileName, line);
-
-    if (!highlightTimeStamps.has(uniqueKey)) {
-      await saveTimestamp(upperCaseKeyword, fileName, line, context);
-    }
-  }
   await highlightWords(context); // ✅ Now use safely without resetting others
 
   // Registering Highlight Word Command
@@ -61,12 +43,16 @@ async function activate(context) {
   context.subscriptions.push(scanHighlightedKeywordFiles);
   context.subscriptions.push(customSidebar);
 
-  // Start watching for file changes
-  await watchFiles(context); // 🚀 This ensures real-time updates
+  // Start watching for file changes, reusing the already-computed scan results
+  // to avoid a redundant full workspace scan at startup.
+  await watchFiles(context, results); // 🚀 This ensures real-time updates
 
-  vscode.window.onDidChangeActiveTextEditor(() => highlightWords(context));
-  vscode.workspace.onDidChangeTextDocument(() => highlightWords(context));
-  await highlightWords(context);
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor(() => highlightWords(context))
+  );
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeTextDocument(() => highlightWords(context))
+  );
 }
 
 function deactivate() {}

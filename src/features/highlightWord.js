@@ -3,6 +3,8 @@ const fs = require("fs");
 const path = require("path");
 const getKeywordHighlightColor = require("../utility/highlight_word_required/getKeywordHighlightColor");
 let predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+// Build a Map for O(1) keyword lookups instead of a linear array scan per match.
+let predefinedKeywordMap = new Map(predefinedKeywordColors.map((item) => [item.keyword, item.color]));
 const commentStyles = require("../utility/file_scanner_required/commentStyles");
 
 function getCommentSymbol(document) {
@@ -35,6 +37,7 @@ fs.watchFile(keywordsFilePath, (curr, prev) => {
     require.resolve("../utility/highlight_word_required/preDefinedKeywords")
   ];
   predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+  predefinedKeywordMap = new Map(predefinedKeywordColors.map((item) => [item.keyword, item.color]));
 
   // Reset decorations
   decorationTypes.forEach((decoration) => {
@@ -101,19 +104,9 @@ async function highlightWords(context) {
     }
 
     // Checking & applying predefined custom Keyword style, if present
-    // console.log("predefinedKeywordColors:InsideHW.js", predefinedKeywordColors);
-
-    let foundKeyword;
-    for (const item of predefinedKeywordColors) {
-      if (item.keyword === uppercaseKeyword) {
-        foundKeyword = item;
-        break;
-      }
-    }
-
     let bgColor;
-    if (foundKeyword) {
-      bgColor = foundKeyword.color;
+    if (predefinedKeywordMap.has(uppercaseKeyword)) {
+      bgColor = predefinedKeywordMap.get(uppercaseKeyword);
     } else {
       bgColor = getKeywordHighlightColor(uppercaseKeyword).backgroundColor;
     }
