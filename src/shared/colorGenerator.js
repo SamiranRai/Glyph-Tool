@@ -43,8 +43,3 @@ function generateColor(keyword) {
 if (isNode) {
   module.exports = generateColor;
 }
-
-
-/**
- {code} 
- */
