@@ -1,6 +1,20 @@
 const vscode = require("vscode");
 const path = require("path");
 
+const preDefinedKeywordsPath = "./../utility/highlight_word_required/preDefinedKeywords";
+const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
+const commentStyles = require("../utility/file_scanner_required/commentStyles");
+const {
+  saveTimestamp,
+  highlightTimeStamps,
+} = require("./../db/levelDb");
+const { generateKeywordKey } = require("./../utility/db_required/keyGenerator");
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+/** Directory names that are never scanned for keyword annotations. */
 const EXCLUDED_DIRS = [
   "node_modules",
   ".git",
@@ -16,42 +30,89 @@ const EXCLUDED_DIRS = [
   "temp",
 ];
 
-// Check if a file is inside any excluded directory
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns `true` if the given file URI is inside one of the excluded
+ * directories.
+ * @param {import('vscode').Uri} fileUri
+ * @returns {boolean}
+ */
 function isExcluded(fileUri) {
   return EXCLUDED_DIRS.some((dir) =>
     fileUri.fsPath.split(/[\\/]/).includes(dir)
   );
 }
 
-// Importing "preDefinedKeywords"
-const preDefinedKeywords = () => {
-  const filePath = require.resolve(
-    "./../utility/highlight_word_required/preDefinedKeywords"
+/**
+ * Escapes special regex characters in a string so it can be used as a literal
+ * pattern inside a RegExp.
+ * @param {string} symbol
+ * @returns {string}
+ */
+function escapeRegex(symbol) {
+  return symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+}
+
+/**
+ * Builds the keyword-annotation regex for the given comment symbol.
+ * Matches lines of the form: `<commentSymbol> @KEYWORD: description`
+ * @param {string} commentSymbol
+ * @returns {RegExp}
+ */
+function buildCommentRegex(commentSymbol) {
+  const escaped = escapeRegex(commentSymbol);
+  return new RegExp(
+    `^\\s*${escaped}\\s*@([A-Z_]+):\\s*(.*)`,
+    "gm"
   );
-  delete require.cache[filePath]; // Clear cache
-  return require(filePath); // Re-require updated file
+}
+
+/**
+ * Re-requires `preDefinedKeywords.js` bypassing the module cache, so that
+ * user edits to the file are picked up without restarting the extension.
+ * @returns {Array<{ keyword: string, color: string }>}
+ */
+function loadPredefinedKeywords() {
+  const filePath = require.resolve(preDefinedKeywordsPath);
+  delete require.cache[filePath];
+  return require(filePath);
+}
+
+// ---------------------------------------------------------------------------
+// Sidebar update callback
+// ---------------------------------------------------------------------------
+
+/** Callback registered by the sidebar provider to receive fresh scan results. */
+let updateSidebar = null;
+
+/**
+ * Registers the function that the sidebar provider uses to update its UI.
+ * Must be called once from the sidebar provider's `resolveWebviewView`.
+ * @param {(data: object[]) => void} callback
+ */
+const setSidebarCallback = (callback) => {
+  updateSidebar = callback;
 };
 
-// Importing "fileExtensions"
-const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
-const commentStyles = require("../utility/file_scanner_required/commentStyles");
-// Importing "highlightTimeStamps"
-//const { highlightTimeStamps } = require("./highlightWord"); // store all keyword timeStamp
-const {
-  saveTimestamp,
-  getTimestamp,
-  getAllTimestamps,
-  highlightTimeStamps
-} = require("./../db/levelDb");
+// ---------------------------------------------------------------------------
+// Core scanner
+// ---------------------------------------------------------------------------
 
-const { generateKeywordKey } = require("./../utility/db_required/keyGenerator");
-
-// Store the data
+/** Holds the latest scan results shared across the module. */
 const resultData = [];
-let updateSidebar = null; // Store the sidebar update function
 
+/**
+ * Scans every file in the workspace for keyword annotations, persists any
+ * newly-discovered timestamps, and pushes the full result set to the sidebar.
+ *
+ * @param {import('vscode').ExtensionContext} context
+ * @returns {Promise<object[]>}  The collected keyword items.
+ */
 const scanAllFilesContainKeywords = async (context) => {
-  resultData.length = 0; // Clear previous results
+  resultData.length = 0;
 
   const workspaceFolder = vscode.workspace.workspaceFolders;
   if (!workspaceFolder) {
@@ -62,60 +123,24 @@ const scanAllFilesContainKeywords = async (context) => {
     `**/*.{${fileExtensions.join(",")}}`
   );
 
-  // Push the preDefinedKeywords once outside the loop
-  resultData.push({ preDefinedKeywords: preDefinedKeywords() });
+  // Include predefined keywords so the sidebar can render color swatches.
+  resultData.push({ preDefinedKeywords: loadPredefinedKeywords() });
 
   for (const file of files) {
     try {
-      if (isExcluded(file)) continue; // ⛔ Skip excluded folders
+      if (isExcluded(file)) continue;
 
       const ext = path.extname(file.fsPath).replace(".", "").toLowerCase();
       const commentSymbol = commentStyles[ext] || "//";
+      const regex = buildCommentRegex(commentSymbol);
 
-      let regex;
-
-      const escapeRegex = (symbol) =>
-        symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-
-      if (commentSymbol === ";") {
-        // Match ; KEY: description (for AHK, INI)
-        regex = new RegExp(
-          `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
-          "gm"
-        );
-      } else if (commentSymbol === "#") {
-        // Match # KEY: description (for Python, Bash, etc.)
-        regex = new RegExp(`^\\s*#\\s*@([A-Z_]+):\\s*(.*)`, "gm");
-      } else {
-        // default : line comments like //, --
-        regex = new RegExp(
-          `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
-          "gm"
-        );
-      }
-
-      let content;
-      // 📝 First, check if the file is open in an editor
+      // Prefer real-time editor content over the on-disk version.
       const openEditor = vscode.window.visibleTextEditors.find(
         (editor) => editor.document.uri.fsPath === file.fsPath
       );
-
-      // if it's open
-      if (openEditor) {
-        content = openEditor.document.getText(); // Get real-time content
-        //console.log("RealTimeContent:", content);
-      } else {
-        // 📂 If not open, read from disk
-        // content = Buffer.from(
-        //   await vscode.workspace.fs.readFile(file)
-        // ).toString("utf8");
-
-        content = Buffer.from(
-          await vscode.workspace.fs.readFile(file)
-        ).toString("utf8"); // 🟢 Read from disk
-        //console.log("WholeDisk Content:", content)
-      }
-      //resultData.push({ preDefinedKeywords });
+      const content = openEditor
+        ? openEditor.document.getText()
+        : Buffer.from(await vscode.workspace.fs.readFile(file)).toString("utf8");
 
       const lines = content.split("\n");
 
@@ -128,18 +153,16 @@ const scanAllFilesContainKeywords = async (context) => {
               ? descriptionMatch[1].trim()
               : "No Description.";
 
-          let keyword = match[1] + ":"; // return  - keyword
-          let fileName = path.basename(file.fsPath);
-          let line = i + 1;
+          const keyword = match[1] + ":";
+          const fileName = path.basename(file.fsPath);
+          const line = i + 1;
           const uniqueKey = generateKeywordKey(keyword, fileName, line);
-          //let existingTimestamp = getTimestamp(uniqueKey);
 
           if (!highlightTimeStamps.has(uniqueKey)) {
             await saveTimestamp(keyword, fileName, line, context);
           }
-          const existingTimestamp = highlightTimeStamps.get(uniqueKey); // update reference
+          const existingTimestamp = highlightTimeStamps.get(uniqueKey);
 
-          // Push the date to "resultData" array
           resultData.push({
             keyword: match[1],
             description,
@@ -148,7 +171,6 @@ const scanAllFilesContainKeywords = async (context) => {
             line: i + 1,
             timeStamp: existingTimestamp,
             snippet: lines[i].trim(),
-            // predefinedkeywords : preDefinedKeywords,
           });
         }
       }
@@ -158,31 +180,33 @@ const scanAllFilesContainKeywords = async (context) => {
     }
   }
 
-  console.log("Updated resultData:", resultData);
-
   if (updateSidebar) {
     updateSidebar(resultData);
   } else {
-    console.error("❌ updateSidebar is NOT set! Sidebar cannot update.");
+    console.error("updateSidebar is not set — sidebar cannot update.");
   }
 
-  // also returning "resultData" for watchFiles--> previous keyword init scanning
   return resultData;
 };
 
-//Store previously detected keywords to avoid unnecessary scans
-let previousComments = new Map(); // Stores keyword-description pairs
-let previousKeywords = new Set();
+// ---------------------------------------------------------------------------
+// Real-time file watcher
+// ---------------------------------------------------------------------------
+
+// State used by the change-detection logic in onDidChangeTextDocument.
+let previousComments = new Map();
 let initialScanCompleted = false;
 let debouncerTimer = null;
 let recentlyUpdated = false;
 
-// watchFile-> for real-time file monitoring
+/**
+ * Runs an initial workspace scan and then starts watching for file-system and
+ * in-editor changes so the sidebar always reflects the current state.
+ * @param {import('vscode').ExtensionContext} context
+ */
 const watchFiles = async (context) => {
-  // Run an initial scan and store existing keywords in previousKeywords
   const initialResults = await scanAllFilesContainKeywords(context);
-  previousKeywords = new Set(initialResults.map((item) => item.keyword));
-  initialScanCompleted = true; // Intial Scan Completed!
+  initialScanCompleted = true;
 
   const watcher = vscode.workspace.createFileSystemWatcher(
     `**/*.{${fileExtensions.join(",")}}`
@@ -190,96 +214,60 @@ const watchFiles = async (context) => {
 
   watcher.onDidChange(() => {
     if (recentlyUpdated) {
-      // console.log("Skipping redundant scan (already updated by text edit)");
       recentlyUpdated = false;
       return;
     }
-    // console.log("File Changed - Rescanning...");
     scanAllFilesContainKeywords(context);
   });
 
-  watcher.onDidCreate(() => {
-    // console.log("File Created - Rescanning...");
-    scanAllFilesContainKeywords(context);
-  });
+  watcher.onDidCreate(() => scanAllFilesContainKeywords(context));
+  watcher.onDidDelete(() => scanAllFilesContainKeywords(context));
 
-  watcher.onDidDelete(() => {
-    // console.log("File Deleted - Rescanning...");
-    scanAllFilesContainKeywords(context);
-  });
-
-  // Detect real-time text changes (even before saving)
-
+  // Detect real-time text changes (even before saving).
   vscode.workspace.onDidChangeTextDocument(async (event) => {
-    if (!initialScanCompleted) return; // Skip scanning before initial load
+    if (!initialScanCompleted) return;
 
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor || event.document !== activeEditor.document) return;
-    const fileName = activeEditor?.document.fileName || "unknown";
-    const lines = activeEditor?.document.getText()?.split("\n") || [];
+
+    const fileName = activeEditor.document.fileName;
+    const lines = activeEditor.document.getText().split("\n");
 
     const ext = path
       .extname(event.document.fileName)
       .replace(".", "")
       .toLowerCase();
     const commentSymbol = commentStyles[ext] || "//";
-
-    const escapeRegex = (symbol) =>
-      symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-
-    if (commentSymbol === ";") {
-      // Match ; KEY: description (for AHK, INI)
-      regex = new RegExp(
-        `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
-        "gm"
-      );
-    } else if (commentSymbol === "#") {
-      // Match # KEY: description (for Python, Bash, etc.)
-      regex = new RegExp(`^\\s*#\\s*@([A-Z_]+):\\s*(.*)`, "gm");
-    } else {
-      // default : line comments like //, --
-      regex = new RegExp(
-        `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
-        "gm"
-      );
-    }
+    const regex = buildCommentRegex(commentSymbol);
 
     const text = event.document.getText();
     const matches = new Map();
 
-    // keyword : Description`
-    //const regex = /^\/\/\s*([A-Z_]+):\s*(.*)$/gm;
     for (const match of text.matchAll(regex)) {
       const keyword = match[1].trim();
       const description = match[2]?.trim() || "No Description";
-      matches.set(`${keyword}: ${description}`, true); // Store full pair
+      matches.set(`${keyword}: ${description}`, true);
     }
 
-    // Populate `previousComments` only once after the initial scan
+    // Populate previousComments once after the initial scan.
     if (!previousComments.size) {
       matches.forEach((_, comment) => previousComments.set(comment, true));
       return;
     }
 
-    // Detect added and removed comments
     const newComments = [...matches.keys()];
     const oldComments = [...previousComments.keys()];
 
-    const removedComments = oldComments.filter(
-      (comment) => !matches.has(comment)
-    );
-    const addedComments = newComments.filter(
-      (comment) => !previousComments.has(comment)
-    );
+    const removedComments = oldComments.filter((c) => !matches.has(c));
+    const addedComments = newComments.filter((c) => !previousComments.has(c));
 
     if (removedComments.length > 0 || addedComments.length > 0) {
       for (const comment of addedComments) {
         const keyword = comment.split(":")[0];
-        const lineIndex = lines.findIndex(line =>
+        const lineIndex = lines.findIndex((line) =>
           line.includes("@" + keyword.replace(":", ""))
         );
         const line = lineIndex !== -1 ? lineIndex : 0;
-        // => save()
         await saveTimestamp(keyword + ":", fileName, line, context);
       }
 
@@ -291,17 +279,10 @@ const watchFiles = async (context) => {
         scanAllFilesContainKeywords(context);
         recentlyUpdated = true;
       }, 500);
-    } else {
-      console.log(
-        "✅ No meaningful comment changes detected, skipping rescan."
-      );
     }
   });
-};
 
-// Modify `setSidebarCallback`
-const setSidebarCallback = (callback) => {
-  updateSidebar = callback;
+  return initialResults;
 };
 
 module.exports = {

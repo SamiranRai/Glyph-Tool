@@ -6,10 +6,6 @@ const {
   setSidebarCallback,
 } = require("../features/fileScanner");
 
-// Importing "highlightTimeStamps"
-const { highlightTimeStamps } = require("./../features/highlightWord"); // store all keyword timeStamp
-const { saveTimestamp } = require("./../db/levelDb");
-
 const {
   loadKeywords,
   updateKeyword,
@@ -17,147 +13,43 @@ const {
   removeKeyword,
 } = require("./../utility/highlight_word_required/keywordManager");
 
-// <---------------------------------------------------------->
+const commentStyles = require("./../utility/file_scanner_required/commentStyles");
 
-// Map of comment styles for different file extensions
-const commentStyles = {
-  js: "//", // JavaScript
-  jsx: "//", // JavaScript (React)
-  ts: "//", // TypeScript
-  tsx: "//", // TypeScript (React)
-  java: "//", // Java
-  c: "//", // C
-  cpp: "//", // C++
-  cs: "//", // C#
-  go: "//", // Go
-  php: "//", // PHP (also supports '#')
-  py: "#", // Python
-  rb: "#", // Ruby
-  rs: "//", // Rust
-  swift: "//", // Swift
-  kt: "//", // Kotlin
-  dart: "//", // Dart
-  scala: "//", // Scala
-  scss: "//", // Sass (SCSS)
-  less: "//", // Less
-  ahk: ";", // AutoHotkey
-  sh: "#", // Shell
-  bash: "#", // Bash
-  zsh: "#", // ZSH
-  yaml: "#", // YAML
-  yml: "#", // YAML
-  toml: "#", // TOML
-  ini: ";", // INI
-  cfg: "#", // Config
-  jsonc: "//", // JSON with comments
-  css: "/*", // CSS (block comments)
-  vue: "//", // Vue (inside <script>)
-  svelte: "//", // Svelte (inside <script>)
-  md: "<!--", // Markdown (HTML-style comments)
-  html: "<!--", // HTML
-  xml: "<!--", // XML
-  sql: "--", // SQL
-  pl: "#", // Perl
-  pm: "#", // Perl Module
-  r: "#", // R
-  m: "%", // MATLAB
-  jl: "#", // Julia
-  lisp: ";", // Lisp
-  clj: ";", // Clojure
-  cljs: ";", // ClojureScript
-  fs: "//", // F#
-  fsi: "//", // F# Interactive
-  ml: "(*", // OCaml
-  mli: "(*", // OCaml Interface
-  vb: "'", // Visual Basic
-  vbs: "'", // VBScript
-  ps1: "#", // PowerShell
-  tex: "%", // LaTeX
-  asm: ";", // Assembly
-  bat: "REM", // Batch file
-  dockerfile: "#", // Dockerfile
-  makefile: "#", // Makefile
-  groovy: "//", // Groovy
-  gradle: "//", // Gradle
-  h: "//", // C Header
-  hpp: "//", // C++ Header
-  objc: "//", // Objective-C
-  objcpp: "//", // Objective-C++
-  coffee: "#", // CoffeeScript
-  styl: "//", // Stylus
-  elm: "--", // Elm
-  hs: "--", // Haskell
-  erl: "%", // Erlang
-  ex: "#", // Elixir
-  exs: "#", // Elixir Script
-  nim: "#", // Nim
-  cr: "#", // Crystal
-  v: "//", // Verilog
-  sv: "//", // SystemVerilog
-  vhdl: "--", // VHDL
-  ada: "--", // Ada
-  d: "//", // D
-  pas: "//", // Pascal
-  asm: ";", // Assembly
-  s: ";", // Assembly
-  rkt: ";", // Racket
-  sc: "//", // Scala
-  kt: "//", // Kotlin
-  kts: "//", // Kotlin Script
-  tsx: "//", // TypeScript JSX
-  jsx: "//", // JavaScript JSX
-  json5: "//", // JSON5
-  toml: "#", // TOML
-  cfg: "#", // Config
-  conf: "#", // Config
-  ini: ";", // INI
-  properties: "#", // Java Properties
-  dotenv: "#", // .env files
-  env: "#", // Environment files
-  tf: "#", // Terraform
-  tfvars: "#", // Terraform variables
-  hcl: "#", // HashiCorp Configuration Language
-  puppet: "#", // Puppet
-  chef: "#", // Chef
-  ansible: "#", // Ansible
-  salt: "#", // SaltStack
-  jinja: "{#", // Jinja2
-  twig: "{#", // Twig
-  erb: "<%", // Embedded Ruby
-  ejs: "<%", // Embedded JavaScript
-  mustache: "{{!", // Mustache
-  handlebars: "{{!", // Handlebars
-  liquid: "{%", // Liquid
-  njk: "{#", // Nunjucks
-};
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-// Function to dynamically generate the correct comment
+/**
+ * Returns the comment symbol for the given file name, falling back to `//`.
+ * @param {string} fileName
+ * @returns {string}
+ */
 function getCommentStyleForFile(fileName) {
-  const fileExtension = fileName.split(".").pop();
-  return commentStyles[fileExtension] || "//"; // Default to "//" if no matching extension is found
+  const ext = fileName.split(".").pop();
+  return commentStyles[ext] || "//";
 }
 
-// <---------------------------------------------------------->
-
-function isFileUnchanged(filePath, prevMtime) {
-  const currentMtime = fs.statSync(filePath).mtimeMs;
-  return prevMtime === currentMtime;
-}
-
-// Helper
-function normalizePath(path) {
-  return path.replace(/\\/g, "/").toLowerCase();
-}
-
+/**
+ * VS Code WebviewViewProvider that powers the Glyph Tool sidebar panel.
+ * Renders the sidebar HTML/CSS/JS webview and acts as the message broker
+ * between the webview and the extension's backend services.
+ */
 class CustomSidebarProvider {
+  /**
+   * @param {import('vscode').ExtensionContext} context
+   */
   constructor(context) {
     this.context = context;
-    this.webviewView = null; // Store the webview instance
+    this.webviewView = null;
   }
 
+  /**
+   * Called by VS Code when the webview view is first created or re-opened.
+   * Loads the sidebar HTML, injects asset URIs, and sets up two-way messaging.
+   * @param {import('vscode').WebviewView} webviewView
+   */
   resolveWebviewView(webviewView) {
-    this.webviewView = webviewView; // Store for later updates
-
+    this.webviewView = webviewView;
     webviewView.webview.options = { enableScripts: true };
 
     const htmlPath = path.join(
@@ -481,11 +373,16 @@ class CustomSidebarProvider {
     });
   }
 
+  /**
+   * Posts a `updateData` message to the sidebar webview with the latest
+   * keyword scan results.
+   * @param {object[]} data  Array of keyword items to render in the sidebar.
+   */
   sendSidebarUpdate(data) {
     if (this.webviewView && this.webviewView.webview) {
       this.webviewView.webview.postMessage({ command: "updateData", data });
     } else {
-      console.warn("⚠️ Sidebar webview is unavailable. Could not send update.");
+      console.warn("Sidebar webview is unavailable. Could not send update.");
     }
   }
 }
