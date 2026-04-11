@@ -758,7 +758,6 @@ function renderFallbackIfnoData(data, Tab) {
 //
 // <--------- UPDATE ITEM COUNT INDEPENDTLY :START --------->
 
-// @DONE: "FIX_ITEM_COUNT" - fix item count showing wrong and implement a better method [16 May 2025 | 1747381022823]
 // SENDING FRESH RAW DATA TO "renderIndependentItemCount" function;
 function renderIndependentItemCount(freshRawData) {
   const excludePreDefinedKeywordData = freshRawData.filter(item => !item.preDefinedKeywords);
@@ -788,25 +787,6 @@ function renderIndependentItemCount(freshRawData) {
     doneItemCount.style.display = 'block';
     doneItemCount.innerHTML = doneKeywordData.length;
   }
-
-
-  // if (taskData.length === 0) {
-  //   // Hide
-  //   taskItemCount.style.display = "none";
-  // } else if (taskData.length >= 2) {
-  //   // Block
-  //   taskItemCount.style.display = "block";
-  //   taskItemCount.innerHTML = taskData.length - 1;
-  // }
-
-  // if (doneData.length === 0) {
-  //   // Hide
-  //   doneItemCount.style.display = "none";
-  // } else if (doneData.length >= 2) {
-  //   // Block
-  //   doneItemCount.style.display = "block";
-  //   doneItemCount.innerHTML = doneData.length - 1;
-  // }
 }
 
 // <--------- UPDATE ITEM COUNT INDEPENDTLY :END --------->
@@ -841,6 +821,8 @@ function groupData(data) {
     }
     groupByKeyword[keyword].push(item);
   });
+
+  console.log("Collection:", [groupByKeyword, groupByFileAndKeyword]);
 
   return [groupByKeyword, groupByFileAndKeyword];
 }
