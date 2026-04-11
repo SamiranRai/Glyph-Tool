@@ -6,6 +6,10 @@ const {
   setSidebarCallback,
 } = require("../features/fileScanner");
 
+// Importing "highlightTimeStamps"
+const { highlightTimeStamps } = require("./../features/highlightWord"); // store all keyword timeStamp
+const { saveTimestamp } = require("./../db/levelDb");
+
 const {
   loadKeywords,
   updateKeyword,
@@ -13,43 +17,36 @@ const {
   removeKeyword,
 } = require("./../utility/highlight_word_required/keywordManager");
 
-const commentStyles = require("./../utility/file_scanner_required/commentStyles");
+// Map of comment styles for different file extensions (shared with fileScanner)
+const commentStyles = require("../utility/file_scanner_required/commentStyles");
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-/**
- * Returns the comment symbol for the given file name, falling back to `//`.
- * @param {string} fileName
- * @returns {string}
- */
+// Function to dynamically generate the correct comment style for a file
 function getCommentStyleForFile(fileName) {
-  const ext = fileName.split(".").pop();
-  return commentStyles[ext] || "//";
+  const fileExtension = fileName.split(".").pop();
+  return commentStyles[fileExtension] || "//"; // Default to "//" if no matching extension is found
 }
 
-/**
- * VS Code WebviewViewProvider that powers the Glyph Tool sidebar panel.
- * Renders the sidebar HTML/CSS/JS webview and acts as the message broker
- * between the webview and the extension's backend services.
- */
+// <---------------------------------------------------------->
+
+function isFileUnchanged(filePath, prevMtime) {
+  const currentMtime = fs.statSync(filePath).mtimeMs;
+  return prevMtime === currentMtime;
+}
+
+// Helper
+function normalizePath(path) {
+  return path.replace(/\\/g, "/").toLowerCase();
+}
+
 class CustomSidebarProvider {
-  /**
-   * @param {import('vscode').ExtensionContext} context
-   */
   constructor(context) {
     this.context = context;
-    this.webviewView = null;
+    this.webviewView = null; // Store the webview instance
   }
 
-  /**
-   * Called by VS Code when the webview view is first created or re-opened.
-   * Loads the sidebar HTML, injects asset URIs, and sets up two-way messaging.
-   * @param {import('vscode').WebviewView} webviewView
-   */
   resolveWebviewView(webviewView) {
-    this.webviewView = webviewView;
+    this.webviewView = webviewView; // Store for later updates
+
     webviewView.webview.options = { enableScripts: true };
 
     const htmlPath = path.join(
@@ -373,16 +370,11 @@ class CustomSidebarProvider {
     });
   }
 
-  /**
-   * Posts a `updateData` message to the sidebar webview with the latest
-   * keyword scan results.
-   * @param {object[]} data  Array of keyword items to render in the sidebar.
-   */
   sendSidebarUpdate(data) {
     if (this.webviewView && this.webviewView.webview) {
       this.webviewView.webview.postMessage({ command: "updateData", data });
     } else {
-      console.warn("Sidebar webview is unavailable. Could not send update.");
+      console.warn("⚠️ Sidebar webview is unavailable. Could not send update.");
     }
   }
 }

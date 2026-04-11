@@ -1,6 +1,6 @@
 # 🌟 Glyph — Highlight TODOs, FIXMEs, Custom Keywords & More in VS Code
 
-**Glyph** is a simple yet powerful Visual Studio Code extension that helps developers highlight, track, and manage task-related comments directly within their codebase. Whether it’s `TODO`, `FIXME`, or your own custom keywords like `BUG`, `IMPROVE`, or `REFACTOR`, Glyph ensures that nothing slips through the cracks.
+**Glyph** is a simple yet powerful Visual Studio Code extension that helps developers highlight, track, and manage task-related comments directly within their codebase. Whether it’s `@TODO`, `@FIXME`, or your own custom keywords like `@BUG`, `@IMPROVE`, or `@REFACTOR`, Glyph ensures that nothing slips through the cracks.
 
 > Stay organized. Stay productive. Stay focused.
 
@@ -9,10 +9,10 @@
 ## Features
 
 - **Instant Detection**  
-  Highlights keywords like `TODO`, `FIXME`, or any custom tag as you type — no save required.
+  Highlights keywords like `@TODO`, `@FIXME`, or any custom tag as you type — no save required.
 
 - **Custom Keywords**  
-  Define your own task labels like `OPTIMIZE`, `DEBUG`, or `REFACTOR`, and assign unique colors to each.
+  Define your own task labels like `@OPTIMIZE`, `@DEBUG`, or `@REFACTOR`, and assign unique colors to each.
 
 - **Central Task View**  
   All keyword-based comments are listed in a dedicated Glyph sidebar panel.
@@ -127,20 +127,21 @@ Glyph fits beautifully into your editor whether you’re in light mode or dark.
 
 1. Open any source code file in Visual Studio Code.
 2. Add a comment using a supported or custom keyword:
+3. Make sure to start with @ before your keyword.
 
    ```js
-   // Todo: Refactor the login logic
+   // @Todo: Refactor the login logic
 
-   // Custom_Keyword: Use any Keyword you Want and the extension will automatically highlight the keyword
+   // @Custom_Keyword: Use any Keyword you Want and the extension will automatically highlight the keyword
 
-   // Improve: Use any Comment accoding to the Language
+   // @Improve: Use any Comment accoding to the Language
 
-   // Support: Support All languages - Python, java, js, php... (Just use their comment, like for python use #, Java //, js //, html <!---->, css /**/...).
+   // @Support: Support All languages - Python, java, js, php... (Just use their comment, like for python use #, Java //, js //, html <!---->, css /**/...).
    ```
 
-3. Open the Glyph sidebar by clicking its icon.
-4. View, mark as done, undo, delete, or filter tasks with ease.
-5. You can define any keyword in any file type — Glyph automatically detects the correct comment style.
+4. Open the Glyph sidebar by clicking its icon.
+5. View, mark as done, undo, delete, or filter tasks with ease.
+6. You can define any keyword in any file type — Glyph automatically detects the correct comment style.
 
 ---
 
