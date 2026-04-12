@@ -1,28 +1,25 @@
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
-const getKeywordHighlightColor = require("../utility/highlight_word_required/getKeywordHighlightColor");
-let predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+const getKeywordHighlightColor = require("../../shared/get-keyword-highlight-color");
+let predefinedKeywordColors = require("../../shared/predefined-keywords");
 // Build a Map for O(1) keyword lookups instead of a linear array scan per match.
 let predefinedKeywordMap = new Map(predefinedKeywordColors.map((item) => [item.keyword, item.color]));
-const commentStyles = require("../utility/file_scanner_required/commentStyles");
+const commentStyles = require("../../shared/comment-styles");
+const { getCommentSymbolForFile } = require("../../shared/comment-utils");
+const { createHighlightKeywordRegex } = require("../../shared/keyword-comment-regex");
 
 function getCommentSymbol(document) {
-  const ext = path.extname(document.fileName).slice(1).toLowerCase();
-  return commentStyles[ext] || null;
+  return getCommentSymbolForFile(document.fileName, commentStyles, null);
 }
-//------- WHOLE FILE BASED DYNAMIC REGULAR-EXPRESSION--------//
 
-//------- WHOLE FILE BASED DYNAMIC REGULAR-EXPRESSION--------//
-
-// Database related
 const {
   initDB,
   saveTimestamp,
   highlightTimeStamps,
-} = require("./../db/levelDb");
+} = require("../../db/levelDb");
 
-const { generateKeywordKey } = require("./../utility/db_required/keyGenerator");
+const { generateKeywordKey } = require("../../shared/key-generator");
 
 let isEditing = false;
 let decorationTypes = new Map();
@@ -30,13 +27,13 @@ let decorationTypes = new Map();
 // Watch for changes in preDefinedKeywords.js
 const keywordsFilePath = path.join(
   __dirname,
-  "../utility/highlight_word_required/preDefinedKeywords.js"
+  "../../shared/predefined-keywords.js"
 );
-fs.watchFile(keywordsFilePath, (curr, prev) => {
+fs.watchFile(keywordsFilePath, () => {
   delete require.cache[
-    require.resolve("../utility/highlight_word_required/preDefinedKeywords")
+    require.resolve("../../shared/predefined-keywords")
   ];
-  predefinedKeywordColors = require("../utility/highlight_word_required/preDefinedKeywords");
+  predefinedKeywordColors = require("../../shared/predefined-keywords");
   predefinedKeywordMap = new Map(predefinedKeywordColors.map((item) => [item.keyword, item.color]));
 
   // Reset decorations
@@ -58,19 +55,11 @@ async function highlightWords(context) {
   }
 
   const text = editor.document.getText();
-  // const regex = /^[ \t]*\/\/[ \t]*([a-zA-Z_][a-zA-Z0-9_]*):[^\n]*$/gm; -- 100% working
-  //const regex = getHighlightRegex(); // testing -- 100% working
   const commentPrefix = getCommentSymbol(editor.document);
   if (!commentPrefix) return;
 
-  const escapedPrefix = commentPrefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  const regex = new RegExp(
-    `^[ \\t]*${escapedPrefix}[ \\t]*@([a-zA-Z_][a-zA-Z0-9_]*)[:][^\\n]*$`,
-    "gm"
-  );
+  const regex = createHighlightKeywordRegex(commentPrefix);
   let keywordRanges = new Map();
-  let existingKeywords = new Set(); // For Keyword Tracking purpose
 
   let match;
   while ((match = regex.exec(text))) {
@@ -86,14 +75,11 @@ async function highlightWords(context) {
     const line = startPos.line;
 
     const uniqueKey = generateKeywordKey(uppercaseKeyword, fileName, line);
-    existingKeywords.add(uniqueKey); // Track Seen Keyword
 
-    // Safe DB call
     if (!highlightTimeStamps.has(uniqueKey)) {
       await saveTimestamp(uppercaseKeyword, fileName, line, context);
     }
 
-    // Ensure keyword is converted to uppercase in the document
     if (keyword !== uppercaseKeyword) {
       await editor.edit((editBuilder) => {
         editBuilder.replace(
@@ -103,7 +89,6 @@ async function highlightWords(context) {
       });
     }
 
-    // Checking & applying predefined custom Keyword style, if present
     let bgColor;
     if (predefinedKeywordMap.has(uppercaseKeyword)) {
       bgColor = predefinedKeywordMap.get(uppercaseKeyword);
@@ -130,14 +115,6 @@ async function highlightWords(context) {
       .push(new vscode.Range(startPos, endPos));
   }
 
-  // // Remove timestamps for deleted keywords
-  // for (const key of highlightTimeStamps.keys()) {
-  //   if (!existingKeywords.has(key)) {
-  //     await deleteTimestamp(key, context);
-  //   }
-  // }
-
-  // Apply decorations (RESET before applying new ones)
   decorationTypes.forEach((decoration) => {
     editor.setDecorations(decoration, []);
   });
@@ -152,7 +129,6 @@ async function highlightWords(context) {
   isEditing = false;
 }
 
-// **Activation Function**
 async function activate(context) {
   await initDB(context);
 

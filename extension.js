@@ -1,51 +1,42 @@
 const vscode = require("vscode");
 
-// Importing "highlightWords functions"
-const { highlightWords } = require("./src/features/highlightWord");
+const {
+  highlightWords,
+} = require("./src/features/highlighting/highlight-word");
 
-// Importing "scanAllFilesContainKeywords" && "watchFiles"
 const {
   scanAllFilesContainKeywords,
   watchFiles,
-} = require("./src/features/fileScanner");
+} = require("./src/features/scanning/file-scanner");
 
-// Importing initDB
 const { initDB } = require("./src/db/levelDb");
 
-
-// Importing "CustomSidebarProvider"
-const CustomSidebarProvider = require("./src/sidebar/customSidebar");
+const CustomSidebarProvider = require("./src/features/sidebar/custom-sidebar-provider");
 
 async function activate(context) {
-  await initDB(context); // ✅ Load existing timestamps from globalState
+  await initDB(context);
   const results = await scanAllFilesContainKeywords(context);
-  await highlightWords(context); // ✅ Now use safely without resetting others
+  await highlightWords(context);
 
-  // Registering Highlight Word Command
   let highlightWordCommand = vscode.commands.registerCommand(
     "highlightWord.afterColon",
     async () => await highlightWords(context)
   );
 
-  // Register File Scanner Command
   let scanHighlightedKeywordFiles = vscode.commands.registerCommand(
     "scanAllfiles.containDefaultKeyword",
     async () => await scanAllFilesContainKeywords(context)
   );
 
-  // Registering Custom SideBar
   let customSidebar = vscode.window.registerWebviewViewProvider(
     "customSidebar",
-    new CustomSidebarProvider(context)
+    new CustomSidebarProvider(context),
   );
-  // Push commands to subscriptions
   context.subscriptions.push(highlightWordCommand);
   context.subscriptions.push(scanHighlightedKeywordFiles);
   context.subscriptions.push(customSidebar);
 
-  // Start watching for file changes, reusing the already-computed scan results
-  // to avoid a redundant full workspace scan at startup.
-  await watchFiles(context, results); // 🚀 This ensures real-time updates
+  await watchFiles(context, results);
 
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor(() => highlightWords(context))
