@@ -1,3 +1,6 @@
+/* eslint-env browser, node */
+/* global window */
+
 // Detect environment: Node.js (Backend) or Browser (Frontend)
 const isNode = typeof module !== "undefined" && module.exports;
 
@@ -6,7 +9,7 @@ if (isNode) {
   var tinycolor = require("tinycolor2");
 } else if (typeof window !== "undefined" && !window.tinycolor) {
   console.warn(
-    "⚠️ tinycolor is not loaded in the frontend. Make sure to add the CDN!"
+    "tinycolor is not loaded in the frontend. Make sure to add the CDN."
   );
 }
 

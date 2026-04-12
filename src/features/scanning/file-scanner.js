@@ -1,6 +1,8 @@
 const vscode = require("vscode");
 const path = require("path");
 const fs = require("fs");
+const { getCommentSymbolForFile } = require("../../shared/comment-utils");
+const { createScanKeywordRegex } = require("../../shared/keyword-comment-regex");
 
 const EXCLUDED_DIRS = [
   "node_modules",
@@ -17,17 +19,14 @@ const EXCLUDED_DIRS = [
   "temp",
 ];
 
-// Check if a file is inside any excluded directory
 function isExcluded(fileUri) {
   return EXCLUDED_DIRS.some((dir) =>
     fileUri.fsPath.split(/[\\/]/).includes(dir)
   );
 }
 
-// Cached predefined keywords — refreshed automatically when the file changes
-// instead of busting the require cache on every scan call.
-let cachedPreDefinedKeywords = require("./../utility/highlight_word_required/preDefinedKeywords");
-const preDefinedKeywordsFilePath = require.resolve("./../utility/highlight_word_required/preDefinedKeywords");
+let cachedPreDefinedKeywords = require("../../shared/predefined-keywords");
+const preDefinedKeywordsFilePath = require.resolve("../../shared/predefined-keywords");
 fs.watchFile(preDefinedKeywordsFilePath, () => {
   try {
     delete require.cache[preDefinedKeywordsFilePath];
@@ -37,47 +36,29 @@ fs.watchFile(preDefinedKeywordsFilePath, () => {
   }
 });
 
-// Importing "fileExtensions"
-const fileExtensions = require("../utility/file_scanner_required/fileExtensions");
-const commentStyles = require("../utility/file_scanner_required/commentStyles");
-// Importing "highlightTimeStamps"
+const fileExtensions = require("../../shared/file-extensions");
+const commentStyles = require("../../shared/comment-styles");
 const {
   saveTimestamp,
   highlightTimeStamps
-} = require("./../db/levelDb");
+} = require("../../db/levelDb");
 
-const { generateKeywordKey } = require("./../utility/db_required/keyGenerator");
+const { generateKeywordKey } = require("../../shared/key-generator");
 
-// Cache compiled regex objects per file extension to avoid rebuilding on every scan/keystroke.
 const regexCache = new Map();
-const escapeRegex = (symbol) => symbol.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
 
 function buildRegexForExt(ext) {
   if (regexCache.has(ext)) {
     return regexCache.get(ext);
   }
   const commentSymbol = commentStyles[ext] || "//";
-  let regex;
-  if (commentSymbol === ";") {
-    regex = new RegExp(
-      `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
-      "gm"
-    );
-  } else if (commentSymbol === "#") {
-    regex = new RegExp(`^\\s*#\\s*@([A-Z_]+):\\s*(.*)`, "gm");
-  } else {
-    regex = new RegExp(
-      `^\\s*${escapeRegex(commentSymbol)}\\s*@([A-Z_]+):\\s*(.*)`,
-      "gm"
-    );
-  }
+  const regex = createScanKeywordRegex(commentSymbol);
   regexCache.set(ext, regex);
   return regex;
 }
 
-// Store the data
 const resultData = [];
-let updateSidebar = null; // Store the sidebar update function
+let updateSidebar = null;
 
 const scanAllFilesContainKeywords = async (context) => {
   resultData.length = 0; // Clear previous results
@@ -91,39 +72,28 @@ const scanAllFilesContainKeywords = async (context) => {
     `**/*.{${fileExtensions.join(",")}}`
   );
 
-  // Push the preDefinedKeywords once outside the loop
   resultData.push({ preDefinedKeywords: cachedPreDefinedKeywords });
 
   for (const file of files) {
     try {
-      if (isExcluded(file)) continue; // ⛔ Skip excluded folders
+      if (isExcluded(file)) continue;
 
       const ext = path.extname(file.fsPath).replace(".", "").toLowerCase();
 
       const regex = buildRegexForExt(ext);
-      regex.lastIndex = 0; // Ensure clean state when reusing a cached regex
+      regex.lastIndex = 0;
       let content;
-      // 📝 First, check if the file is open in an editor
       const openEditor = vscode.window.visibleTextEditors.find(
         (editor) => editor.document.uri.fsPath === file.fsPath
       );
 
-      // if it's open
       if (openEditor) {
-        content = openEditor.document.getText(); // Get real-time content
-        //console.log("RealTimeContent:", content);
+        content = openEditor.document.getText();
       } else {
-        // 📂 If not open, read from disk
-        // content = Buffer.from(
-        //   await vscode.workspace.fs.readFile(file)
-        // ).toString("utf8");
-
         content = Buffer.from(
           await vscode.workspace.fs.readFile(file)
-        ).toString("utf8"); // 🟢 Read from disk
-        //console.log("WholeDisk Content:", content)
+        ).toString("utf8");
       }
-      //resultData.push({ preDefinedKeywords });
 
       const lines = content.split("\n");
 
@@ -136,18 +106,16 @@ const scanAllFilesContainKeywords = async (context) => {
               ? descriptionMatch[1].trim()
               : "No Description.";
 
-          let keyword = match[1] + ":"; // return  - keyword
+          let keyword = match[1] + ":";
           let fileName = path.basename(file.fsPath);
           let line = i + 1;
           const uniqueKey = generateKeywordKey(keyword, fileName, line);
-          //let existingTimestamp = getTimestamp(uniqueKey);
 
           if (!highlightTimeStamps.has(uniqueKey)) {
             await saveTimestamp(keyword, fileName, line, context);
           }
-          const existingTimestamp = highlightTimeStamps.get(uniqueKey); // update reference
+          const existingTimestamp = highlightTimeStamps.get(uniqueKey);
 
-          // Push the date to "resultData" array
           resultData.push({
             keyword: match[1],
             description,
@@ -156,7 +124,6 @@ const scanAllFilesContainKeywords = async (context) => {
             line: i + 1,
             timeStamp: existingTimestamp,
             snippet: lines[i].trim(),
-            // predefinedkeywords : preDefinedKeywords,
           });
         }
       }
@@ -166,34 +133,26 @@ const scanAllFilesContainKeywords = async (context) => {
     }
   }
 
-  console.log("Updated resultData:", resultData);
-
   if (updateSidebar) {
     updateSidebar(resultData);
   } else {
-    console.error("❌ updateSidebar is NOT set! Sidebar cannot update.");
+    console.error("updateSidebar is not set. Sidebar cannot update.");
   }
 
-  // also returning "resultData" for watchFiles--> previous keyword init scanning
   return resultData;
 };
 
-//Store previously detected keywords to avoid unnecessary scans
-let previousComments = new Map(); // Stores keyword-description pairs
-let previousKeywords = new Set();
+let previousComments = new Map();
 let initialScanCompleted = false;
 let debouncerTimer = null;
 let recentlyUpdated = false;
 
-// watchFile-> for real-time file monitoring
-// Accepts optional initialResults from a prior scan to skip a redundant startup scan.
 const watchFiles = async (context, initialResults = null) => {
-  // Reuse already-computed scan results when available, otherwise run a fresh scan.
   const scanResults = initialResults !== null
     ? initialResults
     : await scanAllFilesContainKeywords(context);
-  previousKeywords = new Set(scanResults.map((item) => item.keyword));
-  initialScanCompleted = true; // Initial Scan Completed!
+  void scanResults;
+  initialScanCompleted = true;
 
   const watcher = vscode.workspace.createFileSystemWatcher(
     `**/*.{${fileExtensions.join(",")}}`
@@ -201,28 +160,22 @@ const watchFiles = async (context, initialResults = null) => {
 
   watcher.onDidChange(() => {
     if (recentlyUpdated) {
-      // console.log("Skipping redundant scan (already updated by text edit)");
       recentlyUpdated = false;
       return;
     }
-    // console.log("File Changed - Rescanning...");
     scanAllFilesContainKeywords(context);
   });
 
   watcher.onDidCreate(() => {
-    // console.log("File Created - Rescanning...");
     scanAllFilesContainKeywords(context);
   });
 
   watcher.onDidDelete(() => {
-    // console.log("File Deleted - Rescanning...");
     scanAllFilesContainKeywords(context);
   });
 
-  // Detect real-time text changes (even before saving)
-
   vscode.workspace.onDidChangeTextDocument(async (event) => {
-    if (!initialScanCompleted) return; // Skip scanning before initial load
+    if (!initialScanCompleted) return;
 
     const activeEditor = vscode.window.activeTextEditor;
     if (!activeEditor || event.document !== activeEditor.document) return;
@@ -234,8 +187,9 @@ const watchFiles = async (context, initialResults = null) => {
       .replace(".", "")
       .toLowerCase();
 
-    // Use the cached regex for this file extension (avoids rebuilding on every keystroke)
-    const regex = buildRegexForExt(ext);
+    const commentSymbol = getCommentSymbolForFile(event.document.fileName, commentStyles, "//");
+    const regex = regexCache.get(ext) || createScanKeywordRegex(commentSymbol);
+    regexCache.set(ext, regex);
 
     const text = event.document.getText();
     const matches = new Map();
@@ -243,16 +197,14 @@ const watchFiles = async (context, initialResults = null) => {
     for (const match of text.matchAll(regex)) {
       const keyword = match[1].trim();
       const description = match[2]?.trim() || "No Description";
-      matches.set(`${keyword}: ${description}`, true); // Store full pair
+      matches.set(`${keyword}: ${description}`, true);
     }
 
-    // Populate `previousComments` only once after the initial scan
     if (!previousComments.size) {
       matches.forEach((_, comment) => previousComments.set(comment, true));
       return;
     }
 
-    // Detect added and removed comments
     const newComments = [...matches.keys()];
     const oldComments = [...previousComments.keys()];
 
@@ -270,7 +222,6 @@ const watchFiles = async (context, initialResults = null) => {
           line.includes("@" + keyword.replace(":", ""))
         );
         const line = lineIndex !== -1 ? lineIndex : 0;
-        // => save()
         await saveTimestamp(keyword + ":", fileName, line, context);
       }
 
@@ -282,15 +233,10 @@ const watchFiles = async (context, initialResults = null) => {
         scanAllFilesContainKeywords(context);
         recentlyUpdated = true;
       }, 500);
-    } else {
-      console.log(
-        "✅ No meaningful comment changes detected, skipping rescan."
-      );
     }
   });
 };
 
-// Modify `setSidebarCallback`
 const setSidebarCallback = (callback) => {
   updateSidebar = callback;
 };
